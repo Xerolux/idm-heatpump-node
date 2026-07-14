@@ -56,15 +56,16 @@ Complete semantic and behavioral parity with the latest stable pinned `Xerolux/i
 
 ## Key Decisions
 
-| Decision | Rationale | Outcome |
-|----------|-----------|---------|
-| Treat the pinned Python release as the semantic and behavioral authority | Prevents undocumented Node-specific drift | — Pending |
-| Keep `private: true` until all parity and release gates pass | Partial publication is explicitly forbidden | — Pending |
-| Treat the existing package/tooling as delivered foundation | Remaining work should focus on functional parity, while final release re-verifies packaging | ✓ Good |
-| Use one strict TypeScript source for ESM and CommonJS outputs | Avoids behavior divergence between module formats | — Pending |
-| Keep concrete Modbus access behind `ModbusTransport` | Isolates domain behavior and enables deterministic contract tests | — Pending |
-| Keep the web supplement optional and read-only | Modbus remains the baseline path and write safety stays centralized | — Pending |
-| Release first as `0.1.0` only at full scope | Version signals TypeScript API maturity, not reduced parity | — Pending |
+| Decision                                                                 | Rationale                                                                                   | Outcome   |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- | --------- |
+| Treat the pinned Python release as the semantic and behavioral authority | Prevents undocumented Node-specific drift                                                   | — Pending |
+| Keep `private: true` until all parity and release gates pass             | Partial publication is explicitly forbidden                                                 | — Pending |
+| Treat the existing package/tooling as delivered foundation               | Remaining work should focus on functional parity, while final release re-verifies packaging | ✓ Good    |
+| Use one strict TypeScript source for ESM and CommonJS outputs            | Avoids behavior divergence between module formats                                           | — Pending |
+| Keep concrete Modbus access behind `ModbusTransport`                     | Isolates domain behavior and enables deterministic contract tests                           | — Pending |
+| Keep the web supplement optional and read-only                           | Modbus remains the baseline path and write safety stays centralized                         | — Pending |
+| Release first as `0.1.0` only at full scope                              | Version signals TypeScript API maturity, not reduced parity                                 | — Pending |
 
 ---
-*Last updated: 2026-07-14 after project initialization from ingested specifications*
+
+_Last updated: 2026-07-14 after project initialization from ingested specifications_

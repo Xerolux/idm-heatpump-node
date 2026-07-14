@@ -58,83 +58,84 @@ None. Complete parity is indivisible for the initial npm release; unsupported or
 
 ## Out of Scope
 
-| Feature | Reason |
-|---------|--------|
-| Partial npm release | Full parity is an absolute publication gate. |
-| Python runtime integration | Python is development/CI reference material only. |
-| Navigator 1.0/1.7 | Separate, currently unsupported protocol family. |
-| Browser support | Target runtime is standalone Node.js 22+. |
-| Telemetry | Explicitly excluded by the package boundary. |
+| Feature                               | Reason                                                                |
+| ------------------------------------- | --------------------------------------------------------------------- |
+| Partial npm release                   | Full parity is an absolute publication gate.                          |
+| Python runtime integration            | Python is development/CI reference material only.                     |
+| Navigator 1.0/1.7                     | Separate, currently unsupported protocol family.                      |
+| Browser support                       | Target runtime is standalone Node.js 22+.                             |
+| Telemetry                             | Explicitly excluded by the package boundary.                          |
 | Independent Node register corrections | The Python authority must receive source/hardware-backed fixes first. |
-| Unapproved live hardware writes | Safety-sensitive interaction requires explicit user authorization. |
+| Unapproved live hardware writes       | Safety-sensitive interaction requires explicit user authorization.    |
 
 ## Source Traceability
 
 Each v1 requirement below derives from exactly one of the 27 ingested binding constraints. This preserves 27/27 constraint coverage while the roadmap maps every v1 requirement to exactly one phase.
 
-| Requirement | Ingested constraint | Authoritative source |
-|-------------|---------------------|----------------------|
-| PKG-01 | Standalone TypeScript runtime and parity release policy | `docs/IMPLEMENTATION-PLAN.md` § Zielbild |
-| PKG-02 | Target package structure | `docs/IMPLEMENTATION-PLAN.md` § Vorgesehene Paketstruktur |
-| PKG-03 | Runtime, compiler, and module baseline | `docs/IMPLEMENTATION-PLAN.md` § Architekturentscheidungen |
-| TRN-01 | Modbus isolation and deterministic test infrastructure | `docs/IMPLEMENTATION-PLAN.md` § Architekturentscheidungen |
-| PKG-04 | Web export and platform boundaries | `docs/IMPLEMENTATION-PLAN.md` § Architekturentscheidungen |
-| PKG-05 | Tooling and package contract | `docs/IMPLEMENTATION-PLAN.md` § Phase 1 |
-| PAR-01 | Parity harness, codec, and register schema implementation | `docs/IMPLEMENTATION-PLAN.md` § Phase 2 |
-| TRN-02 | Transport and read-path behavior | `docs/IMPLEMENTATION-PLAN.md` § Phase 3 |
-| DET-01 | Model and feature detection boundary | `docs/IMPLEMENTATION-PLAN.md` § Phase 4 |
-| WRT-01 | Write-safety implementation sequence and invariants | `docs/IMPLEMENTATION-PLAN.md` § Phase 5 |
-| WEB-01 | Optional read-only web supplement | `docs/IMPLEMENTATION-PLAN.md` § Phase 6 |
-| PAR-02 | Full-parity and release-readiness gate | `docs/IMPLEMENTATION-PLAN.md` § Phase 7 |
-| REL-01 | Initial release identity and changelog evidence | `docs/IMPLEMENTATION-PLAN.md` § Erstes Release |
-| BASE-01 | Reproducible upstream baseline | `docs/PARITY-CONTRACT.md` § Referenz |
-| API-01 | Public API semantic equivalence | `docs/PARITY-CONTRACT.md` § Paritätsdimensionen 1 |
-| REG-01 | Exact register-schema parity | `docs/PARITY-CONTRACT.md` § Paritätsdimensionen 2 |
-| COD-01 | Codec parity | `docs/PARITY-CONTRACT.md` § Paritätsdimensionen 3 |
-| TRN-03 | Transport and batching parity | `docs/PARITY-CONTRACT.md` § Paritätsdimensionen 4 |
-| DET-02 | Detection and state parity | `docs/PARITY-CONTRACT.md` § Paritätsdimensionen 5 |
-| ERR-01 | Error and resilience parity | `docs/PARITY-CONTRACT.md` § Paritätsdimensionen 6 |
-| WRT-02 | Write-safety parity | `docs/PARITY-CONTRACT.md` § Paritätsdimensionen 7 |
-| WEB-02 | Web-supplement parity | `docs/PARITY-CONTRACT.md` § Paritätsdimensionen 8 |
-| CTR-01 | Cross-repository contract scenario schema | `docs/PARITY-CONTRACT.md` § Contract-Harness |
-| CTR-02 | Behavioral contract coverage | `docs/PARITY-CONTRACT.md` § Contract-Harness |
-| API-02 | API parity matrix lifecycle | `docs/PARITY-CONTRACT.md` § API-Paritätsmatrix |
-| REL-02 | Coordinated release process and stale-baseline handling | `docs/PARITY-CONTRACT.md` § Koordinierte Releases |
-| REL-03 | Absolute npm release gate | `docs/PARITY-CONTRACT.md` § Release-Gate |
+| Requirement | Ingested constraint                                       | Authoritative source                                      |
+| ----------- | --------------------------------------------------------- | --------------------------------------------------------- |
+| PKG-01      | Standalone TypeScript runtime and parity release policy   | `docs/IMPLEMENTATION-PLAN.md` § Zielbild                  |
+| PKG-02      | Target package structure                                  | `docs/IMPLEMENTATION-PLAN.md` § Vorgesehene Paketstruktur |
+| PKG-03      | Runtime, compiler, and module baseline                    | `docs/IMPLEMENTATION-PLAN.md` § Architekturentscheidungen |
+| TRN-01      | Modbus isolation and deterministic test infrastructure    | `docs/IMPLEMENTATION-PLAN.md` § Architekturentscheidungen |
+| PKG-04      | Web export and platform boundaries                        | `docs/IMPLEMENTATION-PLAN.md` § Architekturentscheidungen |
+| PKG-05      | Tooling and package contract                              | `docs/IMPLEMENTATION-PLAN.md` § Phase 1                   |
+| PAR-01      | Parity harness, codec, and register schema implementation | `docs/IMPLEMENTATION-PLAN.md` § Phase 2                   |
+| TRN-02      | Transport and read-path behavior                          | `docs/IMPLEMENTATION-PLAN.md` § Phase 3                   |
+| DET-01      | Model and feature detection boundary                      | `docs/IMPLEMENTATION-PLAN.md` § Phase 4                   |
+| WRT-01      | Write-safety implementation sequence and invariants       | `docs/IMPLEMENTATION-PLAN.md` § Phase 5                   |
+| WEB-01      | Optional read-only web supplement                         | `docs/IMPLEMENTATION-PLAN.md` § Phase 6                   |
+| PAR-02      | Full-parity and release-readiness gate                    | `docs/IMPLEMENTATION-PLAN.md` § Phase 7                   |
+| REL-01      | Initial release identity and changelog evidence           | `docs/IMPLEMENTATION-PLAN.md` § Erstes Release            |
+| BASE-01     | Reproducible upstream baseline                            | `docs/PARITY-CONTRACT.md` § Referenz                      |
+| API-01      | Public API semantic equivalence                           | `docs/PARITY-CONTRACT.md` § Paritätsdimensionen 1         |
+| REG-01      | Exact register-schema parity                              | `docs/PARITY-CONTRACT.md` § Paritätsdimensionen 2         |
+| COD-01      | Codec parity                                              | `docs/PARITY-CONTRACT.md` § Paritätsdimensionen 3         |
+| TRN-03      | Transport and batching parity                             | `docs/PARITY-CONTRACT.md` § Paritätsdimensionen 4         |
+| DET-02      | Detection and state parity                                | `docs/PARITY-CONTRACT.md` § Paritätsdimensionen 5         |
+| ERR-01      | Error and resilience parity                               | `docs/PARITY-CONTRACT.md` § Paritätsdimensionen 6         |
+| WRT-02      | Write-safety parity                                       | `docs/PARITY-CONTRACT.md` § Paritätsdimensionen 7         |
+| WEB-02      | Web-supplement parity                                     | `docs/PARITY-CONTRACT.md` § Paritätsdimensionen 8         |
+| CTR-01      | Cross-repository contract scenario schema                 | `docs/PARITY-CONTRACT.md` § Contract-Harness              |
+| CTR-02      | Behavioral contract coverage                              | `docs/PARITY-CONTRACT.md` § Contract-Harness              |
+| API-02      | API parity matrix lifecycle                               | `docs/PARITY-CONTRACT.md` § API-Paritätsmatrix            |
+| REL-02      | Coordinated release process and stale-baseline handling   | `docs/PARITY-CONTRACT.md` § Koordinierte Releases         |
+| REL-03      | Absolute npm release gate                                 | `docs/PARITY-CONTRACT.md` § Release-Gate                  |
 
 ## Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| PAR-01 | Phase 1 | Pending |
-| BASE-01 | Phase 1 | Pending |
-| API-01 | Phase 1 | Pending |
-| API-02 | Phase 1 | Pending |
-| REG-01 | Phase 1 | Pending |
-| COD-01 | Phase 1 | Pending |
-| CTR-01 | Phase 1 | Pending |
-| TRN-01 | Phase 2 | Pending |
-| TRN-02 | Phase 2 | Pending |
-| TRN-03 | Phase 2 | Pending |
-| DET-01 | Phase 2 | Pending |
-| DET-02 | Phase 2 | Pending |
-| ERR-01 | Phase 2 | Pending |
-| WRT-01 | Phase 3 | Pending |
-| WRT-02 | Phase 3 | Pending |
-| PKG-04 | Phase 4 | Pending |
-| WEB-01 | Phase 4 | Pending |
-| WEB-02 | Phase 4 | Pending |
-| PKG-01 | Phase 5 | Pending |
-| PKG-02 | Phase 5 | Pending |
-| PKG-03 | Phase 5 | Pending |
-| PKG-05 | Phase 5 | Pending |
-| PAR-02 | Phase 5 | Pending |
-| REL-01 | Phase 5 | Pending |
-| CTR-02 | Phase 5 | Pending |
-| REL-02 | Phase 5 | Pending |
-| REL-03 | Phase 5 | Pending |
+| Requirement | Phase   | Status  |
+| ----------- | ------- | ------- |
+| PAR-01      | Phase 1 | Pending |
+| BASE-01     | Phase 1 | Pending |
+| API-01      | Phase 1 | Pending |
+| API-02      | Phase 1 | Pending |
+| REG-01      | Phase 1 | Pending |
+| COD-01      | Phase 1 | Pending |
+| CTR-01      | Phase 1 | Pending |
+| TRN-01      | Phase 2 | Pending |
+| TRN-02      | Phase 2 | Pending |
+| TRN-03      | Phase 2 | Pending |
+| DET-01      | Phase 2 | Pending |
+| DET-02      | Phase 2 | Pending |
+| ERR-01      | Phase 2 | Pending |
+| WRT-01      | Phase 3 | Pending |
+| WRT-02      | Phase 3 | Pending |
+| PKG-04      | Phase 4 | Pending |
+| WEB-01      | Phase 4 | Pending |
+| WEB-02      | Phase 4 | Pending |
+| PKG-01      | Phase 5 | Pending |
+| PKG-02      | Phase 5 | Pending |
+| PKG-03      | Phase 5 | Pending |
+| PKG-05      | Phase 5 | Pending |
+| PAR-02      | Phase 5 | Pending |
+| REL-01      | Phase 5 | Pending |
+| CTR-02      | Phase 5 | Pending |
+| REL-02      | Phase 5 | Pending |
+| REL-03      | Phase 5 | Pending |
 
 **Coverage:**
+
 - Ingested binding constraints: 27 total
 - Constraints represented by v1 requirements: 27
 - v1 requirements: 27 total
@@ -143,5 +144,6 @@ Each v1 requirement below derives from exactly one of the 27 ingested binding co
 - Duplicate phase mappings: 0 ✓
 
 ---
-*Requirements defined: 2026-07-14*
-*Last updated: 2026-07-14 after roadmap creation from ingested specifications*
+
+_Requirements defined: 2026-07-14_
+_Last updated: 2026-07-14 after roadmap creation from ingested specifications_

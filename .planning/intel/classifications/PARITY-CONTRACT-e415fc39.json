@@ -20,11 +20,7 @@
     "API parity matrix",
     "release gate"
   ],
-  "cross_refs": [
-    "UPSTREAM-PARITY.json",
-    "docs/API-PARITY.md",
-    "docs/compatibility-matrix.json"
-  ],
+  "cross_refs": ["UPSTREAM-PARITY.json", "docs/API-PARITY.md", "docs/compatibility-matrix.json"],
   "locked": false,
   "precedence": null,
   "notes": ""
