@@ -55,6 +55,38 @@ interface DisposableCheckout {
   readonly output: string;
 }
 
+interface FixtureRoot {
+  readonly schema_version: number;
+  readonly generator_version: string;
+  readonly baseline: {
+    readonly repository: string;
+    readonly python_package: string;
+    readonly python_version: string;
+    readonly git_tag: string;
+    readonly git_commit: string;
+    readonly parity_schema_version: number;
+  };
+  readonly [key: string]: unknown;
+}
+
+function readJson<T>(path: string): T {
+  return JSON.parse(readFileSync(path, "utf8")) as T;
+}
+
+function collectObjectKeys(value: unknown, keys = new Set<string>()): Set<string> {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      collectObjectKeys(item, keys);
+    }
+  } else if (typeof value === "object" && value !== null) {
+    for (const [key, item] of Object.entries(value)) {
+      keys.add(key);
+      collectObjectKeys(item, keys);
+    }
+  }
+  return keys;
+}
+
 function createExactCheckout(): DisposableCheckout {
   const root = temporaryDirectory("idm-python-contract-test-");
   const checkout = join(root, "upstream");
@@ -205,4 +237,172 @@ describe("verified Python contract generator", () => {
       expect(result.stderr).toContain("invalid_number_tag");
     }
   });
+
+  it("generates complete fixtures with exact API, class, codec, schema, and scenario facts", () => {
+    const checkout = createExactCheckout();
+    const result = runGenerator(checkout);
+    requireSuccess(result, "fixture generation");
+
+    const fixtureNames = [
+      "public-api.json",
+      "public-classes.json",
+      "codec-vectors.json",
+      "register-schema.json",
+      "behavior-contract.json",
+      "web-contract.json",
+    ] as const;
+    const fixtures = Object.fromEntries(
+      fixtureNames.map((name) => [name, readJson<FixtureRoot>(join(checkout.output, "test/fixtures", name))]),
+    ) as Record<(typeof fixtureNames)[number], FixtureRoot>;
+
+    for (const fixture of Object.values(fixtures)) {
+      expect(fixture.schema_version).toBe(1);
+      expect(fixture.generator_version).toBe("1");
+      expect(fixture.baseline).toEqual({
+        repository: CANONICAL_ORIGIN,
+        python_package: "idm-heatpump-api",
+        python_version: "0.7.6",
+        git_tag: "v0.7.6",
+        git_commit: PINNED_COMMIT,
+        parity_schema_version: 1,
+      });
+    }
+
+    const publicApi = fixtures["public-api.json"] as FixtureRoot & {
+      readonly symbols: readonly { readonly name: string; readonly source_group: string; readonly export_boundary: string }[];
+      readonly counts: { readonly total: number; readonly root: number; readonly web: number };
+      readonly aliases: readonly { readonly name: string; readonly target: string }[];
+    };
+    expect(publicApi.symbols).toHaveLength(89);
+    expect(publicApi.counts).toEqual({ total: 89, root: 59, web: 30 });
+    expect(publicApi.symbols.map(({ name }) => name)).toEqual([...new Set(publicApi.symbols.map(({ name }) => name))]);
+    expect(publicApi.aliases.map(({ name }) => name)).toEqual(
+      expect.arrayContaining([
+        "AuthenticationError",
+        "ConnectionError",
+        "CsrfError",
+        "PinRejectedError",
+        "ProtocolError",
+        "TimeoutError",
+        "WebSocketError",
+      ]),
+    );
+
+    const publicClasses = fixtures["public-classes.json"] as FixtureRoot & {
+      readonly classes: readonly {
+        readonly public_names: readonly string[];
+        readonly constructor: { readonly signature: string; readonly parameters: readonly unknown[] };
+        readonly members: readonly { readonly name: string; readonly kind: string; readonly signature?: string }[];
+        readonly validation_boundaries: readonly unknown[];
+      }[];
+    };
+    const classNames = publicClasses.classes.flatMap(({ public_names }) => public_names);
+    expect(classNames).toContain("RegisterDef");
+    expect(classNames).toContain("IdmModbusClient");
+    expect(classNames).toContain("IdmWebData");
+    expect(publicClasses.classes.every(({ constructor }) => constructor.parameters.length >= 0)).toBe(true);
+    const forbiddenClassKeys = [
+      "typescript_symbol",
+      "representation",
+      "owner_phase",
+      "export_path",
+      "status",
+      "mapping_evidence",
+    ];
+    const classKeys = collectObjectKeys(publicClasses);
+    expect(forbiddenClassKeys.filter((key) => classKeys.has(key))).toEqual([]);
+
+    const codecs = fixtures["codec-vectors.json"] as FixtureRoot & {
+      readonly layers: {
+        readonly primitive: { readonly cases: readonly { readonly id: string }[] };
+        readonly register: { readonly cases: readonly { readonly id: string }[] };
+      };
+    };
+    const codecIds = [...codecs.layers.primitive.cases, ...codecs.layers.register.cases].map(({ id }) => id);
+    expect(codecIds).toEqual(
+      expect.arrayContaining([
+        "primitive_float32_low_word_first",
+        "primitive_float32_swapped",
+        "primitive_float32_negative_zero",
+        "primitive_float32_nan",
+        "primitive_float32_positive_infinity",
+        "primitive_float32_subnormal",
+        "primitive_float32_overflow",
+        "primitive_float32_word_below_range",
+        "primitive_int8_boundaries",
+        "primitive_int16_boundaries",
+        "register_float_extra_word",
+        "register_float_short",
+        "register_uint16_direct_first_word",
+        "register_integer_tie_rounding",
+        "register_round_two_digits",
+        "register_bool_masking",
+        "register_bitflag_masking",
+      ]),
+    );
+
+    const registerSchema = fixtures["register-schema.json"] as FixtureRoot & {
+      readonly maps: Readonly<Record<string, Readonly<Record<string, Record<string, unknown>>>>>;
+      readonly documented_overlaps: readonly { readonly address: number; readonly names: readonly string[] }[];
+      readonly builder_contract: Readonly<Record<string, unknown>>;
+    };
+    expect(Object.fromEntries(Object.entries(registerSchema.maps).map(([name, map]) => [name, Object.keys(map).length]))).toEqual({
+      default: 267,
+      navigator_10_full: 587,
+      navigator_20_circuit_a: 105,
+    });
+    const expectedRegisterFields = [
+      "address", "datatype", "name", "unit", "writable", "min_val", "max_val", "enum_options",
+      "multiplier", "register_type", "eeprom_sensitive", "cyclic_required", "cyclic_write_ttl", "binary",
+      "enabled_by_default", "state_class", "icon", "write_only", "write_class", "exclude_from_write",
+      "source", "source_version", "supported_models", "sentinel_values", "last_verified", "size",
+    ].sort();
+    for (const map of Object.values(registerSchema.maps)) {
+      for (const register of Object.values(map)) {
+        expect(Object.keys(register).sort()).toEqual(expectedRegisterFields);
+      }
+    }
+    expect(registerSchema.documented_overlaps).toEqual([
+      { address: 1393, names: ["hc_a_mode", "humidity_sensor"] },
+      { address: 1442, names: ["hc_a_heating_limit", "hc_g_heating_curve"] },
+      { address: 1484, names: ["hc_a_cooling_limit", "hc_g_room_setpoint_cool_eco"] },
+    ]);
+    expect(registerSchema.builder_contract).toHaveProperty("circuits");
+    expect(registerSchema.builder_contract).toHaveProperty("zones");
+    expect(registerSchema.builder_contract).toHaveProperty("rooms");
+    expect(registerSchema.builder_contract).toHaveProperty("models");
+    expect(registerSchema.builder_contract).toHaveProperty("features");
+    expect(registerSchema.builder_contract).toHaveProperty("registry_surface");
+
+    const behavior = fixtures["behavior-contract.json"] as FixtureRoot & {
+      readonly scenarios: readonly Record<string, unknown>[];
+    };
+    const scenarioFields = [
+      "name",
+      "configuration",
+      "transport_responses",
+      "clock",
+      "operation",
+      "expected_result",
+      "expected_requests",
+      "expected_state",
+    ].sort();
+    expect(behavior.scenarios.length).toBeGreaterThan(0);
+    for (const scenario of behavior.scenarios) {
+      expect(Object.keys(scenario).sort()).toEqual(scenarioFields);
+    }
+
+    const allFixtureText = fixtureNames
+      .map((name) => readFileSync(join(checkout.output, "test/fixtures", name), "utf8"))
+      .join("\n");
+    expect(allFixtureText).toContain('"$number": "-0"');
+    expect(allFixtureText).toContain('"$number": "NaN"');
+    expect(allFixtureText).not.toMatch(/Navigator 1\.[07]/u);
+
+    expect(fixtures["web-contract.json"]).toMatchObject({
+      release_blocking: true,
+      deferred_to_phase: 4,
+      evidence_kind: "deferred_marker",
+    });
+  }, 120_000);
 });
