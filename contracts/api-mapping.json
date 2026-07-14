@@ -1,0 +1,1589 @@
+{
+  "schema_version": 1,
+  "baseline": {
+    "repository": "https://github.com/Xerolux/idm-heatpump-api",
+    "python_package": "idm-heatpump-api",
+    "python_version": "0.7.6",
+    "git_tag": "v0.7.6",
+    "git_commit": "ad121ebf34a5f5e37204371c026927d77efcd15c",
+    "parity_schema_version": 1
+  },
+  "mappings": [
+    {
+      "python_symbol": "ACTIVE_HC_MODE_OPTIONS",
+      "typescript_symbol": "ACTIVE_HC_MODE_OPTIONS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "BIVALENCE_STATE_OPTIONS",
+      "typescript_symbol": "BIVALENCE_STATE_OPTIONS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "BOOSTER_FAULT_OPTIONS",
+      "typescript_symbol": "BOOSTER_FAULT_OPTIONS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "CIRCUIT_MODE_OPTIONS",
+      "typescript_symbol": "CIRCUIT_MODE_OPTIONS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "CORE_REGISTERS",
+      "typescript_symbol": "CORE_REGISTERS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "registers",
+      "contract_test": "test/registers/builders.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "readonly_map",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "DEFAULT_PORT",
+      "typescript_symbol": "DEFAULT_PORT",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "DEFAULT_SLAVE_ID",
+      "typescript_symbol": "DEFAULT_SLAVE_ID",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "DEFAULT_TIMEOUT",
+      "typescript_symbol": "DEFAULT_TIMEOUT",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "EEPROM_SENSITIVE_ADDRESSES",
+      "typescript_symbol": "EEPROM_SENSITIVE_ADDRESSES",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["set_to_immutable_set_like"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "EVU_LOCK_OPTIONS",
+      "typescript_symbol": "EVU_LOCK_OPTIONS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "FEATURE_CASCADE",
+      "typescript_symbol": "FEATURE_CASCADE",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "FEATURE_HEATING_CIRCUITS",
+      "typescript_symbol": "FEATURE_HEATING_CIRCUITS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "FEATURE_ISC",
+      "typescript_symbol": "FEATURE_ISC",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "FEATURE_PV",
+      "typescript_symbol": "FEATURE_PV",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "FEATURE_SOLAR",
+      "typescript_symbol": "FEATURE_SOLAR",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "FEATURE_ZONE_MODULES",
+      "typescript_symbol": "FEATURE_ZONE_MODULES",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "HEATING_CIRCUIT_LETTERS",
+      "typescript_symbol": "HEATING_CIRCUIT_LETTERS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["tuple_to_readonly_array"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "HP_OPERATING_MODE_OPTIONS",
+      "typescript_symbol": "HP_OPERATING_MODE_OPTIONS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "ISC_MODE_OPTIONS",
+      "typescript_symbol": "ISC_MODE_OPTIONS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "MAX_HEATING_CIRCUITS",
+      "typescript_symbol": "MAX_HEATING_CIRCUITS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "MAX_ROOMS_PER_ZONE",
+      "typescript_symbol": "MAX_ROOMS_PER_ZONE",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "MAX_RETRIES",
+      "typescript_symbol": "MAX_RETRIES",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "MAX_ZONE_MODULES",
+      "typescript_symbol": "MAX_ZONE_MODULES",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "MODEL_DETECTION_MAX_RETRIES",
+      "typescript_symbol": "MODEL_DETECTION_MAX_RETRIES",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "MODEL_DETECTION_TIMEOUT",
+      "typescript_symbol": "MODEL_DETECTION_TIMEOUT",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "MODEL_NAVIGATOR_10",
+      "typescript_symbol": "MODEL_NAVIGATOR_10",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "MODEL_NAVIGATOR_20",
+      "typescript_symbol": "MODEL_NAVIGATOR_20",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "MODEL_NAVIGATOR_PRO",
+      "typescript_symbol": "MODEL_NAVIGATOR_PRO",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "MODEL_UNKNOWN",
+      "typescript_symbol": "MODEL_UNKNOWN",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "RETRY_BACKOFF_BASE",
+      "typescript_symbol": "RETRY_BACKOFF_BASE",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "ROOM_MODE_OPTIONS",
+      "typescript_symbol": "ROOM_MODE_OPTIONS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "SMART_GRID_OPTIONS",
+      "typescript_symbol": "SMART_GRID_OPTIONS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "SOLAR_MODE_OPTIONS",
+      "typescript_symbol": "SOLAR_MODE_OPTIONS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "SYSTEM_MODE_OPTIONS",
+      "typescript_symbol": "SYSTEM_MODE_OPTIONS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "VARIABLE_INPUT_OPTIONS",
+      "typescript_symbol": "VARIABLE_INPUT_OPTIONS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "ZONE_MODULE_MODE_OPTIONS",
+      "typescript_symbol": "ZONE_MODULE_MODE_OPTIONS",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "AuthenticationError",
+      "typescript_symbol": "AuthenticationError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_alias_to_typescript_alias", "python_exception_to_error_class"],
+      "representation": {
+        "form": "alias",
+        "python_class": "IdmWebAuthenticationError",
+        "alias_of": "IdmWebAuthenticationError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "ConnectionError",
+      "typescript_symbol": "ConnectionError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_alias_to_typescript_alias", "python_exception_to_error_class"],
+      "representation": {
+        "form": "alias",
+        "python_class": "IdmWebConnectionError",
+        "alias_of": "IdmWebConnectionError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "CsrfError",
+      "typescript_symbol": "CsrfError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_alias_to_typescript_alias", "python_exception_to_error_class"],
+      "representation": {
+        "form": "alias",
+        "python_class": "IdmWebCsrfError",
+        "alias_of": "IdmWebCsrfError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "AdaptiveBackoff",
+      "typescript_symbol": "AdaptiveBackoff",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "timing",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["snake_case_to_camelCase"],
+      "representation": {
+        "form": "class",
+        "python_class": "AdaptiveBackoff",
+        "constructor": "class",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "DataType",
+      "typescript_symbol": "DataType",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "domain_types",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["enum_to_const_union"],
+      "representation": {
+        "form": "frozen_const_and_union",
+        "python_class": "DataType",
+        "constructor": "not_constructible",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "FeatureFlags",
+      "typescript_symbol": "FeatureFlags",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "domain_types",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["python_dataclass_to_readonly_object_factory", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "FeatureFlags",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmClientDiagnostics",
+      "typescript_symbol": "IdmClientDiagnostics",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 2,
+      "status": "planned",
+      "evidence_category": "transport_diagnostics",
+      "contract_test": "test/parity/transport-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase",
+        "tuple_to_readonly_array"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmClientDiagnostics",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmNavigator10WebClient",
+      "typescript_symbol": "IdmNavigator10WebClient",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_client",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase", "tuple_to_readonly_array"],
+      "representation": {
+        "form": "class",
+        "python_class": "IdmNavigator10WebClient",
+        "constructor": "class",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmNavigator20WebClient",
+      "typescript_symbol": "IdmNavigator20WebClient",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_client",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "mapping_to_readonly_map_or_record",
+        "none_to_null",
+        "snake_case_to_camelCase",
+        "tuple_to_readonly_array"
+      ],
+      "representation": {
+        "form": "class",
+        "python_class": "IdmNavigator20WebClient",
+        "constructor": "class",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmModelInfo",
+      "typescript_symbol": "IdmModelInfo",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "domain_types",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [
+        "list_to_readonly_array",
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "set_to_immutable_set_like",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmModelInfo",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmModbusClient",
+      "typescript_symbol": "IdmModbusClient",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 2,
+      "status": "planned",
+      "evidence_category": "transport_client",
+      "contract_test": "test/parity/transport-contract.test.ts",
+      "normalizations": [
+        "mapping_to_readonly_map_or_record",
+        "none_to_null",
+        "set_to_immutable_set_like",
+        "snake_case_to_camelCase",
+        "tuple_to_readonly_array"
+      ],
+      "representation": {
+        "form": "class",
+        "python_class": "IdmModbusClient",
+        "constructor": "class",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IllegalAddressError",
+      "typescript_symbol": "IllegalAddressError",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 2,
+      "status": "planned",
+      "evidence_category": "transport_errors",
+      "contract_test": "test/parity/transport-contract.test.ts",
+      "normalizations": ["python_exception_to_error_class"],
+      "representation": {
+        "form": "error_class",
+        "python_class": "IllegalAddressError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "ModbusCodec",
+      "typescript_symbol": "ModbusCodec",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "codec",
+      "contract_test": "test/codec.test.ts",
+      "normalizations": ["snake_case_to_camelCase"],
+      "representation": {
+        "form": "class",
+        "python_class": "ModbusCodec",
+        "constructor": "class",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebAuthenticationError",
+      "typescript_symbol": "IdmWebAuthenticationError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_exception_to_error_class"],
+      "representation": {
+        "form": "error_class",
+        "python_class": "IdmWebAuthenticationError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebConnectionError",
+      "typescript_symbol": "IdmWebConnectionError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_exception_to_error_class"],
+      "representation": {
+        "form": "error_class",
+        "python_class": "IdmWebConnectionError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebCsrfError",
+      "typescript_symbol": "IdmWebCsrfError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_exception_to_error_class"],
+      "representation": {
+        "form": "error_class",
+        "python_class": "IdmWebCsrfError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebData",
+      "typescript_symbol": "IdmWebData",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "mapping_to_readonly_map_or_record",
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebData",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebDependencyError",
+      "typescript_symbol": "IdmWebDependencyError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_exception_to_error_class"],
+      "representation": {
+        "form": "error_class",
+        "python_class": "IdmWebDependencyError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebDiagnostics",
+      "typescript_symbol": "IdmWebDiagnostics",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase",
+        "tuple_to_readonly_array"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebDiagnostics",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebError",
+      "typescript_symbol": "IdmWebError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_exception_to_error_class"],
+      "representation": {
+        "form": "error_class",
+        "python_class": "IdmWebError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebNotification",
+      "typescript_symbol": "IdmWebNotification",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "mapping_to_readonly_map_or_record",
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebNotification",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebNotifications",
+      "typescript_symbol": "IdmWebNotifications",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase",
+        "tuple_to_readonly_array"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebNotifications",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebPinRejectedError",
+      "typescript_symbol": "IdmWebPinRejectedError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_exception_to_error_class"],
+      "representation": {
+        "form": "error_class",
+        "python_class": "IdmWebPinRejectedError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebProtocolError",
+      "typescript_symbol": "IdmWebProtocolError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_exception_to_error_class"],
+      "representation": {
+        "form": "error_class",
+        "python_class": "IdmWebProtocolError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebResponseError",
+      "typescript_symbol": "IdmWebResponseError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_exception_to_error_class"],
+      "representation": {
+        "form": "error_class",
+        "python_class": "IdmWebResponseError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebTimeoutError",
+      "typescript_symbol": "IdmWebTimeoutError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_exception_to_error_class"],
+      "representation": {
+        "form": "error_class",
+        "python_class": "IdmWebTimeoutError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebWebSocketError",
+      "typescript_symbol": "IdmWebWebSocketError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_exception_to_error_class"],
+      "representation": {
+        "form": "error_class",
+        "python_class": "IdmWebWebSocketError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "PinRejectedError",
+      "typescript_symbol": "PinRejectedError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_alias_to_typescript_alias", "python_exception_to_error_class"],
+      "representation": {
+        "form": "alias",
+        "python_class": "IdmWebPinRejectedError",
+        "alias_of": "IdmWebPinRejectedError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "ProtocolError",
+      "typescript_symbol": "ProtocolError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_alias_to_typescript_alias", "python_exception_to_error_class"],
+      "representation": {
+        "form": "alias",
+        "python_class": "IdmWebProtocolError",
+        "alias_of": "IdmWebProtocolError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "TimeoutError",
+      "typescript_symbol": "TimeoutError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_alias_to_typescript_alias", "python_exception_to_error_class"],
+      "representation": {
+        "form": "alias",
+        "python_class": "IdmWebTimeoutError",
+        "alias_of": "IdmWebTimeoutError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "WebSocketError",
+      "typescript_symbol": "WebSocketError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_alias_to_typescript_alias", "python_exception_to_error_class"],
+      "representation": {
+        "form": "alias",
+        "python_class": "IdmWebWebSocketError",
+        "alias_of": "IdmWebWebSocketError",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebValue",
+      "typescript_symbol": "IdmWebValue",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebValue",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebValueDescription",
+      "typescript_symbol": "IdmWebValueDescription",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebValueDescription",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "ModbusErrorContext",
+      "typescript_symbol": "ModbusErrorContext",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 2,
+      "status": "planned",
+      "evidence_category": "transport_errors",
+      "contract_test": "test/parity/transport-contract.test.ts",
+      "normalizations": ["python_dataclass_to_readonly_object_factory", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "ModbusErrorContext",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "PollRateLimiter",
+      "typescript_symbol": "PollRateLimiter",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "timing",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "class",
+        "python_class": "PollRateLimiter",
+        "constructor": "class",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "RECOMMENDED_WEB_SCAN_INTERVAL",
+      "typescript_symbol": "RECOMMENDED_WEB_SCAN_INTERVAL",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "RegisterDef",
+      "typescript_symbol": "RegisterDef",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "register_definition",
+      "contract_test": "test/registers/register-def.test.ts",
+      "normalizations": [
+        "mapping_to_readonly_map_or_record",
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "set_to_immutable_set_like",
+        "snake_case_to_camelCase",
+        "tuple_to_readonly_array"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "RegisterDef",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "RegisterRegistry",
+      "typescript_symbol": "RegisterRegistry",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "registers",
+      "contract_test": "test/registers/builders.test.ts",
+      "normalizations": [
+        "mapping_to_readonly_map_or_record",
+        "none_to_null",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "class",
+        "python_class": "RegisterRegistry",
+        "constructor": "class",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "RegisterType",
+      "typescript_symbol": "RegisterType",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "domain_types",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["enum_to_const_union"],
+      "representation": {
+        "form": "frozen_const_and_union",
+        "python_class": "RegisterType",
+        "constructor": "not_constructible",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "WEB_VALUE_DESCRIPTIONS",
+      "typescript_symbol": "WEB_VALUE_DESCRIPTIONS",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "WriteClass",
+      "typescript_symbol": "WriteClass",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "domain_types",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["enum_to_const_union"],
+      "representation": {
+        "form": "frozen_const_and_union",
+        "python_class": "WriteClass",
+        "constructor": "not_constructible",
+        "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "WriteSafetyResult",
+      "typescript_symbol": "WriteSafetyResult",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 3,
+      "status": "planned",
+      "evidence_category": "writes",
+      "contract_test": "test/parity/write-contract.test.ts",
+      "normalizations": [
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase",
+        "tuple_to_readonly_array"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "WriteSafetyResult",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "build_register_map",
+      "typescript_symbol": "buildRegisterMap",
+      "export_path": ".",
+      "kind": "function",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "registers",
+      "contract_test": "test/registers/builders.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "create_optional_navigator10_web_client",
+      "typescript_symbol": "createOptionalNavigator10WebClient",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_factory",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "create_optional_navigator20_web_client",
+      "typescript_symbol": "createOptionalNavigator20WebClient",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_factory",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "get_all_registers",
+      "typescript_symbol": "getAllRegisters",
+      "export_path": ".",
+      "kind": "function",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "registers",
+      "contract_test": "test/registers/builders.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "get_detection_registers",
+      "typescript_symbol": "getDetectionRegisters",
+      "export_path": ".",
+      "kind": "function",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "registers",
+      "contract_test": "test/registers/builders.test.ts",
+      "normalizations": ["list_to_readonly_array", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "get_heating_circuit_registers",
+      "typescript_symbol": "getHeatingCircuitRegisters",
+      "export_path": ".",
+      "kind": "function",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "registers",
+      "contract_test": "test/registers/builders.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "get_register",
+      "typescript_symbol": "getRegister",
+      "export_path": ".",
+      "kind": "function",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "registers",
+      "contract_test": "test/registers/builders.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "get_register_registry",
+      "typescript_symbol": "getRegisterRegistry",
+      "export_path": ".",
+      "kind": "function",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "registers",
+      "contract_test": "test/registers/builders.test.ts",
+      "normalizations": ["snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "get_zone_module_registers",
+      "typescript_symbol": "getZoneModuleRegisters",
+      "export_path": ".",
+      "kind": "function",
+      "owner_phase": 1,
+      "status": "planned",
+      "evidence_category": "registers",
+      "contract_test": "test/registers/builders.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "quiet_pymodbus_logging",
+      "typescript_symbol": "quietPymodbusLogging",
+      "export_path": ".",
+      "kind": "function",
+      "owner_phase": 2,
+      "status": "planned",
+      "evidence_category": "transport_logging",
+      "contract_test": "test/parity/transport-contract.test.ts",
+      "normalizations": ["snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "web_pin_configured",
+      "typescript_symbol": "webPinConfigured",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_configuration",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    }
+  ]
+}
