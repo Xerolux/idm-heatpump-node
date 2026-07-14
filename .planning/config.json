@@ -1,0 +1,8 @@
+{
+  "runtime": "codex",
+  "workflow": {
+    "use_worktrees": false,
+    "_auto_chain_active": false
+  },
+  "parallelization": false
+}
