@@ -1,9 +1,28 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
+import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 const ROOT = resolve(import.meta.dirname, "../..");
+const GENERATOR = "scripts/generate-api-parity.mjs";
+const GENERATOR_INPUTS = [
+  GENERATOR,
+  "contracts/api-mapping.json",
+  "test/fixtures/public-api.json",
+  "test/fixtures/public-classes.json",
+  "UPSTREAM-PARITY.json",
+] as const;
+const temporaryDirectories: string[] = [];
 
 interface PublicSymbol {
   readonly export_boundary: "." | "./web";
@@ -104,6 +123,60 @@ function collectKeys(value: unknown, target = new Set<string>()): Set<string> {
   }
   return target;
 }
+
+function createGeneratorProject(): string {
+  const project = mkdtempSync(join(tmpdir(), "idm-api-parity-test-"));
+  temporaryDirectories.push(project);
+  mkdirSync(resolve(project, "docs"));
+
+  for (const relativePath of GENERATOR_INPUTS) {
+    const target = resolve(project, relativePath);
+    mkdirSync(dirname(target), { recursive: true });
+    copyFileSync(resolve(ROOT, relativePath), target);
+  }
+
+  return project;
+}
+
+function runGenerator(
+  project: string,
+  args: readonly string[] = [],
+  environment: NodeJS.ProcessEnv = process.env,
+): SpawnSyncReturns<string> {
+  return spawnSync(process.execPath, [GENERATOR, ...args], {
+    cwd: project,
+    encoding: "utf8",
+    env: environment,
+    maxBuffer: 8 * 1024 * 1024,
+    shell: false,
+    timeout: 30_000,
+  });
+}
+
+function requireSuccess(result: SpawnSyncReturns<string>, purpose: string): void {
+  if (result.status !== 0) {
+    throw new Error(
+      `${purpose} failed\n${result.error?.message ?? ""}\n${result.stdout}\n${result.stderr}`,
+    );
+  }
+}
+
+function mutateProjectJson<T>(
+  project: string,
+  relativePath: string,
+  mutate: (value: T) => void,
+): void {
+  const path = resolve(project, relativePath);
+  const value = JSON.parse(readFileSync(path, "utf8")) as T;
+  mutate(value);
+  writeFileSync(path, `${JSON.stringify(value, undefined, 2)}\n`);
+}
+
+afterEach(() => {
+  for (const directory of temporaryDirectories.splice(0)) {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 describe("API mapping inventory", () => {
   it("mapping has exact one-to-one coverage of the 89 pinned Python exports", () => {
@@ -271,5 +344,171 @@ describe("Phase-1 class representation mapping", () => {
       expect(rootSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
       expect(webSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
     }
+  });
+});
+
+describe("generated API and baseline documentation", () => {
+  it("generator rejects mapping, inventory, class, baseline, and release status drift", () => {
+    const cases: readonly {
+      readonly code: string;
+      readonly mutate: (project: string) => void;
+      readonly args?: readonly string[];
+    }[] = [
+      {
+        code: "mapping_duplicate_python_symbol",
+        mutate(project) {
+          mutateProjectJson<ApiMapping>(project, "contracts/api-mapping.json", (mapping) => {
+            (mapping.mappings as ApiMappingRow[]).push(mapping.mappings[0]!);
+          });
+        },
+      },
+      {
+        code: "mapping_inventory_mismatch",
+        mutate(project) {
+          mutateProjectJson<ApiMapping>(project, "contracts/api-mapping.json", (mapping) => {
+            (mapping.mappings as ApiMappingRow[]).pop();
+          });
+        },
+      },
+      {
+        code: "mapping_export_boundary_mismatch",
+        mutate(project) {
+          mutateProjectJson<ApiMapping>(project, "contracts/api-mapping.json", (mapping) => {
+            (mapping.mappings[0] as { export_path: string }).export_path = "./web";
+          });
+        },
+      },
+      {
+        code: "mapping_class_inventory_mismatch",
+        mutate(project) {
+          mutateProjectJson<ApiMapping>(project, "contracts/api-mapping.json", (mapping) => {
+            const row = mapping.mappings.find(
+              ({ python_symbol }) => python_symbol === "PollRateLimiter",
+            )!;
+            (row.representation as { python_class?: string }).python_class = "WrongClass";
+          });
+        },
+      },
+      {
+        code: "mapping_not_applicable_rationale_missing",
+        mutate(project) {
+          mutateProjectJson<ApiMapping>(project, "contracts/api-mapping.json", (mapping) => {
+            (mapping.mappings[0] as { status: string }).status = "not_applicable";
+          });
+        },
+      },
+      {
+        args: ["--release"],
+        code: "mapping_release_status_incomplete",
+        mutate() {},
+      },
+      {
+        code: "baseline_inventory_mismatch",
+        mutate(project) {
+          mutateProjectJson<{ baseline: { git_commit: string } }>(
+            project,
+            "test/fixtures/public-api.json",
+            (fixture) => {
+              fixture.baseline.git_commit = "0".repeat(40);
+            },
+          );
+        },
+      },
+    ];
+
+    for (const testCase of cases) {
+      const project = createGeneratorProject();
+      testCase.mutate(project);
+      const result = runGenerator(project, testCase.args);
+      expect(result.status, testCase.code).not.toBe(0);
+      expect(result.stderr, testCase.code).toContain(testCase.code);
+    }
+  });
+
+  it("generator renders all 89 mapping rows and complete Phase-1 class member evidence", () => {
+    const project = createGeneratorProject();
+    requireSuccess(runGenerator(project), "documentation generation");
+
+    const apiDocument = readFileSync(resolve(project, "docs/API-PARITY.md"), "utf8");
+    const baselineDocument = readFileSync(resolve(project, "docs/BASELINE.md"), "utf8");
+
+    expect(apiDocument).toMatch(/^<!-- GENERATED FILE/u);
+    expect(apiDocument).toContain("ad121ebf34a5f5e37204371c026927d77efcd15c");
+    expect(apiDocument).toContain("89 public symbols: 59 root, 30 web");
+    for (const row of apiMapping.mappings) {
+      expect(apiDocument, row.python_symbol).toContain(`| \`${row.python_symbol}\` |`);
+    }
+    expect(apiDocument).toContain("`PollRateLimiter.interval` → `interval`");
+    expect(apiDocument).toContain("`RegisterRegistry.by_address` → `byAddress`");
+    expect(apiDocument).toContain("`RegisterRegistry.to_schema` → `toSchema`");
+
+    expect(baselineDocument).toMatch(/^<!-- GENERATED FILE/u);
+    expect(baselineDocument).toContain("| Python version | `0.7.6` |");
+    expect(baselineDocument).toContain("| Parity status | `planned` |");
+    expect(baselineDocument).toContain("| Verified on | `2026-07-14` |");
+    expect(baselineDocument).not.toContain("PollRateLimiter");
+  });
+
+  it("check mode is non-mutating, reports drift, and generation is byte-stable", () => {
+    const project = createGeneratorProject();
+    requireSuccess(runGenerator(project), "initial generation");
+    const apiPath = resolve(project, "docs/API-PARITY.md");
+    const baselinePath = resolve(project, "docs/BASELINE.md");
+    const firstApi = readFileSync(apiPath);
+    const firstBaseline = readFileSync(baselinePath);
+
+    requireSuccess(runGenerator(project), "repeat generation");
+    expect(readFileSync(apiPath)).toEqual(firstApi);
+    expect(readFileSync(baselinePath)).toEqual(firstBaseline);
+
+    const beforeCheck = {
+      apiBytes: readFileSync(apiPath),
+      apiMtime: statSync(apiPath).mtimeMs,
+      baselineBytes: readFileSync(baselinePath),
+      baselineMtime: statSync(baselinePath).mtimeMs,
+    };
+    requireSuccess(runGenerator(project, ["--check"]), "fresh check");
+    expect(readFileSync(apiPath)).toEqual(beforeCheck.apiBytes);
+    expect(readFileSync(baselinePath)).toEqual(beforeCheck.baselineBytes);
+    expect(statSync(apiPath).mtimeMs).toBe(beforeCheck.apiMtime);
+    expect(statSync(baselinePath).mtimeMs).toBe(beforeCheck.baselineMtime);
+
+    writeFileSync(apiPath, `${readFileSync(apiPath, "utf8")}manual drift\n`);
+    const driftBytes = readFileSync(apiPath);
+    const driftMtime = statSync(apiPath).mtimeMs;
+    const result = runGenerator(project, ["--check"]);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("generated_document_stale");
+    expect(readFileSync(apiPath)).toEqual(driftBytes);
+    expect(statSync(apiPath).mtimeMs).toBe(driftMtime);
+  });
+
+  it("generation rolls back both allowlisted documents after an injected replacement failure", () => {
+    const project = createGeneratorProject();
+    mkdirSync(resolve(project, "docs"), { recursive: true });
+    const apiPath = resolve(project, "docs/API-PARITY.md");
+    const baselinePath = resolve(project, "docs/BASELINE.md");
+    writeFileSync(apiPath, "prior api\n");
+    writeFileSync(baselinePath, "prior baseline\n");
+
+    const result = runGenerator(project, [], {
+      ...process.env,
+      IDM_API_GENERATOR_TEST_FAIL_AFTER_REPLACE: "1",
+    });
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("generated_document_write_failed");
+    expect(readFileSync(apiPath, "utf8")).toBe("prior api\n");
+    expect(readFileSync(baselinePath, "utf8")).toBe("prior baseline\n");
+  });
+
+  it("generator uses fixed local paths and no shell, child process, network, or dynamic output", () => {
+    const source = readFileSync(resolve(ROOT, GENERATOR), "utf8");
+
+    expect(source).not.toMatch(/node:child_process|spawn|execFile|\bfetch\s*\(|https?:\/\//u);
+    expect(source).not.toMatch(/process\.cwd|--root|--output/u);
+    expect(source).toContain('"contracts/api-mapping.json"');
+    expect(source).toContain('"docs/API-PARITY.md"');
+    expect(source).toContain('"docs/BASELINE.md"');
   });
 });
