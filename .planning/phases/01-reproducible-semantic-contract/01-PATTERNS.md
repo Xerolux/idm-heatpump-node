@@ -1,8 +1,8 @@
 # Phase 1: Reproducible Semantic Contract - Pattern Map
 
 **Mapped:** 2026-07-14  
-**Files analyzed:** 36 planned new/modified artifacts  
-**Node analogs found:** 25 / 36 (mostly role matches; the semantic core is intentionally greenfield)
+**Files analyzed:** all 46 planned new/modified artifacts plus the existing web export boundary
+**Node analogs found:** role matches are recorded per artifact below; the semantic core is intentionally greenfield
 
 This repository is still a bootstrap codebase. The closest implementation analogs are
 therefore the existing parity metadata validator, bootstrap tests, package smoke-test script,
@@ -12,44 +12,55 @@ copy.
 
 ## File Classification
 
-| New/Modified File                      | Role                            | Data Flow              | Closest Node Analog               | Match Quality                  |
-| -------------------------------------- | ------------------------------- | ---------------------- | --------------------------------- | ------------------------------ |
-| `contracts/api-mapping.json`           | config / contract               | transform              | `UPSTREAM-PARITY.json`            | role-match                     |
-| `contracts/normalization.md`           | config / contract documentation | transform              | `docs/PARITY-CONTRACT.md`         | role-match                     |
-| `src/constants.ts`                     | model / constants               | transform              | `src/internal/parity-metadata.ts` | weak role-match                |
-| `src/types.ts`                         | model                           | transform              | `src/internal/parity-metadata.ts` | role-match                     |
-| `src/errors.ts`                        | model / utility                 | request-response       | none                              | greenfield                     |
-| `src/codec.ts`                         | utility / domain service        | transform              | none                              | greenfield                     |
-| `src/contracts/tagged-values.ts`       | utility / contract model        | transform              | `src/internal/parity-metadata.ts` | role-match                     |
-| `src/contracts/scenario.ts`            | model / validator               | transform              | `src/internal/parity-metadata.ts` | role-match                     |
-| `src/registers/definitions.ts`         | model                           | transform              | none                              | greenfield                     |
-| `src/registers/heating-circuits.ts`    | domain builder                  | batch / transform      | none                              | greenfield                     |
-| `src/registers/zone-modules.ts`        | domain builder                  | batch / transform      | none                              | greenfield                     |
-| `src/registers/registry.ts`            | registry / service              | CRUD / transform       | none                              | greenfield                     |
-| `src/registers/serialize.ts`           | utility                         | transform              | `src/internal/parity-metadata.ts` | weak role-match                |
-| `src/registers/index.ts`               | route / barrel                  | transform              | `src/index.ts`                    | exact                          |
-| `src/internal/parity-metadata.ts`      | model / validator               | transform              | itself                            | exact                          |
-| `src/index.ts`                         | route / package barrel          | transform              | itself and `src/web/index.ts`     | exact                          |
-| `src/web/index.ts`                     | route / package barrel          | transform              | itself                            | exact; remain empty in Phase 1 |
-| `scripts/generate-python-contract.py`  | generator / integration utility | process + file I/O     | `scripts/check-package.mjs`       | role-match; different language |
-| `scripts/check-upstream-version.mjs`   | validator / integration utility | process + file I/O     | `scripts/check-package.mjs`       | strong role-match              |
-| `scripts/generate-api-parity.mjs`      | generator                       | file I/O / transform   | `scripts/check-package.mjs`       | role-match                     |
-| `test/fixtures/public-api.json`        | golden fixture                  | file I/O               | `UPSTREAM-PARITY.json`            | role-match                     |
-| `test/fixtures/codec-vectors.json`     | golden fixture                  | file I/O               | `UPSTREAM-PARITY.json`            | role-match                     |
-| `test/fixtures/register-schema.json`   | golden fixture                  | file I/O               | `docs/compatibility-matrix.json`  | weak role-match                |
-| `test/fixtures/behavior-contract.json` | scenario fixture                | request-response       | none                              | greenfield                     |
-| `test/fixtures/web-contract.json`      | deferred contract marker        | transform              | `docs/compatibility-matrix.json`  | role-match                     |
-| `test/parity/baseline.test.ts`         | test / process integration      | process + file I/O     | `test/bootstrap.test.ts`          | exact style                    |
-| `test/parity/api-parity.test.ts`       | contract test                   | file I/O / transform   | `test/bootstrap.test.ts`          | exact style                    |
-| `test/parity/codec-contract.test.ts`   | contract test                   | transform              | `test/bootstrap.test.ts`          | exact style                    |
-| `test/parity/register-schema.test.ts`  | contract test                   | batch / transform      | `test/bootstrap.test.ts`          | exact style                    |
-| `test/parity/scenario-schema.test.ts`  | schema test                     | transform              | `test/bootstrap.test.ts`          | exact style                    |
-| `test/registers/register-def.test.ts`  | unit test                       | transform              | `test/bootstrap.test.ts`          | exact style                    |
-| `test/registers/builders.test.ts`      | unit test                       | batch / transform      | `test/bootstrap.test.ts`          | exact style                    |
-| `docs/BASELINE.md`                     | generated documentation         | file I/O / transform   | none                              | greenfield generated file      |
-| `docs/API-PARITY.md`                   | generated documentation         | file I/O / transform   | none                              | greenfield generated file      |
-| `package.json`                         | package config                  | build / publish        | itself                            | exact                          |
-| `.github/workflows/ci.yml`             | CI config                       | event-driven / process | itself                            | exact                          |
+| New/Modified File                           | Role                            | Data Flow              | Closest Node Analog               | Match Quality                  |
+| ------------------------------------------- | ------------------------------- | ---------------------- | --------------------------------- | ------------------------------ |
+| `contracts/api-mapping.json`                | config / contract               | transform              | `UPSTREAM-PARITY.json`            | role-match                     |
+| `contracts/normalization.md`                | config / contract documentation | transform              | `docs/PARITY-CONTRACT.md`         | role-match                     |
+| `src/constants.ts`                          | model / constants               | transform              | `src/internal/parity-metadata.ts` | weak role-match                |
+| `src/types.ts`                              | model                           | transform              | `src/internal/parity-metadata.ts` | role-match                     |
+| `src/errors.ts`                             | model / utility                 | request-response       | none                              | greenfield                     |
+| `src/codec.ts`                              | utility / domain service        | transform              | none                              | greenfield                     |
+| `src/contracts/tagged-values.ts`            | utility / contract model        | transform              | `src/internal/parity-metadata.ts` | role-match                     |
+| `src/contracts/scenario.ts`                 | model / validator               | transform              | `src/internal/parity-metadata.ts` | role-match                     |
+| `src/registers/definitions.ts`              | model                           | transform              | none                              | greenfield                     |
+| `src/registers/core.ts`                     | domain builder                  | batch / transform      | none                              | greenfield                     |
+| `src/registers/feature-blocks.ts`           | domain builder                  | batch / transform      | none                              | greenfield                     |
+| `src/registers/heating-circuits.ts`         | domain builder                  | batch / transform      | none                              | greenfield                     |
+| `src/registers/zone-modules.ts`             | domain builder                  | batch / transform      | none                              | greenfield                     |
+| `src/registers/registry.ts`                 | registry / service              | CRUD / transform       | none                              | greenfield                     |
+| `src/registers/serialize.ts`                | utility                         | transform              | `src/internal/parity-metadata.ts` | weak role-match                |
+| `src/registers/index.ts`                    | route / barrel                  | transform              | `src/index.ts`                    | exact                          |
+| `src/internal/parity-metadata.ts`           | model / validator               | transform              | itself                            | exact                          |
+| `src/timing.ts`                             | utility / domain service        | transform              | none                              | greenfield                     |
+| `src/index.ts`                              | route / package barrel          | transform              | itself and `src/web/index.ts`     | exact                          |
+| `src/web/index.ts`                          | route / package barrel          | transform              | itself                            | exact; remain empty in Phase 1 |
+| `scripts/generate-python-contract.py`       | generator / integration utility | process + file I/O     | `scripts/check-package.mjs`       | role-match; different language |
+| `scripts/check-upstream-version.mjs`        | validator / integration utility | process + file I/O     | `scripts/check-package.mjs`       | strong role-match              |
+| `scripts/generate-api-parity.mjs`           | generator                       | file I/O / transform   | `scripts/check-package.mjs`       | role-match                     |
+| `scripts/check-parity.mjs`                  | orchestrator                    | process + file I/O     | `scripts/check-package.mjs`       | strong role-match              |
+| `test/fixtures/public-api.json`             | golden fixture                  | file I/O               | `UPSTREAM-PARITY.json`            | role-match                     |
+| `test/fixtures/public-classes.json`         | golden fixture                  | file I/O               | pinned Python public classes      | role-match                     |
+| `test/fixtures/codec-vectors.json`          | golden fixture                  | file I/O               | `UPSTREAM-PARITY.json`            | role-match                     |
+| `test/fixtures/register-schema.json`        | golden fixture                  | file I/O               | `docs/compatibility-matrix.json`  | weak role-match                |
+| `test/fixtures/behavior-contract.json`      | scenario fixture                | request-response       | none                              | greenfield                     |
+| `test/fixtures/web-contract.json`           | deferred contract marker        | transform              | `docs/compatibility-matrix.json`  | role-match                     |
+| `test/parity/baseline.test.ts`              | test / process integration      | process + file I/O     | `test/bootstrap.test.ts`          | exact style                    |
+| `test/parity/generator.test.ts`             | test / process integration      | process + file I/O     | `test/bootstrap.test.ts`          | exact style                    |
+| `test/parity/api-parity.test.ts`            | contract test                   | file I/O / transform   | `test/bootstrap.test.ts`          | exact style                    |
+| `test/parity/codec-contract.test.ts`        | contract test                   | transform              | `test/bootstrap.test.ts`          | exact style                    |
+| `test/parity/register-schema.test.ts`       | contract test                   | batch / transform      | `test/bootstrap.test.ts`          | exact style                    |
+| `test/parity/scenario-schema.test.ts`       | schema test                     | transform              | `test/bootstrap.test.ts`          | exact style                    |
+| `test/parity/phase-gate.test.ts`            | integration / final gate        | process + file I/O     | `test/bootstrap.test.ts`          | exact style                    |
+| `test/codec.test.ts`                        | unit test                       | transform              | `test/bootstrap.test.ts`          | exact style                    |
+| `test/registers/register-def.test.ts`       | unit test                       | transform              | `test/bootstrap.test.ts`          | exact style                    |
+| `test/registers/builders.test.ts`           | unit test                       | batch / transform      | `test/bootstrap.test.ts`          | exact style                    |
+| `test/semantic/constants-and-types.test.ts` | unit test                       | transform              | `test/bootstrap.test.ts`          | exact style                    |
+| `docs/BASELINE.md`                          | generated documentation         | file I/O / transform   | none                              | greenfield generated file      |
+| `docs/API-PARITY.md`                        | generated documentation         | file I/O / transform   | none                              | greenfield generated file      |
+| `package.json`                              | package config                  | build / publish        | itself                            | exact                          |
+| `.github/workflows/ci.yml`                  | CI config                       | event-driven / process | itself                            | exact                          |
+| `README.md`                                 | package documentation           | transform              | itself                            | exact                          |
+| `CHANGELOG.md`                              | release documentation           | transform              | none                              | greenfield                     |
 
 ## Pattern Assignments
 
@@ -127,22 +138,30 @@ and deterministic-error style above, but take semantics only from the pinned cod
 goldens.
 
 **Pinned semantic analog** (`idm_heatpump/client.py:265-301`): primitive Float32 and signed
-integer codecs are stateless, validate required lengths/ranges, and preserve a separate primitive
-surface from register-aware codec behavior (`client.py:1118-1146`).
+integer codecs are stateless and preserve a separate primitive surface from register-aware codec
+behavior (`client.py:1118-1146`). Their input domains are deliberately different and must be
+generated/tested independently.
 
 Implementation conventions fixed by the phase context/research:
 
 - use native `DataView` with explicit little-endian operations;
 - return low word then high word and support the Python `swapped` option;
-- validate every input word as an integer in `0..0xffff` before binary conversion;
+- enforce integer `0..0xffff` packing bounds only for primitive/register FLOAT paths that reach
+  Python `struct.pack("<HH")`;
+- mirror pinned masking/direct behavior everywhere else: primitive/register INT8 and INT16 use
+  bitwise masks and accept arbitrary integers, UCHAR/BITFLAG/BOOL mask the first integer word,
+  and unscaled UINT16 returns the first value directly; dispatcher validation is limited to
+  empty/short arrays before datatype dispatch;
 - reject Float32 overflow instead of accepting DataView narrowing to infinity;
 - use a dedicated round-half-even helper for register integer scaling;
 - centralize datatype size and codec dispatch in exhaustive readonly records;
 - keep primitive NaN/infinity/-0 behavior distinct from register-aware unavailable-value
   handling; sentinels remain decoded values.
 
-Do not introduce Buffer-only or host-endian code, `Math.round`, permissive coercion, or a single
-codec layer that conflates primitive and register-aware behavior.
+Do not introduce Buffer-only or host-endian code, `Math.round`, a global unsigned-word validator,
+or a single codec layer that conflates primitive and register-aware behavior. Any coercion,
+masking, direct pass-through, or rejection must come from the generated pinned-Python case for
+that exact datatype/path.
 
 ### Tagged contract values: `src/contracts/tagged-values.ts`
 
@@ -170,7 +189,8 @@ function readJson<T>(file: string): T {
 The generic cast is acceptable only at the file boundary and must immediately feed the new
 strict scenario parser. Do not treat `as T` as validation. Require fixture schema version,
 baseline identity, unique scenario names, known operation kinds, all eight CTR-01 fields,
-bounded arrays/objects, valid 16-bit words, and strict tagged values.
+bounded arrays/objects, valid 16-bit words only in transport/request envelope fields, and strict
+tagged values. Direct codec-operation inputs retain their datatype-specific generated domains.
 
 ### Register builders: `src/registers/heating-circuits.ts`, `zone-modules.ts`, and
 
@@ -203,16 +223,23 @@ checks and keep serialization as a pure boundary transform.
 
 The registry may reject duplicate exact `(registerType, startAddress)` identities but must allow
 occupied-range overlaps. Preserve the upstream default distinctions between core lookup,
-complete default maps, and model-specific maps. The serializer is the only place that converts a
-runtime `ReadonlyMap` into sorted JSON-compatible objects; sort canonical names, stringify
-numeric enum keys, sort set-like exclusions, preserve sequence-like metadata, and route
-exceptional numbers through the tagged-value normalizer.
+complete default maps, and model-specific maps. Implement the public abbreviated
+`RegisterRegistry.toSchema()` exactly as pinned: a sorted list containing only `key`, `address`,
+`datatype`, `unit`, `scale`, `min_value`, `max_value`, `writable`, `register_type`, `write_class`,
+and `supported_models`. This public method is required API behavior, not deprecated or optional.
+
+Separately, `serializeRegisterMap` is the only boundary that converts runtime maps into the full
+sorted 26-field parity contract. It must never call, reuse, alias, or extend `toSchema()`. Sort
+canonical names, stringify numeric enum keys, sort set-like exclusions, preserve sequence-like
+metadata, and route exceptional numbers through the tagged-value normalizer.
 
 **Pinned semantic analogs:**
 
-- `idm_heatpump/registers.py:98-153` for registry lookup/require/address/writable behavior;
+- `idm_heatpump/registers.py:98-153` for registry lookup/require/address/writable and abbreviated
+  `to_schema()` behavior;
 - `tests/test_register_schema.py:17-51` for the complete 26-field schema serialization;
-- do **not** copy the abbreviated upstream `RegisterRegistry.to_schema()` field set.
+- test abbreviated `toSchema()` and full 26-field serialization independently and forbid either
+  implementation from delegating to the other.
 
 ### Barrels and public export boundaries: `src/registers/index.ts`, `src/index.ts`, and
 
@@ -299,7 +326,7 @@ importing any upstream module. It must never contact a heat pump or receive secr
 
 ### API mapping, generated docs, and fixtures
 
-Applies to `contracts/api-mapping.json`, `docs/API-PARITY.md`, `docs/BASELINE.md`, and all five
+Applies to `contracts/api-mapping.json`, `docs/API-PARITY.md`, `docs/BASELINE.md`, and all six
 `test/fixtures/*.json` files.
 
 **Versioned JSON analogs:** `UPSTREAM-PARITY.json:1-10` and
@@ -312,6 +339,12 @@ carry a generated-file warning and must never become an independent source. The 
 exact one-to-one coverage of all 89 pinned Python `__all__` symbols, preserves alias entries,
 enforces `.` versus `./web`, and requires evidence for `complete` statuses.
 
+`test/fixtures/public-classes.json` contains Python-derived facts only: public constructors,
+properties/methods, signatures, defaults, and observed validation/acceptance boundaries. It must
+not contain Node owner phases, export paths, TypeScript names, lifecycle statuses, or approved TS
+representations. Those Node decisions live only in `contracts/api-mapping.json`; mapping tests
+join them to the Python facts and reject a missing member or undocumented representation change.
+
 `docs/BASELINE.md` is a human-readable projection of `UPSTREAM-PARITY.json`, not another place to
 edit baseline facts. Golden fixtures are deterministic UTF-8, stable-key-order JSON; semantic
 array order is preserved while set/map normalizations are explicitly sorted.
@@ -321,7 +354,7 @@ remain release-blocking and cannot be labeled complete in Phase 1.
 
 ### Vitest suites
 
-Applies to all five `test/parity/*.test.ts` files and both `test/registers/*.test.ts` files.
+Applies to all seven planned `test/parity/*.test.ts` files and both `test/registers/*.test.ts` files.
 
 **Exact style analog:** `test/bootstrap.test.ts`.
 

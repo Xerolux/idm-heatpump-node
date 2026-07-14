@@ -164,7 +164,14 @@ No new npm dependency is required for Phase 1. Use the installed and locked repo
 
 ## Package Legitimacy Audit
 
-Not applicable: Phase 1 should install no new npm packages. Existing packages are already locked, their selected versions were confirmed on the npm registry during this research, and no Phase-1 recommendation expands the dependency graph. [VERIFIED: npm registry and `package-lock.json`]
+Phase 1 adds no npm dependency and does not expand the package's runtime or development dependency graph. The isolated CI reference job does provision the pinned Python implementation's declared Modbus dependency, so it is recorded explicitly rather than treated as an unreviewed package-manager action.
+
+| Package                                          | Ecosystem | Classification | Evidence                                                                                                                                                                             | Phase-1 disposition                                                                                     |
+| ------------------------------------------------ | --------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| Existing Node toolchain from `package-lock.json` | npm       | VERIFIED       | Exact versions/integrities are locked and the selected direct versions were confirmed on npm during research.                                                                        | Use `npm ci`; add nothing.                                                                              |
+| `pymodbus==3.12.1`                               | PyPI      | VERIFIED       | Pinned upstream `pyproject.toml` declares `pymodbus>=3.12.1,<4.0`; 3.12.1 is the researched deterministic CI version and the package/import is present in the validated environment. | Install only in the isolated Python contract-generation CI job; never include it in npm runtime output. |
+
+No package is classified `[ASSUMED]`, `[SUS]`, or `[SLOP]`; therefore no package-legitimacy checkpoint is required. [VERIFIED: npm registry, pinned upstream `pyproject.toml`, `package-lock.json`, and environment audit]
 
 ## Architecture Patterns
 
@@ -215,6 +222,7 @@ scripts/
 test/
   fixtures/
     public-api.json
+    public-classes.json
     codec-vectors.json
     register-schema.json
     behavior-contract.json
@@ -279,7 +287,7 @@ Store one object per Python public symbol with at least:
   "export_path": ".",
   "kind": "function",
   "owner_phase": 1,
-  "status": "complete",
+  "status": "planned",
   "contract_test": "test/parity/register-schema.test.ts",
   "normalizations": ["snake_case_to_camelCase"]
 }
@@ -287,7 +295,9 @@ Store one object per Python public symbol with at least:
 
 The generator obtains Python `__all__` from the pinned source, then fails for a missing, extra, or duplicate mapping. It writes `public-api.json` and renders `docs/API-PARITY.md`; generated Markdown is never the mapping source. [VERIFIED: API-01, API-02, and locked mapping decision]
 
-During Phase 1, later-owned symbols may be `planned` but must already have their exact TypeScript name, export path, owner phase, and intended contract test category. The release gate in Phase 5 must reject `planned`, `partial`, or unjustified `not_applicable`. [VERIFIED: `docs/PARITY-CONTRACT.md`]
+Plan 03 initializes mappings as `planned`, including Phase-1-owned rows. Only the final Phase-1 gate may promote a row to `complete`, and only after its runtime/type representation, authoritative member/signature/default/validation inventory, and focused evidence all exist; documentation and fixtures are then regenerated and verified before the symbol is exported. Later-owned symbols remain `planned`. The release gate in Phase 5 must reject `planned`, `partial`, or unjustified `not_applicable`. [VERIFIED: `docs/PARITY-CONTRACT.md` and checker-required evidence ordering]
+
+The generator must also emit `public-classes.json`, an authoritative inventory for every public Python class. It records Python-derived facts only: constructor signature, parameter kinds/defaults, public properties/methods, method signatures/defaults, and validation/acceptance boundaries. It must not record Node owner phase, export path, TypeScript name/status, evidence, or representation. Those Node decisions (`class`, frozen const+union, immutable object/factory, or readonly data shape) live only in `contracts/api-mapping.json`, whose tests join them to the Python facts and close every owner-phase-1 member, including `PollRateLimiter.interval` and the complete `RegisterRegistry.get`/`require`/`by_address`/`writable`/`to_schema` surface. [VERIFIED: pinned `client.py`, `registers.py`, API-01, and checker correction]
 
 ### Pattern 5: Representative Schemas Plus Exhaustive Builder Boundaries
 
@@ -305,7 +315,7 @@ Representative complete maps prove every metadata field; compact builder cases p
 
 ### Pattern 6: Immutable Definitions, Cache-Safe Map Results
 
-`createRegisterDef()` should validate, clone, and freeze all nested collections before freezing the returned object. Datatype size is derived centrally (`FLOAT` is 2; all other current datatypes are 1), and write class is derived from write metadata rather than accepted as contradictory input. [VERIFIED: pinned `RegisterDef.__post_init__`, `write_class`, and locked object decision]
+`createRegisterDef()` must implement exactly the semantic validations in pinned `RegisterDef.__post_init__`: known datatype/register type; non-negative address; non-empty source/source version/supported models; finite non-zero multiplier; finite ordered min/max; write metadata only on writable registers; EEPROM/cyclic exclusion; and cyclic-TTL dependency/finite-positive checks. It must not add empty-name, integer-address, or collection-member rejection that Python accepts. The approved TypeScript-only difference is representation: clone/freeze nested collections and the returned plain object, derive datatype size centrally (`FLOAT` is 2; all other current datatypes are 1), and derive write class instead of accepting either derived value as input. [VERIFIED: pinned `RegisterDef.__post_init__`, `write_class`, locked immutable-object decision, and checker correction]
 
 Builder caches may hold internal maps, but each public result must be a fresh map or a mutation-proof view so consumer mutation cannot alter cached future results. A TypeScript `ReadonlyMap` annotation alone does not protect runtime state from a cast; tests must at least prove that mutating one returned map cannot affect a later build. [VERIFIED: pinned builder returns a shallow copy and locked `ReadonlyMap` API]
 
@@ -316,7 +326,7 @@ Builder caches may hold internal maps, but each public result must be a fresh ma
 - **Using `JSON.stringify` directly for all numbers:** non-finite numbers become `null`, hiding differences; negative zero also needs an explicit tag. [VERIFIED: locked decision]
 - **Using `Math.round` for Python integer scaling:** Python rounds exact ties to even; JavaScript `Math.round` has different tie behavior. [CITED: https://docs.python.org/3.12/library/functions.html#round]
 - **Using only the high-level float decoder for codec vectors:** it intentionally maps non-finite values to `None`; primitive `ModbusCodec` must still preserve their bit patterns. [VERIFIED: pinned `client.py`]
-- **Freezing only the outer `RegisterDef`:** nested option objects/arrays/sets would remain mutable and could corrupt shared definitions. [VERIFIED: locked immutable-object decision]
+- **Adding semantic strictness while freezing `RegisterDef`:** immutability is approved, but rejecting names, fractional non-negative addresses, or collection members that pinned `__post_init__` accepts would violate API-01. [VERIFIED: pinned `RegisterDef.__post_init__` and locked immutable-object decision]
 - **Adding a no-overlap validation:** official logical ranges overlap at documented boundaries. [VERIFIED: `docs/Register-Map-Invariants.md`]
 - **Exporting stubs that appear functional:** maintain mapping ownership/status during development, but do not expose a partial client or web implementation as complete. [VERIFIED: `AGENTS.md` no-partial-release rule]
 
@@ -326,7 +336,7 @@ Builder caches may hold internal maps, but each public result must be a fresh ma
 
 1. Read and strictly validate `UPSTREAM-PARITY.json` without importing upstream code.
 2. Verify checkout URL, `HEAD`, tag resolution, pinned `pyproject.toml` version, and supported parity-schema version.
-3. Read Python `__all__` and assert all symbols are importable in the pinned environment; serialize the ordered inventory and source group.
+3. Read Python `__all__` and assert all symbols are importable in the pinned environment; serialize the ordered inventory/source group plus an authoritative public-class constructor/member/signature/default/validation inventory.
 4. Validate `contracts/api-mapping.json` as a one-to-one mapping of that inventory and render `docs/API-PARITY.md` and `docs/BASELINE.md`.
 5. Generate primitive and register-aware codec vectors, using tagged values for NaN, infinities, and negative zero and normalized error objects for rejected cases.
 6. Build the three representative Python register maps exactly as upstream `test_register_schema.py` does, serialize all 26 fields, and assert the result equals the pinned upstream snapshot before emitting the Node fixture.
@@ -354,7 +364,7 @@ Each entry in `behavior-contract.json` must include these fields even when a sem
 }
 ```
 
-Add a `schema_version` and full baseline identity at the fixture root. Reject missing fields, unknown operation kinds, duplicate scenario names, out-of-range words, and unrecognized tagged values. [VERIFIED: CTR-01 and locked tagged-value decision]
+Add a `schema_version` and full baseline identity at the fixture root. Reject missing fields, unknown operation kinds, duplicate scenario names, out-of-range words specifically in transport/request envelope fields, and unrecognized tagged values; direct codec operation inputs retain their generated datatype-specific domains. [VERIFIED: CTR-01, pinned codec behavior, and locked tagged-value decision]
 
 ### Error normalization
 
@@ -382,15 +392,15 @@ Verified Python examples are:
 
 [VERIFIED: pinned `ModbusCodec` executed in the local reference environment]
 
-Mandatory primitive vectors should also cover subnormal/minimum/maximum finite Float32, both `swapped` modes, extra input words, too-short input, non-integer/out-of-range words, INT8/INT16 limits, and values outside Float32 range. JavaScript `DataView.setFloat32` can narrow a large finite Number to infinity where Python packing rejects an out-of-range value, so the TypeScript wrapper must validate representability and match the Python failure contract. [VERIFIED: pinned implementation behavior and DataView numeric narrowing semantics]
+Mandatory primitive vectors should also cover subnormal/minimum/maximum finite Float32, both `swapped` modes, extra input words, too-short input, Float32's `struct.pack("<HH")` type/range failures, INT8/INT16 mask acceptance and encode limits, and values outside Float32 range. Validation is datatype-specific: primitive Float32 rejects invalid 16-bit pack inputs, while primitive INT8/INT16 decoders use Python bitwise masks and therefore accept arbitrary Python integers. JavaScript must reproduce those distinct domains rather than impose one global word validator. `DataView.setFloat32` can also narrow a large finite Number to infinity where Python packing rejects an out-of-range value, so the TypeScript wrapper must match that failure contract. [VERIFIED: pinned implementation behavior, generated execution, and DataView numeric narrowing semantics]
 
 ### Register-aware behavior
 
-The pinned register-aware codec supports `FLOAT`, `UCHAR`, `INT8`, `INT16`, `UINT16`, `BOOL`, and `BITFLAG`. It applies multipliers on decode, rounds finite numeric results to two decimal places, masks UCHAR/INT8/BITFLAG to the low byte, uses signed two's-complement for INT8/INT16, and rejects empty/short word arrays. [VERIFIED: pinned `client.py` and `test_value_boundaries.py`]
+The pinned register-aware codec supports `FLOAT`, `UCHAR`, `INT8`, `INT16`, `UINT16`, `BOOL`, and `BITFLAG`. It applies multipliers on decode, uses Python `round(value, 2)` for scaled finite results, masks UCHAR/INT8/BITFLAG to the low byte, uses signed two's-complement masks for INT8/INT16, passes the first UINT16 word through when the multiplier is `1.0`, and rejects only empty/short arrays at the dispatcher before datatype-specific behavior runs. It does not globally require every consumed word to be an unsigned 16-bit integer. [VERIFIED: pinned `client.py`, generated execution, and `test_value_boundaries.py`]
 
 Python's integer encoding performs `round()` before `int()` for UCHAR/INT8/INT16/UINT16, so ties are round-to-even: `0.5 -> 0`, `1.5 -> 2`, `2.5 -> 2`, `-1.5 -> -2`, and `-2.5 -> -2`. This is a required cross-language vector class. [VERIFIED: pinned codec executed locally; CITED: https://docs.python.org/3.12/library/functions.html#round]
 
-The high-level float decoder maps raw NaN and infinities to `None`/`null`, while `1.125` decodes to `1.12`; negative zero and sentinel values require separate assertions. Sentinels such as `-1.0`, `254`, and `255` remain the decoded value and are interpreted through metadata, not converted to null. [VERIFIED: pinned `client.py`, `test_registers.py`, and hardware sentinel fixture]
+The high-level float decoder maps raw NaN and infinities to `None`/`null`, while Python's binary-float `round(value, 2)` behavior (including `1.125 -> 1.12` and adjacent/tie-sensitive values generated by Python itself) must be reproduced rather than approximated with decimal-only or JavaScript rounding. Negative zero and sentinel values require separate assertions. Sentinels such as `-1.0`, `254`, and `255` remain the decoded value and are interpreted through metadata, not converted to null. [VERIFIED: pinned `client.py`, `test_registers.py`, Python `round`, and hardware sentinel fixture]
 
 Codec fixtures must therefore distinguish `layer: "primitive"` from `layer: "register"` and include both accepted results and normalized rejection expectations. [VERIFIED: two distinct pinned API layers]
 
@@ -398,10 +408,10 @@ Codec fixtures must therefore distinguish `layer: "primitive"` from `layer: "reg
 
 ### Immutable `RegisterDef` factory contract
 
-The TypeScript factory must accept the Python fields except derived `size` and `write_class`, apply Python defaults, and enforce at least these invariants:
+The TypeScript factory must accept the Python fields except derived `size` and `write_class`, apply Python defaults, and enforce exactly these pinned semantic invariants:
 
 - datatype and register type are known frozen-object values;
-- address is a non-negative integer;
+- address is non-negative (do not add an integer-only runtime rejection absent from Python);
 - source/source version are non-empty and at least one supported model exists;
 - multiplier is finite and non-zero;
 - min/max are finite when present and min does not exceed max;
@@ -412,7 +422,7 @@ The TypeScript factory must accept the Python fields except derived `size` and `
 
 [VERIFIED: pinned `RegisterDef.__post_init__` and `write_class`]
 
-The factory should additionally validate integer/string collection members and clone/freeze nested values because the locked TypeScript design is stronger than Python's mutable dataclass. This is an idiomatic representation difference, not a semantic weakening. [VERIFIED: `01-CONTEXT.md`]
+The factory must not add collection-member or empty-name validation. It may clone/freeze nested values and the returned object because immutability is the locked TypeScript representation decision; this representation hardening must not narrow the accepted Python input domain. [VERIFIED: pinned `RegisterDef.__post_init__`, `01-CONTEXT.md`, and checker correction]
 
 ### Builder behavior that must not be simplified
 
@@ -437,6 +447,7 @@ Do not reuse the registry's abbreviated `to_schema()` output as the parity schem
 | `docs/API-PARITY.md`                                      | Generated from mapping + public inventory                            | Fresh generation, status enum valid, evidence path exists, later owner recorded. [VERIFIED: API-02]                                                                                     |
 | `docs/BASELINE.md`                                        | Generated from `UPSTREAM-PARITY.json` and verified checkout          | URL/version/tag/full SHA/schema shown; no independent editable baseline facts. [VERIFIED: BASE-01]                                                                                      |
 | `test/fixtures/public-api.json`                           | Pinned `__all__`                                                     | Ordered inventory, source group, baseline identity. [VERIFIED: pinned public API test]                                                                                                  |
+| `test/fixtures/public-classes.json`                       | Pinned public classes                                                | Python-only constructor/member signatures, defaults, properties, and validation/acceptance outcomes; zero Node decisions. [VERIFIED: pinned source and API-01]                          |
 | `test/fixtures/codec-vectors.json`                        | Executed pinned primitive/register codecs                            | Tagged exceptional numbers, boundaries, multipliers, rounding, accepted and rejected cases. [VERIFIED: COD-01]                                                                          |
 | `test/fixtures/register-schema.json`                      | Executed pinned builders cross-checked with upstream schema snapshot | Three full maps, 26 fields, compact builder cases, positive overlap set. [VERIFIED: REG-01]                                                                                             |
 | `test/fixtures/behavior-contract.json`                    | Pinned semantic scenarios                                            | Every scenario contains all CTR-01 fields and passes runtime schema validation. [VERIFIED: CTR-01]                                                                                      |
@@ -644,20 +655,20 @@ The current bootstrap suite has 9 passing tests; no Phase-1 semantic/parity test
 - [ ] `test/parity/codec-contract.test.ts` — COD-01.
 - [ ] `test/registers/register-def.test.ts`, `test/registers/builders.test.ts`, and `test/parity/register-schema.test.ts` — REG-01.
 - [ ] `test/parity/scenario-schema.test.ts` — CTR-01.
-- [ ] `test/fixtures/public-api.json`, `codec-vectors.json`, `register-schema.json`, `behavior-contract.json`, and explicit deferred `web-contract.json`.
+- [ ] `test/fixtures/public-api.json`, `public-classes.json`, `codec-vectors.json`, `register-schema.json`, `behavior-contract.json`, and explicit deferred `web-contract.json`.
 - [ ] npm scripts `parity:generate`, `parity:api`, and `parity:check`, wired into CI.
 
 ## Security Domain
 
 ### Applicable ASVS Categories
 
-| ASVS Category         | Applies | Standard Control                                                                                                                                                                                  |
-| --------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| V2 Authentication     | no      | No authentication surface exists in Phase 1; web auth is Phase 4. [VERIFIED: phase boundary]                                                                                                      |
-| V3 Session Management | no      | No sessions or tokens are handled. [VERIFIED: phase boundary]                                                                                                                                     |
-| V4 Access Control     | no      | This is a local library/build-contract phase with no authorization boundary. [VERIFIED: phase scope]                                                                                              |
-| V5 Input Validation   | yes     | Strict manifest parser, verified Git identity, runtime contract parser, register factory validation, word/range checks, and fixed operation kinds. [VERIFIED: requirements and pinned validation] |
-| V6 Cryptography       | no      | No cryptographic primitive is needed; Git SHA is identity/equality evidence here, not a home-grown security signature. [VERIFIED: phase scope]                                                    |
+| ASVS Category         | Applies | Standard Control                                                                                                                                                                              |
+| --------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| V2 Authentication     | no      | No authentication surface exists in Phase 1; web auth is Phase 4. [VERIFIED: phase boundary]                                                                                                  |
+| V3 Session Management | no      | No sessions or tokens are handled. [VERIFIED: phase boundary]                                                                                                                                 |
+| V4 Access Control     | no      | This is a local library/build-contract phase with no authorization boundary. [VERIFIED: phase scope]                                                                                          |
+| V5 Input Validation   | yes     | Strict manifest/Git/scenario checks, exact pinned RegisterDef validation, transport-envelope word ranges, and datatype-specific codec domains. [VERIFIED: requirements and pinned validation] |
+| V6 Cryptography       | no      | No cryptographic primitive is needed; Git SHA is identity/equality evidence here, not a home-grown security signature. [VERIFIED: phase scope]                                                |
 
 ### Known Threat Patterns for the Contract Toolchain
 
@@ -711,22 +722,11 @@ The plan must include a threat model for scripts that clone/import upstream sour
 | --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------- |
 | —   | None. All factual claims were verified from the pinned local source/tests, the Node repository, local tool execution, npm metadata, or official Python/JavaScript documentation. | —       | —             |
 
-## Open Questions
+## Resolved Research Decisions
 
-1. **Should `docs/BASELINE.md` be generated or omitted?**
-   - What we know: the authoritative machine source is `UPSTREAM-PARITY.json`; the file was named as expected reading but does not exist. [VERIFIED: repository]
-   - What's unclear: no binding project document explicitly requires this human-readable mirror.
-   - Recommendation: generate it from the manifest so it cannot drift; never make it an independent source.
-
-2. **Which stable semantic error codes should represent Python validation exceptions?**
-   - What we know: identical accepted/rejected behavior is required, but the current parity contract does not enumerate non-transport error normalization. [VERIFIED: API-01 and parity contract]
-   - What's unclear: exact naming (`invalid_circuit`, `invalid_zone_count`, etc.) is at implementation discretion.
-   - Recommendation: define the small code list in `contracts/normalization.md` and generate both Python and TypeScript expectations from it before writing rejection tests.
-
-3. **How should later-owned public classes appear during Phase 1?**
-   - What we know: all 89 symbols need mapped counterparts, while transport/writes/web are explicitly later and partial public behavior is forbidden. [VERIFIED: API requirements and phase boundary]
-   - What's unclear: whether a type-only declaration for a later class is valuable before runtime implementation.
-   - Recommendation: record the final runtime name and owner phase in the mapping, keep status `planned`, and do not export a throwing runtime stub. The Phase-5 release gate resolves all statuses.
+1. **`docs/BASELINE.md` is generated.** `UPSTREAM-PARITY.json` remains the sole machine authority; the Markdown file is a deterministic projection and never an independently edited source. [RESOLVED: Plan 01-03]
+2. **Stable validation codes are contract-owned.** Plan 01-02 defines the finite semantic code list in `contracts/normalization.md` before generating rejected cases; raw language exception types/messages remain diagnostic only. Codes normalize only actual pinned rejection boundaries and may not invent stricter TypeScript validation. [RESOLVED: Plans 01-02, 01-04, 01-05, 01-06]
+3. **Later-owned Node class decisions are mapping-only in Phase 1.** Python class facts remain in `public-classes.json`; final TypeScript names, export paths, owner phases, representations, statuses, and intended evidence exist only in `contracts/api-mapping.json` with status `planned`. No runtime or throwing stub is exported. The Phase-5 release gate resolves remaining statuses. [RESOLVED: Plans 01-03 and finalization plans]
 
 ## Sources
 

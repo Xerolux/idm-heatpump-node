@@ -61,6 +61,7 @@ phases.
 </decisions>
 
 <code_context>
+
 ## Existing Code Insights
 
 ### Reusable Assets
