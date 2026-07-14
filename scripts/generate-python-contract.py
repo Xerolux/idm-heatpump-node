@@ -18,7 +18,7 @@ import json
 import math
 import os
 import re
-import struct
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -964,10 +964,95 @@ def generate_fixtures(manifest: Mapping[str, Any], checkout: Path) -> dict[Path,
 def write_fixtures(artifacts: Mapping[Path, bytes], output_root: Path) -> None:
     if set(artifacts) != set(OUTPUT_PATHS):
         fail("fixture_invalid", "generator did not produce the exact output allowlist")
-    for relative_path in OUTPUT_PATHS:
-        destination = output_root / relative_path
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_bytes(artifacts[relative_path])
+    fixture_directory = output_root / "test" / "fixtures"
+    fixture_directory.mkdir(parents=True, exist_ok=True)
+    try:
+        if fixture_directory.resolve(strict=True).parent.parent != output_root.resolve(strict=True):
+            fail("invalid_output_root", "fixture directory escapes the approved output root")
+    except OSError as error:
+        fail("invalid_output_root", str(error))
+
+    transaction_root = Path(
+        tempfile.mkdtemp(prefix=".idm-contract-transaction-", dir=fixture_directory)
+    )
+    staged_root = transaction_root / "staged"
+    backup_root = transaction_root / "backup"
+    staged_root.mkdir()
+    backup_root.mkdir()
+    replaced: list[tuple[Path, Path | None]] = []
+    try:
+        for relative_path in OUTPUT_PATHS:
+            staged = staged_root / relative_path.name
+            with staged.open("wb") as stream:
+                stream.write(artifacts[relative_path])
+                stream.flush()
+                os.fsync(stream.fileno())
+            if staged.read_bytes() != artifacts[relative_path]:
+                fail("fixture_invalid", f"staged artifact verification failed: {relative_path}")
+            try:
+                validate_contract_value(json.loads(staged.read_text(encoding="utf-8")))
+            except (UnicodeError, json.JSONDecodeError) as error:
+                fail("fixture_invalid", f"staged artifact is not canonical JSON: {error}")
+
+        if os.environ.get("IDM_CONTRACT_TEST_FAIL_AFTER_STAGE") == "1":
+            fail("injected_failure", "test-only failure after all artifacts were staged")
+
+        for relative_path in OUTPUT_PATHS:
+            destination = output_root / relative_path
+            staged = staged_root / relative_path.name
+            backup: Path | None = None
+            if destination.exists():
+                backup = backup_root / relative_path.name
+                os.replace(destination, backup)
+            try:
+                os.replace(staged, destination)
+            except BaseException:
+                if backup is not None and backup.exists():
+                    os.replace(backup, destination)
+                raise
+            replaced.append((destination, backup))
+    except BaseException:
+        for destination, backup in reversed(replaced):
+            try:
+                if destination.exists():
+                    destination.unlink()
+                if backup is not None and backup.exists():
+                    os.replace(backup, destination)
+            except OSError:
+                # Preserve the original exception; a rollback failure remains a
+                # hard generator failure and cannot be reported as success.
+                pass
+        raise
+    finally:
+        shutil.rmtree(transaction_root, ignore_errors=True)
+
+
+def check_fixtures(artifacts: Mapping[Path, bytes], comparison_root: Path) -> None:
+    if set(artifacts) != set(OUTPUT_PATHS):
+        fail("fixture_invalid", "generator did not produce the exact output allowlist")
+    with tempfile.TemporaryDirectory(prefix="idm-heatpump-contract-check-") as temporary:
+        generated_root = Path(temporary)
+        for relative_path in OUTPUT_PATHS:
+            generated = generated_root / relative_path
+            generated.parent.mkdir(parents=True, exist_ok=True)
+            generated.write_bytes(artifacts[relative_path])
+
+        for relative_path in OUTPUT_PATHS:
+            committed = comparison_root / relative_path
+            generated = generated_root / relative_path
+            if not committed.is_file():
+                fail("contract_drift", f"{relative_path.as_posix()}: missing committed artifact")
+            committed_bytes = committed.read_bytes()
+            generated_bytes = generated.read_bytes()
+            if committed_bytes == generated_bytes:
+                continue
+            difference_kind = "byte difference"
+            try:
+                if json.loads(committed_bytes) != json.loads(generated_bytes):
+                    difference_kind = "semantic difference"
+            except (UnicodeError, json.JSONDecodeError):
+                difference_kind = "semantic difference (committed artifact is invalid JSON)"
+            fail("contract_drift", f"{relative_path.as_posix()}: {difference_kind}")
 
 
 def parse_arguments(arguments: list[str]) -> argparse.Namespace:
@@ -990,7 +1075,9 @@ def main(arguments: list[str] | None = None) -> int:
 
     artifacts = generate_fixtures(manifest, checkout)
     if args.check:
-        fail("fixture_invalid", "check mode is implemented by the next task")
+        check_fixtures(artifacts, output_root)
+        print(f"Verified {len(artifacts)} pinned semantic fixtures at {output_root}")
+        return 0
     write_fixtures(artifacts, output_root)
     print(f"Generated {len(artifacts)} pinned semantic fixtures at {output_root}")
     return 0
