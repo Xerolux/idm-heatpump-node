@@ -1,0 +1,119 @@
+{
+  "baseline": {
+    "git_commit": "ad121ebf34a5f5e37204371c026927d77efcd15c",
+    "git_tag": "v0.7.6",
+    "parity_schema_version": 1,
+    "python_package": "idm-heatpump-api",
+    "python_version": "0.7.6",
+    "repository": "https://github.com/Xerolux/idm-heatpump-api"
+  },
+  "generator_version": "1",
+  "operation_kinds": [
+    "normalize_value",
+    "codec_encode_float32",
+    "build_register_map",
+    "register_overlap"
+  ],
+  "scenarios": [
+    {
+      "clock": [],
+      "configuration": {},
+      "expected_requests": [],
+      "expected_result": [
+        {
+          "$number": "NaN"
+        },
+        {
+          "$number": "+Infinity"
+        },
+        {
+          "$number": "-Infinity"
+        },
+        {
+          "$number": "-0"
+        }
+      ],
+      "expected_state": {},
+      "name": "normalize_exceptional_numbers",
+      "operation": {
+        "kind": "normalize_value",
+        "values": [
+          "NaN",
+          "+Infinity",
+          "-Infinity",
+          "-0"
+        ]
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {},
+      "expected_requests": [],
+      "expected_result": [
+        0,
+        16256
+      ],
+      "expected_state": {},
+      "name": "primitive_float_low_word_first",
+      "operation": {
+        "kind": "codec_encode_float32",
+        "value": 1.0
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "circuits": [
+          "H"
+        ]
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "category": "validation",
+        "code": "circuit_invalid",
+        "diagnostic": "Invalid heating circuit letters: ['H']"
+      },
+      "expected_state": {},
+      "name": "invalid_circuit_boundary",
+      "operation": {
+        "kind": "build_register_map"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "circuits": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G"
+        ]
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "heating_circuit_mode": {
+          "address": 1393,
+          "count": 1
+        },
+        "humidity": {
+          "address": 1392,
+          "count": 2
+        }
+      },
+      "expected_state": {},
+      "name": "documented_humidity_overlap",
+      "operation": {
+        "address": 1393,
+        "kind": "register_overlap"
+      },
+      "transport_responses": []
+    }
+  ],
+  "schema_version": 1
+}

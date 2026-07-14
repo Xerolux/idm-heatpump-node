@@ -1,0 +1,17 @@
+{
+  "baseline": {
+    "git_commit": "ad121ebf34a5f5e37204371c026927d77efcd15c",
+    "git_tag": "v0.7.6",
+    "parity_schema_version": 1,
+    "python_package": "idm-heatpump-api",
+    "python_version": "0.7.6",
+    "repository": "https://github.com/Xerolux/idm-heatpump-api"
+  },
+  "deferred_to_phase": 4,
+  "evidence_kind": "deferred_marker",
+  "generator_version": "1",
+  "reason": "Navigator 10 WebSocket and Navigator 2.0 HTTP parity require Phase 4 executable evidence",
+  "release_blocking": true,
+  "scenarios": [],
+  "schema_version": 1
+}

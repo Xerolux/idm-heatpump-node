@@ -1,0 +1,530 @@
+{
+  "baseline": {
+    "git_commit": "ad121ebf34a5f5e37204371c026927d77efcd15c",
+    "git_tag": "v0.7.6",
+    "parity_schema_version": 1,
+    "python_package": "idm-heatpump-api",
+    "python_version": "0.7.6",
+    "repository": "https://github.com/Xerolux/idm-heatpump-api"
+  },
+  "generator_version": "1",
+  "layers": {
+    "primitive": {
+      "cases": [
+        {
+          "expected_result": 1.0,
+          "id": "primitive_float32_low_word_first",
+          "input": {
+            "swapped": false,
+            "words": [
+              0,
+              16256
+            ]
+          },
+          "operation": "decode_float32"
+        },
+        {
+          "expected_result": 1.0,
+          "id": "primitive_float32_swapped",
+          "input": {
+            "swapped": true,
+            "words": [
+              16256,
+              0
+            ]
+          },
+          "operation": "decode_float32"
+        },
+        {
+          "expected_result": {
+            "value": {
+              "$number": "-0"
+            },
+            "words": [
+              0,
+              32768
+            ]
+          },
+          "id": "primitive_float32_negative_zero",
+          "input": {
+            "value": {
+              "$number": "-0"
+            }
+          },
+          "operation": "encode_decode_float32"
+        },
+        {
+          "expected_result": {
+            "value": {
+              "$number": "NaN"
+            },
+            "words": [
+              0,
+              32704
+            ]
+          },
+          "id": "primitive_float32_nan",
+          "input": {
+            "value": {
+              "$number": "NaN"
+            }
+          },
+          "operation": "encode_decode_float32"
+        },
+        {
+          "expected_result": {
+            "value": {
+              "$number": "+Infinity"
+            },
+            "words": [
+              0,
+              32640
+            ]
+          },
+          "id": "primitive_float32_positive_infinity",
+          "input": {
+            "value": {
+              "$number": "+Infinity"
+            }
+          },
+          "operation": "encode_decode_float32"
+        },
+        {
+          "expected_result": {
+            "value": {
+              "$number": "-Infinity"
+            },
+            "words": [
+              0,
+              65408
+            ]
+          },
+          "id": "primitive_float32_negative_infinity",
+          "input": {
+            "value": {
+              "$number": "-Infinity"
+            }
+          },
+          "operation": "encode_decode_float32"
+        },
+        {
+          "expected_result": 3.4028234663852886e+38,
+          "id": "primitive_float32_finite_max",
+          "input": {
+            "value": 3.4028234663852886e+38
+          },
+          "operation": "encode_decode_float32"
+        },
+        {
+          "expected_result": 1.401298464324817e-45,
+          "id": "primitive_float32_subnormal",
+          "input": {
+            "value": 1.401298464324817e-45
+          },
+          "operation": "encode_decode_float32"
+        },
+        {
+          "expected_error": {
+            "category": "validation",
+            "code": "codec_float_overflow",
+            "diagnostic": "float too large to pack with f format"
+          },
+          "id": "primitive_float32_overflow",
+          "input": {
+            "value": 3.5e+38
+          },
+          "operation": "encode_float32"
+        },
+        {
+          "expected_error": {
+            "category": "validation",
+            "code": "codec_word_range",
+            "diagnostic": "'H' format requires 0 <= number <= 65535"
+          },
+          "id": "primitive_float32_word_below_range",
+          "input": {
+            "words": [
+              -1,
+              0
+            ]
+          },
+          "operation": "decode_float32"
+        },
+        {
+          "expected_error": {
+            "category": "validation",
+            "code": "codec_word_range",
+            "diagnostic": "'H' format requires 0 <= number <= 65535"
+          },
+          "id": "primitive_float32_word_above_range",
+          "input": {
+            "words": [
+              65536,
+              0
+            ]
+          },
+          "operation": "decode_float32"
+        },
+        {
+          "expected_result": [
+            {
+              "decoded": -128,
+              "value": -128,
+              "word": 128
+            },
+            {
+              "decoded": 127,
+              "value": 127,
+              "word": 127
+            }
+          ],
+          "id": "primitive_int8_boundaries",
+          "input": {
+            "values": [
+              -128,
+              127
+            ]
+          },
+          "operation": "int8"
+        },
+        {
+          "expected_result": [
+            -1,
+            -1
+          ],
+          "id": "primitive_int8_masking",
+          "input": {
+            "words": [
+              -1,
+              511
+            ]
+          },
+          "operation": "decode_int8"
+        },
+        {
+          "expected_error": {
+            "category": "validation",
+            "code": "codec_int8_range",
+            "diagnostic": "Value -129 out of INT8 range"
+          },
+          "id": "primitive_int8_below_range",
+          "input": {
+            "value": -129
+          },
+          "operation": "encode_int8"
+        },
+        {
+          "expected_error": {
+            "category": "validation",
+            "code": "codec_int8_range",
+            "diagnostic": "Value 128 out of INT8 range"
+          },
+          "id": "primitive_int8_above_range",
+          "input": {
+            "value": 128
+          },
+          "operation": "encode_int8"
+        },
+        {
+          "expected_result": [
+            {
+              "decoded": -32768,
+              "value": -32768,
+              "word": 32768
+            },
+            {
+              "decoded": 32767,
+              "value": 32767,
+              "word": 32767
+            }
+          ],
+          "id": "primitive_int16_boundaries",
+          "input": {
+            "values": [
+              -32768,
+              32767
+            ]
+          },
+          "operation": "int16"
+        },
+        {
+          "expected_result": [
+            -1,
+            -1
+          ],
+          "id": "primitive_int16_masking",
+          "input": {
+            "words": [
+              -1,
+              131071
+            ]
+          },
+          "operation": "decode_int16"
+        },
+        {
+          "expected_error": {
+            "category": "validation",
+            "code": "codec_int16_range",
+            "diagnostic": "Value -32769 out of INT16 range"
+          },
+          "id": "primitive_int16_below_range",
+          "input": {
+            "value": -32769
+          },
+          "operation": "encode_int16"
+        },
+        {
+          "expected_error": {
+            "category": "validation",
+            "code": "codec_int16_range",
+            "diagnostic": "Value 32768 out of INT16 range"
+          },
+          "id": "primitive_int16_above_range",
+          "input": {
+            "value": 32768
+          },
+          "operation": "encode_int16"
+        }
+      ]
+    },
+    "register": {
+      "cases": [
+        {
+          "expected_result": 1.0,
+          "id": "register_float_extra_word",
+          "input": {
+            "datatype": "FLOAT",
+            "words": [
+              0,
+              16256,
+              65535
+            ]
+          },
+          "operation": "decode_value"
+        },
+        {
+          "expected_error": {
+            "category": "validation",
+            "code": "codec_input_short",
+            "diagnostic": "Not enough registers for float_case: got 1, need 2"
+          },
+          "id": "register_float_short",
+          "input": {
+            "datatype": "FLOAT",
+            "words": [
+              0
+            ]
+          },
+          "operation": "decode_value"
+        },
+        {
+          "expected_error": {
+            "category": "validation",
+            "code": "codec_input_empty",
+            "diagnostic": "Empty register list for uchar_case (expected 1)"
+          },
+          "id": "register_empty",
+          "input": {
+            "datatype": "UCHAR",
+            "words": []
+          },
+          "operation": "decode_value"
+        },
+        {
+          "expected_result": null,
+          "id": "register_float_nan_unavailable",
+          "input": {
+            "datatype": "FLOAT",
+            "words": [
+              0,
+              32704
+            ]
+          },
+          "operation": "decode_value"
+        },
+        {
+          "expected_result": {
+            "$number": "-0"
+          },
+          "id": "register_float_negative_zero",
+          "input": {
+            "datatype": "FLOAT",
+            "words": [
+              0,
+              32768
+            ]
+          },
+          "operation": "decode_value"
+        },
+        {
+          "expected_result": 255,
+          "id": "register_uchar_masking",
+          "input": {
+            "datatype": "UCHAR",
+            "words": [
+              511
+            ]
+          },
+          "operation": "decode_value"
+        },
+        {
+          "expected_result": -1,
+          "id": "register_int8_masking",
+          "input": {
+            "datatype": "INT8",
+            "words": [
+              511
+            ]
+          },
+          "operation": "decode_value"
+        },
+        {
+          "expected_result": -1,
+          "id": "register_int16_masking",
+          "input": {
+            "datatype": "INT16",
+            "words": [
+              131071
+            ]
+          },
+          "operation": "decode_value"
+        },
+        {
+          "expected_result": -1,
+          "id": "register_uint16_direct_first_word",
+          "input": {
+            "datatype": "UINT16",
+            "words": [
+              -1,
+              2
+            ]
+          },
+          "operation": "decode_value"
+        },
+        {
+          "expected_result": [
+            false,
+            true,
+            false,
+            true
+          ],
+          "id": "register_bool_masking",
+          "input": {
+            "datatype": "BOOL",
+            "words": [
+              0,
+              1,
+              2,
+              3
+            ]
+          },
+          "operation": "decode_value"
+        },
+        {
+          "expected_result": 255,
+          "id": "register_bitflag_masking",
+          "input": {
+            "datatype": "BITFLAG",
+            "words": [
+              511
+            ]
+          },
+          "operation": "decode_value"
+        },
+        {
+          "expected_result": [
+            [
+              2
+            ],
+            [
+              4
+            ]
+          ],
+          "id": "register_integer_tie_rounding",
+          "input": {
+            "datatype": "UCHAR",
+            "values": [
+              2.5,
+              3.5
+            ]
+          },
+          "operation": "encode_value"
+        },
+        {
+          "expected_result": {
+            "decoded": 12.3,
+            "encoded": [
+              123
+            ]
+          },
+          "id": "register_multiplier",
+          "input": {
+            "datatype": "UINT16",
+            "multiplier": 0.1,
+            "value": 12.3
+          },
+          "operation": "encode_decode_value"
+        },
+        {
+          "expected_result": [
+            1.0,
+            2.67,
+            -1.23
+          ],
+          "id": "register_round_two_digits",
+          "input": {
+            "datatype": "FLOAT",
+            "values": [
+              1.005,
+              2.675,
+              -1.225
+            ]
+          },
+          "operation": "decode_value"
+        },
+        {
+          "expected_error": {
+            "category": "validation",
+            "code": "codec_uchar_range",
+            "diagnostic": "Value -1 out of UCHAR range for uchar_case"
+          },
+          "id": "register_uchar_below_range",
+          "input": {
+            "datatype": "UCHAR",
+            "value": -1
+          },
+          "operation": "encode_value"
+        },
+        {
+          "expected_error": {
+            "category": "validation",
+            "code": "codec_uint16_range",
+            "diagnostic": "Value 65536 out of UINT16 range for uint16_case"
+          },
+          "id": "register_uint16_above_range",
+          "input": {
+            "datatype": "UINT16",
+            "value": 65536
+          },
+          "operation": "encode_value"
+        },
+        {
+          "expected_error": {
+            "category": "validation",
+            "code": "codec_nonfinite",
+            "diagnostic": "Cannot encode NaN/Inf for register float_case"
+          },
+          "id": "register_float_encode_nonfinite",
+          "input": {
+            "datatype": "FLOAT",
+            "value": {
+              "$number": "+Infinity"
+            }
+          },
+          "operation": "encode_value"
+        }
+      ]
+    }
+  },
+  "schema_version": 1
+}

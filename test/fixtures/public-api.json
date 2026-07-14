@@ -1,0 +1,583 @@
+{
+  "aliases": [
+    {
+      "name": "AuthenticationError",
+      "target": "IdmWebAuthenticationError"
+    },
+    {
+      "name": "ConnectionError",
+      "target": "IdmWebConnectionError"
+    },
+    {
+      "name": "CsrfError",
+      "target": "IdmWebCsrfError"
+    },
+    {
+      "name": "PinRejectedError",
+      "target": "IdmWebPinRejectedError"
+    },
+    {
+      "name": "ProtocolError",
+      "target": "IdmWebProtocolError"
+    },
+    {
+      "name": "TimeoutError",
+      "target": "IdmWebTimeoutError"
+    },
+    {
+      "name": "WebSocketError",
+      "target": "IdmWebWebSocketError"
+    }
+  ],
+  "baseline": {
+    "git_commit": "ad121ebf34a5f5e37204371c026927d77efcd15c",
+    "git_tag": "v0.7.6",
+    "parity_schema_version": 1,
+    "python_package": "idm-heatpump-api",
+    "python_version": "0.7.6",
+    "repository": "https://github.com/Xerolux/idm-heatpump-api"
+  },
+  "counts": {
+    "root": 59,
+    "total": 89,
+    "web": 30
+  },
+  "generator_version": "1",
+  "schema_version": 1,
+  "symbols": [
+    {
+      "export_boundary": ".",
+      "name": "ACTIVE_HC_MODE_OPTIONS",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "BIVALENCE_STATE_OPTIONS",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "BOOSTER_FAULT_OPTIONS",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "CIRCUIT_MODE_OPTIONS",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "CORE_REGISTERS",
+      "python_kind": "constant",
+      "source_group": "registers"
+    },
+    {
+      "export_boundary": ".",
+      "name": "DEFAULT_PORT",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "DEFAULT_SLAVE_ID",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "DEFAULT_TIMEOUT",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "EEPROM_SENSITIVE_ADDRESSES",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "EVU_LOCK_OPTIONS",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "FEATURE_CASCADE",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "FEATURE_HEATING_CIRCUITS",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "FEATURE_ISC",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "FEATURE_PV",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "FEATURE_SOLAR",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "FEATURE_ZONE_MODULES",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "HEATING_CIRCUIT_LETTERS",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "HP_OPERATING_MODE_OPTIONS",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "ISC_MODE_OPTIONS",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "MAX_HEATING_CIRCUITS",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "MAX_ROOMS_PER_ZONE",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "MAX_RETRIES",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "MAX_ZONE_MODULES",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "MODEL_DETECTION_MAX_RETRIES",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "MODEL_DETECTION_TIMEOUT",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "MODEL_NAVIGATOR_10",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "MODEL_NAVIGATOR_20",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "MODEL_NAVIGATOR_PRO",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "MODEL_UNKNOWN",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "RETRY_BACKOFF_BASE",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "ROOM_MODE_OPTIONS",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "SMART_GRID_OPTIONS",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "SOLAR_MODE_OPTIONS",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "SYSTEM_MODE_OPTIONS",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "VARIABLE_INPUT_OPTIONS",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": ".",
+      "name": "ZONE_MODULE_MODE_OPTIONS",
+      "python_kind": "constant",
+      "source_group": "const"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "AuthenticationError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "ConnectionError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "CsrfError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": ".",
+      "name": "AdaptiveBackoff",
+      "python_kind": "class",
+      "source_group": "client"
+    },
+    {
+      "export_boundary": ".",
+      "name": "DataType",
+      "python_kind": "class",
+      "source_group": "client"
+    },
+    {
+      "export_boundary": ".",
+      "name": "FeatureFlags",
+      "python_kind": "class",
+      "source_group": "client"
+    },
+    {
+      "export_boundary": ".",
+      "name": "IdmClientDiagnostics",
+      "python_kind": "class",
+      "source_group": "client"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmNavigator10WebClient",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmNavigator20WebClient",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": ".",
+      "name": "IdmModelInfo",
+      "python_kind": "class",
+      "source_group": "client"
+    },
+    {
+      "export_boundary": ".",
+      "name": "IdmModbusClient",
+      "python_kind": "class",
+      "source_group": "client"
+    },
+    {
+      "export_boundary": ".",
+      "name": "IllegalAddressError",
+      "python_kind": "class",
+      "source_group": "client"
+    },
+    {
+      "export_boundary": ".",
+      "name": "ModbusCodec",
+      "python_kind": "class",
+      "source_group": "client"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmWebAuthenticationError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmWebConnectionError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmWebCsrfError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmWebData",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmWebDependencyError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmWebDiagnostics",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmWebError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmWebNotification",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmWebNotifications",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmWebPinRejectedError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmWebProtocolError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmWebResponseError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmWebTimeoutError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmWebWebSocketError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "PinRejectedError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "ProtocolError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "TimeoutError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "WebSocketError",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmWebValue",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "IdmWebValueDescription",
+      "python_kind": "class",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": ".",
+      "name": "ModbusErrorContext",
+      "python_kind": "class",
+      "source_group": "client"
+    },
+    {
+      "export_boundary": ".",
+      "name": "PollRateLimiter",
+      "python_kind": "class",
+      "source_group": "client"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "RECOMMENDED_WEB_SCAN_INTERVAL",
+      "python_kind": "constant",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": ".",
+      "name": "RegisterDef",
+      "python_kind": "class",
+      "source_group": "client"
+    },
+    {
+      "export_boundary": ".",
+      "name": "RegisterRegistry",
+      "python_kind": "class",
+      "source_group": "registers"
+    },
+    {
+      "export_boundary": ".",
+      "name": "RegisterType",
+      "python_kind": "class",
+      "source_group": "client"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "WEB_VALUE_DESCRIPTIONS",
+      "python_kind": "constant",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": ".",
+      "name": "WriteClass",
+      "python_kind": "class",
+      "source_group": "client"
+    },
+    {
+      "export_boundary": ".",
+      "name": "WriteSafetyResult",
+      "python_kind": "class",
+      "source_group": "client"
+    },
+    {
+      "export_boundary": ".",
+      "name": "build_register_map",
+      "python_kind": "function",
+      "source_group": "registers"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "create_optional_navigator10_web_client",
+      "python_kind": "function",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "create_optional_navigator20_web_client",
+      "python_kind": "function",
+      "source_group": "web"
+    },
+    {
+      "export_boundary": ".",
+      "name": "get_all_registers",
+      "python_kind": "function",
+      "source_group": "registers"
+    },
+    {
+      "export_boundary": ".",
+      "name": "get_detection_registers",
+      "python_kind": "function",
+      "source_group": "registers"
+    },
+    {
+      "export_boundary": ".",
+      "name": "get_heating_circuit_registers",
+      "python_kind": "function",
+      "source_group": "registers"
+    },
+    {
+      "export_boundary": ".",
+      "name": "get_register",
+      "python_kind": "function",
+      "source_group": "registers"
+    },
+    {
+      "export_boundary": ".",
+      "name": "get_register_registry",
+      "python_kind": "function",
+      "source_group": "registers"
+    },
+    {
+      "export_boundary": ".",
+      "name": "get_zone_module_registers",
+      "python_kind": "function",
+      "source_group": "registers"
+    },
+    {
+      "export_boundary": ".",
+      "name": "quiet_pymodbus_logging",
+      "python_kind": "function",
+      "source_group": "client"
+    },
+    {
+      "export_boundary": "./web",
+      "name": "web_pin_configured",
+      "python_kind": "function",
+      "source_group": "web"
+    }
+  ]
+}

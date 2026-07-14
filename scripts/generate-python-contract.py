@@ -9,11 +9,16 @@ checkout is added to ``sys.path`` or any upstream module is imported.
 from __future__ import annotations
 
 import argparse
+import ast
+import dataclasses
 import enum
+import hashlib
+import inspect
 import json
 import math
 import os
 import re
+import struct
 import subprocess
 import sys
 import tempfile
@@ -286,6 +291,685 @@ def validate_output_root(raw_path: str | None, repository_root: Path) -> Path:
     return output
 
 
+def _baseline_provenance(manifest: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "repository": manifest["repository"],
+        "python_package": manifest["python_package"],
+        "python_version": manifest["python_version"],
+        "git_tag": manifest["git_tag"],
+        "git_commit": manifest["git_commit"],
+        "parity_schema_version": manifest["schema_version"],
+    }
+
+
+def _fixture_root(manifest: Mapping[str, Any], **content: Any) -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "generator_version": GENERATOR_VERSION,
+        "baseline": _baseline_provenance(manifest),
+        **content,
+    }
+
+
+def _source_groups(checkout: Path) -> dict[str, str]:
+    source = (checkout / "idm_heatpump" / "__init__.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    groups: dict[str, str] = {}
+    for node in tree.body:
+        if not isinstance(node, ast.ImportFrom) or node.level != 1 or node.module is None:
+            continue
+        for imported in node.names:
+            groups[imported.asname or imported.name] = node.module
+    return groups
+
+
+def _signature_value(value: Any) -> dict[str, Any]:
+    if value is inspect.Parameter.empty:
+        return {"kind": "required"}
+    if value is None or isinstance(value, (str, bool, int, float, list, tuple, set, frozenset, dict, enum.Enum)):
+        return {"kind": "value", "value": normalize_contract_value(value)}
+    if inspect.isroutine(value):
+        return {
+            "kind": "callable",
+            "module": getattr(value, "__module__", None),
+            "qualname": getattr(value, "__qualname__", getattr(value, "__name__", type(value).__name__)),
+        }
+    if inspect.isclass(value):
+        return {
+            "kind": "type",
+            "module": value.__module__,
+            "qualname": value.__qualname__,
+        }
+    return {"kind": "python_literal", "type": type(value).__name__, "text": str(value)}
+
+
+def _annotation_text(annotation: Any) -> str | None:
+    if annotation is inspect.Parameter.empty or annotation is inspect.Signature.empty:
+        return None
+    if isinstance(annotation, str):
+        return annotation
+    return inspect.formatannotation(annotation)
+
+
+def _signature_fact(callable_value: Any, *, drop_first: bool = False) -> dict[str, Any]:
+    try:
+        signature = inspect.signature(callable_value)
+    except (TypeError, ValueError):
+        return {"signature": "unavailable", "parameters": [], "return_annotation": None}
+    parameters = list(signature.parameters.values())
+    if drop_first and parameters and parameters[0].name in {"self", "cls"}:
+        parameters = parameters[1:]
+    return {
+        "signature": str(signature),
+        "parameters": [
+            {
+                "name": parameter.name,
+                "kind": parameter.kind.name,
+                "default": _signature_value(parameter.default),
+                "annotation": _annotation_text(parameter.annotation),
+            }
+            for parameter in parameters
+        ],
+        "return_annotation": _annotation_text(signature.return_annotation),
+    }
+
+
+def _class_constructor_fact(class_value: type[Any]) -> dict[str, Any]:
+    try:
+        inspect.signature(class_value)
+    except (TypeError, ValueError):
+        fact = _signature_fact(class_value.__init__, drop_first=True)
+        return {**fact, "source": "inherited_or_declared_init"}
+    return {**_signature_fact(class_value), "source": "class_signature"}
+
+
+def _class_members(class_value: type[Any]) -> list[dict[str, Any]]:
+    members: list[dict[str, Any]] = []
+    dataclass_fields = getattr(class_value, "__dataclass_fields__", {})
+    for name, dataclass_field in sorted(dataclass_fields.items()):
+        if name.startswith("_"):
+            continue
+        if dataclass_field.default is not dataclasses.MISSING:
+            default = _signature_value(dataclass_field.default)
+        elif dataclass_field.default_factory is not dataclasses.MISSING:
+            factory = dataclass_field.default_factory
+            default = {
+                "kind": "factory",
+                "module": getattr(factory, "__module__", None),
+                "qualname": getattr(factory, "__qualname__", getattr(factory, "__name__", type(factory).__name__)),
+            }
+        else:
+            default = {"kind": "required"}
+        members.append(
+            {
+                "name": name,
+                "kind": "attribute",
+                "annotation": _annotation_text(dataclass_field.type),
+                "default": default,
+                "init": bool(dataclass_field.init),
+            }
+        )
+    for name in sorted(class_value.__dict__):
+        if name.startswith("_"):
+            continue
+        if name in dataclass_fields:
+            continue
+        static = inspect.getattr_static(class_value, name)
+        if isinstance(static, property):
+            members.append(
+                {
+                    "name": name,
+                    "kind": "property",
+                    "readable": static.fget is not None,
+                    "writable": static.fset is not None,
+                    "return_annotation": _annotation_text(
+                        inspect.signature(static.fget).return_annotation if static.fget is not None else inspect.Signature.empty
+                    ),
+                }
+            )
+            continue
+        if isinstance(static, staticmethod):
+            members.append({"name": name, "kind": "staticmethod", **_signature_fact(static.__func__)})
+            continue
+        if isinstance(static, classmethod):
+            members.append({"name": name, "kind": "classmethod", **_signature_fact(static.__func__, drop_first=True)})
+            continue
+        if inspect.isfunction(static) or inspect.ismethoddescriptor(static):
+            members.append({"name": name, "kind": "method", **_signature_fact(static, drop_first=True)})
+    return members
+
+
+def _validation_error(code: str, diagnostic: str) -> dict[str, Any]:
+    return {"category": "validation", "code": code, "diagnostic": diagnostic[:240]}
+
+
+def _observe_constructor(class_value: type[Any], arguments: list[Any], keywords: dict[str, Any], code: str) -> dict[str, Any]:
+    try:
+        class_value(*arguments, **keywords)
+    except Exception as error:  # noqa: BLE001 - exact pinned behavior is captured as data
+        return {
+            "input": normalize_contract_value({"arguments": arguments, "keywords": keywords}),
+            "outcome": "rejected",
+            "error": _validation_error(code, str(error)),
+        }
+    return {
+        "input": normalize_contract_value({"arguments": arguments, "keywords": keywords}),
+        "outcome": "accepted",
+    }
+
+
+def _class_validation_boundaries(class_value: type[Any]) -> list[dict[str, Any]]:
+    name = class_value.__name__
+    if name == "AdaptiveBackoff":
+        return [
+            _observe_constructor(class_value, [], {"initial": 5.0, "multiplier": 3.0, "maximum": 300.0}, "register_invalid"),
+            _observe_constructor(class_value, [], {"initial": 0.0}, "register_invalid"),
+            _observe_constructor(class_value, [], {"multiplier": 0.5}, "register_invalid"),
+        ]
+    if name == "PollRateLimiter":
+        return [
+            _observe_constructor(class_value, [0.0], {}, "register_invalid"),
+            _observe_constructor(class_value, [-1.0], {}, "register_invalid"),
+        ]
+    if name == "IdmModbusClient":
+        return [
+            _observe_constructor(class_value, ["example.invalid"], {}, "register_invalid"),
+            _observe_constructor(class_value, [""], {}, "register_invalid"),
+            _observe_constructor(class_value, ["example.invalid"], {"port": 0}, "register_invalid"),
+            _observe_constructor(class_value, ["example.invalid"], {"slave_id": 248}, "register_invalid"),
+        ]
+    if name == "RegisterDef":
+        client_module = sys.modules[class_value.__module__]
+        datatype = client_module.DataType.UCHAR
+        return [
+            _observe_constructor(class_value, [0, datatype, "boundary"], {}, "register_invalid"),
+            _observe_constructor(class_value, [-1, datatype, "boundary"], {}, "register_invalid"),
+            _observe_constructor(class_value, [1, datatype, "boundary"], {"multiplier": 0}, "register_invalid"),
+        ]
+    return [
+        {
+            "kind": "signature_acceptance_domain",
+            "parameters": [parameter["name"] for parameter in _class_constructor_fact(class_value)["parameters"]],
+        }
+    ]
+
+
+def _public_fixtures(manifest: Mapping[str, Any], checkout: Path, package: Any) -> tuple[dict[str, Any], dict[str, Any]]:
+    groups = _source_groups(checkout)
+    public_names = list(package.__all__)
+    if len(public_names) != 89 or len(set(public_names)) != 89:
+        fail("fixture_invalid", "pinned package must expose exactly 89 unique symbols")
+    symbols: list[dict[str, Any]] = []
+    aliases: list[dict[str, str]] = []
+    classes_by_identity: dict[tuple[str, str], dict[str, Any]] = {}
+    for name in public_names:
+        if name not in groups or not hasattr(package, name):
+            fail("fixture_invalid", f"public symbol is not source-backed/importable: {name}")
+        group = groups[name]
+        boundary = "./web" if group == "web" else "."
+        value = getattr(package, name)
+        python_kind = "class" if inspect.isclass(value) else "function" if callable(value) else "constant"
+        symbols.append(
+            {
+                "name": name,
+                "source_group": group,
+                "export_boundary": boundary,
+                "python_kind": python_kind,
+            }
+        )
+        actual_name = getattr(value, "__name__", name)
+        if isinstance(actual_name, str) and actual_name != name:
+            aliases.append({"name": name, "target": actual_name})
+        if inspect.isclass(value):
+            identity = (value.__module__, value.__qualname__)
+            entry = classes_by_identity.get(identity)
+            if entry is None:
+                entry = {
+                    "python_module": value.__module__,
+                    "python_name": value.__qualname__,
+                    "source_group": group,
+                    "public_names": [],
+                    "constructor": _class_constructor_fact(value),
+                    "members": _class_members(value),
+                    "validation_boundaries": _class_validation_boundaries(value),
+                }
+                classes_by_identity[identity] = entry
+            entry["public_names"].append(name)
+    root_count = sum(symbol["export_boundary"] == "." for symbol in symbols)
+    web_count = len(symbols) - root_count
+    if (root_count, web_count) != (59, 30):
+        fail("fixture_invalid", f"unexpected public ownership split: {root_count}/{web_count}")
+    public_api = _fixture_root(
+        manifest,
+        counts={"total": len(symbols), "root": root_count, "web": web_count},
+        symbols=symbols,
+        aliases=aliases,
+    )
+    public_classes = _fixture_root(
+        manifest,
+        classes=list(classes_by_identity.values()),
+    )
+    forbidden = {"typescript_symbol", "representation", "owner_phase", "export_path", "status", "mapping_evidence"}
+    if forbidden.intersection(_recursive_keys(public_classes)):
+        fail("fixture_invalid", "public class facts contain Node-only mapping keys")
+    return public_api, public_classes
+
+
+def _recursive_keys(value: Any) -> set[str]:
+    keys: set[str] = set()
+    if isinstance(value, dict):
+        for key, item in value.items():
+            keys.add(str(key))
+            keys.update(_recursive_keys(item))
+    elif isinstance(value, list):
+        for item in value:
+            keys.update(_recursive_keys(item))
+    return keys
+
+
+def _success_case(identifier: str, operation: str, inputs: Any, callback: Any) -> dict[str, Any]:
+    return {
+        "id": identifier,
+        "operation": operation,
+        "input": normalize_contract_value(inputs),
+        "expected_result": normalize_contract_value(callback()),
+    }
+
+
+def _error_case(identifier: str, operation: str, inputs: Any, code: str, callback: Any) -> dict[str, Any]:
+    try:
+        callback()
+    except Exception as error:  # noqa: BLE001 - exact rejection is expected fixture data
+        return {
+            "id": identifier,
+            "operation": operation,
+            "input": normalize_contract_value(inputs),
+            "expected_error": _validation_error(code, str(error)),
+        }
+    fail("fixture_invalid", f"expected Python rejection did not occur: {identifier}")
+
+
+def _codec_fixture(manifest: Mapping[str, Any], client_module: Any) -> dict[str, Any]:
+    codec = client_module.ModbusCodec
+    datatype = client_module.DataType
+    register_def = client_module.RegisterDef
+    client = client_module.IdmModbusClient("example.invalid")
+    primitive: list[dict[str, Any]] = [
+        _success_case("primitive_float32_low_word_first", "decode_float32", {"words": [0, 16256], "swapped": False}, lambda: codec.decode_float32([0, 16256])),
+        _success_case("primitive_float32_swapped", "decode_float32", {"words": [16256, 0], "swapped": True}, lambda: codec.decode_float32([16256, 0], swapped=True)),
+        _success_case("primitive_float32_negative_zero", "encode_decode_float32", {"value": -0.0}, lambda: {"words": codec.encode_float32(-0.0), "value": codec.decode_float32(codec.encode_float32(-0.0))}),
+        _success_case("primitive_float32_nan", "encode_decode_float32", {"value": float("nan")}, lambda: {"words": codec.encode_float32(float("nan")), "value": codec.decode_float32(codec.encode_float32(float("nan")))}),
+        _success_case("primitive_float32_positive_infinity", "encode_decode_float32", {"value": float("inf")}, lambda: {"words": codec.encode_float32(float("inf")), "value": codec.decode_float32(codec.encode_float32(float("inf")))}),
+        _success_case("primitive_float32_negative_infinity", "encode_decode_float32", {"value": float("-inf")}, lambda: {"words": codec.encode_float32(float("-inf")), "value": codec.decode_float32(codec.encode_float32(float("-inf")))}),
+        _success_case("primitive_float32_finite_max", "encode_decode_float32", {"value": 3.4028234663852886e38}, lambda: codec.decode_float32(codec.encode_float32(3.4028234663852886e38))),
+        _success_case("primitive_float32_subnormal", "encode_decode_float32", {"value": 1.401298464324817e-45}, lambda: codec.decode_float32(codec.encode_float32(1.401298464324817e-45))),
+        _error_case("primitive_float32_overflow", "encode_float32", {"value": 3.5e38}, "codec_float_overflow", lambda: codec.encode_float32(3.5e38)),
+        _error_case("primitive_float32_word_below_range", "decode_float32", {"words": [-1, 0]}, "codec_word_range", lambda: codec.decode_float32([-1, 0])),
+        _error_case("primitive_float32_word_above_range", "decode_float32", {"words": [65536, 0]}, "codec_word_range", lambda: codec.decode_float32([65536, 0])),
+        _success_case("primitive_int8_boundaries", "int8", {"values": [-128, 127]}, lambda: [{"value": value, "word": codec.encode_int8(value), "decoded": codec.decode_int8(codec.encode_int8(value))} for value in (-128, 127)]),
+        _success_case("primitive_int8_masking", "decode_int8", {"words": [-1, 511]}, lambda: [codec.decode_int8(-1), codec.decode_int8(511)]),
+        _error_case("primitive_int8_below_range", "encode_int8", {"value": -129}, "codec_int8_range", lambda: codec.encode_int8(-129)),
+        _error_case("primitive_int8_above_range", "encode_int8", {"value": 128}, "codec_int8_range", lambda: codec.encode_int8(128)),
+        _success_case("primitive_int16_boundaries", "int16", {"values": [-32768, 32767]}, lambda: [{"value": value, "word": codec.encode_int16(value), "decoded": codec.decode_int16(codec.encode_int16(value))} for value in (-32768, 32767)]),
+        _success_case("primitive_int16_masking", "decode_int16", {"words": [-1, 131071]}, lambda: [codec.decode_int16(-1), codec.decode_int16(131071)]),
+        _error_case("primitive_int16_below_range", "encode_int16", {"value": -32769}, "codec_int16_range", lambda: codec.encode_int16(-32769)),
+        _error_case("primitive_int16_above_range", "encode_int16", {"value": 32768}, "codec_int16_range", lambda: codec.encode_int16(32768)),
+    ]
+
+    def reg(kind: Any, name: str, **kwargs: Any) -> Any:
+        return register_def(1, kind, name, **kwargs)
+
+    float_reg = reg(datatype.FLOAT, "float_case")
+    uchar_reg = reg(datatype.UCHAR, "uchar_case")
+    int8_reg = reg(datatype.INT8, "int8_case")
+    int16_reg = reg(datatype.INT16, "int16_case")
+    uint16_reg = reg(datatype.UINT16, "uint16_case")
+    bool_reg = reg(datatype.BOOL, "bool_case")
+    bitflag_reg = reg(datatype.BITFLAG, "bitflag_case")
+    register: list[dict[str, Any]] = [
+        _success_case("register_float_extra_word", "decode_value", {"datatype": "FLOAT", "words": [0, 16256, 65535]}, lambda: client.decode_value([0, 16256, 65535], float_reg)),
+        _error_case("register_float_short", "decode_value", {"datatype": "FLOAT", "words": [0]}, "codec_input_short", lambda: client.decode_value([0], float_reg)),
+        _error_case("register_empty", "decode_value", {"datatype": "UCHAR", "words": []}, "codec_input_empty", lambda: client.decode_value([], uchar_reg)),
+        _success_case("register_float_nan_unavailable", "decode_value", {"datatype": "FLOAT", "words": codec.encode_float32(float("nan"))}, lambda: client.decode_value(codec.encode_float32(float("nan")), float_reg)),
+        _success_case("register_float_negative_zero", "decode_value", {"datatype": "FLOAT", "words": codec.encode_float32(-0.0)}, lambda: client.decode_value(codec.encode_float32(-0.0), float_reg)),
+        _success_case("register_uchar_masking", "decode_value", {"datatype": "UCHAR", "words": [511]}, lambda: client.decode_value([511], uchar_reg)),
+        _success_case("register_int8_masking", "decode_value", {"datatype": "INT8", "words": [511]}, lambda: client.decode_value([511], int8_reg)),
+        _success_case("register_int16_masking", "decode_value", {"datatype": "INT16", "words": [131071]}, lambda: client.decode_value([131071], int16_reg)),
+        _success_case("register_uint16_direct_first_word", "decode_value", {"datatype": "UINT16", "words": [-1, 2]}, lambda: client.decode_value([-1, 2], uint16_reg)),
+        _success_case("register_bool_masking", "decode_value", {"datatype": "BOOL", "words": [0, 1, 2, 3]}, lambda: [client.decode_value([word], bool_reg) for word in (0, 1, 2, 3)]),
+        _success_case("register_bitflag_masking", "decode_value", {"datatype": "BITFLAG", "words": [511]}, lambda: client.decode_value([511], bitflag_reg)),
+        _success_case("register_integer_tie_rounding", "encode_value", {"datatype": "UCHAR", "values": [2.5, 3.5]}, lambda: [client.encode_value(value, uchar_reg) for value in (2.5, 3.5)]),
+        _success_case("register_multiplier", "encode_decode_value", {"datatype": "UINT16", "multiplier": 0.1, "value": 12.3}, lambda: {"encoded": client.encode_value(12.3, reg(datatype.UINT16, "scaled", multiplier=0.1)), "decoded": client.decode_value([123], reg(datatype.UINT16, "scaled", multiplier=0.1))}),
+        _success_case("register_round_two_digits", "decode_value", {"datatype": "FLOAT", "values": [1.005, 2.675, -1.225]}, lambda: [client.decode_value(codec.encode_float32(value), float_reg) for value in (1.005, 2.675, -1.225)]),
+        _error_case("register_uchar_below_range", "encode_value", {"datatype": "UCHAR", "value": -1}, "codec_uchar_range", lambda: client.encode_value(-1, uchar_reg)),
+        _error_case("register_uint16_above_range", "encode_value", {"datatype": "UINT16", "value": 65536}, "codec_uint16_range", lambda: client.encode_value(65536, uint16_reg)),
+        _error_case("register_float_encode_nonfinite", "encode_value", {"datatype": "FLOAT", "value": float("inf")}, "codec_nonfinite", lambda: client.encode_value(float("inf"), float_reg)),
+    ]
+    return _fixture_root(manifest, layers={"primitive": {"cases": primitive}, "register": {"cases": register}})
+
+
+REGISTER_FIELDS = (
+    "address", "datatype", "name", "unit", "writable", "min_val", "max_val", "enum_options",
+    "multiplier", "register_type", "eeprom_sensitive", "cyclic_required", "cyclic_write_ttl",
+    "binary", "enabled_by_default", "state_class", "icon", "write_only", "write_class",
+    "exclude_from_write", "source", "source_version", "supported_models", "sentinel_values",
+    "last_verified", "size",
+)
+
+
+def _serialize_register(register: Any) -> dict[str, Any]:
+    return {
+        "address": register.address,
+        "datatype": register.datatype.value,
+        "name": register.name,
+        "unit": register.unit,
+        "writable": register.writable,
+        "min_val": register.min_val,
+        "max_val": register.max_val,
+        "enum_options": {str(key): value for key, value in sorted((register.enum_options or {}).items())},
+        "multiplier": register.multiplier,
+        "register_type": register.register_type.value,
+        "eeprom_sensitive": register.eeprom_sensitive,
+        "cyclic_required": register.cyclic_required,
+        "cyclic_write_ttl": register.cyclic_write_ttl,
+        "binary": register.binary,
+        "enabled_by_default": register.enabled_by_default,
+        "state_class": register.state_class,
+        "icon": register.icon,
+        "write_only": register.write_only,
+        "write_class": register.write_class.value,
+        "exclude_from_write": sorted(register.exclude_from_write or []),
+        "source": register.source,
+        "source_version": register.source_version,
+        "supported_models": list(register.supported_models),
+        "sentinel_values": list(register.sentinel_values),
+        "last_verified": register.last_verified,
+        "size": register.size,
+    }
+
+
+def _serialize_map(registers: Mapping[str, Any]) -> dict[str, Any]:
+    return {key: _serialize_register(registers[key]) for key in sorted(registers)}
+
+
+def _builder_rejection(identifier: str, code: str, callback: Any) -> dict[str, Any]:
+    try:
+        callback()
+    except Exception as error:  # noqa: BLE001
+        return {"id": identifier, "error": _validation_error(code, str(error))}
+    fail("fixture_invalid", f"expected builder rejection did not occur: {identifier}")
+
+
+def _model_info(client_module: Any, model: str, circuits: list[str], zones: int, **features: bool) -> Any:
+    return client_module.IdmModelInfo(
+        model_name=model,
+        active_heating_circuits=circuits,
+        zone_modules=zones,
+        has_solar=features.get("solar", False),
+        has_isc=features.get("isc", False),
+        has_pv=features.get("pv", False),
+        has_cascade=features.get("cascade", False),
+    )
+
+
+def _register_fixture(manifest: Mapping[str, Any], checkout: Path, client_module: Any, constants: Any, registers: Any) -> dict[str, Any]:
+    navigator_20 = _model_info(client_module, constants.MODEL_NAVIGATOR_20, ["A"], 0)
+    navigator_10 = _model_info(
+        client_module,
+        constants.MODEL_NAVIGATOR_10,
+        list("ABCDEFG"),
+        10,
+        solar=True,
+        isc=True,
+        pv=True,
+        cascade=True,
+    )
+    current_schema = {
+        "schema_version": 1,
+        "maps": {
+            "default": _serialize_map(registers.build_register_map()),
+            "navigator_10_full": _serialize_map(registers.build_register_map(model_info=navigator_10)),
+            "navigator_20_circuit_a": _serialize_map(registers.build_register_map(model_info=navigator_20)),
+        },
+    }
+    snapshot_path = checkout / "tests" / "fixtures" / "register_schema_v1.json"
+    snapshot_bytes = snapshot_path.read_bytes()
+    try:
+        snapshot = json.loads(snapshot_bytes)
+    except json.JSONDecodeError as error:
+        fail("fixture_invalid", f"upstream register snapshot is invalid: {error}")
+    if current_schema != snapshot:
+        fail("fixture_invalid", "generated register maps differ from pinned upstream snapshot")
+    expected_snapshot_bytes = (json.dumps(current_schema, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+    if snapshot_bytes != expected_snapshot_bytes:
+        fail("fixture_invalid", "pinned register snapshot bytes are not canonical")
+    expected_counts = {"default": 267, "navigator_10_full": 587, "navigator_20_circuit_a": 105}
+    if {name: len(values) for name, values in current_schema["maps"].items()} != expected_counts:
+        fail("fixture_invalid", "pinned register map counts changed")
+    for values in current_schema["maps"].values():
+        for register in values.values():
+            if tuple(register) != REGISTER_FIELDS:
+                fail("fixture_invalid", "register serialization does not contain the exact 26 fields")
+
+    circuits = []
+    for letter in "ABCDEFG":
+        built = registers.get_heating_circuit_registers(letter)
+        circuits.append(
+            {
+                "letter": letter,
+                "register_count": len(built),
+                "addresses": {name: definition.address for name, definition in sorted(built.items())},
+            }
+        )
+    zones = []
+    for zone in range(1, 11):
+        built = registers.get_zone_module_registers(zone, room_count=6)
+        zones.append(
+            {
+                "zone": zone,
+                "register_count": len(built),
+                "base_address": built[f"zm{zone}_mode_heat_cool"].address,
+                "last_address": max(item.address + item.size - 1 for item in built.values()),
+            }
+        )
+    rooms = []
+    for count in range(1, 9):
+        built = registers.get_zone_module_registers(1, room_count=count)
+        rooms.append(
+            {
+                "room_count": count,
+                "register_count": len(built),
+                "last_relay_address": built[f"zm1_room{count}_relay"].address,
+            }
+        )
+    model_summaries = []
+    for model_name in (
+        constants.MODEL_NAVIGATOR_10,
+        constants.MODEL_NAVIGATOR_20,
+        constants.MODEL_NAVIGATOR_PRO,
+        constants.MODEL_UNKNOWN,
+    ):
+        info = _model_info(client_module, model_name, ["A"], 0)
+        built = registers.build_register_map(model_info=info)
+        model_summaries.append(
+            {
+                "model_name": model_name,
+                "register_count": len(built),
+                "includes_navigator_10_block": "power_limit_hp" in built,
+                "includes_circuit_a": "hc_a_flow_temp" in built,
+            }
+        )
+    feature_summaries = []
+    for feature in ("solar", "isc", "pv", "cascade"):
+        base_info = _model_info(client_module, constants.MODEL_NAVIGATOR_10, [], 0)
+        feature_info = _model_info(client_module, constants.MODEL_NAVIGATOR_10, [], 0, **{feature: True})
+        base = registers.build_register_map(model_info=base_info)
+        featured = registers.build_register_map(model_info=feature_info)
+        feature_summaries.append(
+            {
+                "feature": feature,
+                "added_registers": sorted(set(featured) - set(base)),
+            }
+        )
+    for feature, info in (
+        ("heating_circuits", _model_info(client_module, constants.MODEL_NAVIGATOR_10, ["A"], 0)),
+        ("zone_modules", _model_info(client_module, constants.MODEL_NAVIGATOR_10, [], 1)),
+    ):
+        base = registers.build_register_map(model_info=_model_info(client_module, constants.MODEL_NAVIGATOR_10, [], 0))
+        featured = registers.build_register_map(model_info=info)
+        feature_summaries.append({"feature": feature, "added_registers": sorted(set(featured) - set(base))})
+
+    precedence_info = _model_info(client_module, constants.MODEL_NAVIGATOR_20, ["A"], 0)
+    precedence_map = registers.build_register_map(
+        model_info=precedence_info,
+        circuits=["G"],
+        zone_modules=10,
+        rooms_per_zone=8,
+    )
+    detection = [_serialize_register(register) for register in registers.get_detection_registers()]
+    registry_surface = {
+        "constructor": _class_constructor_fact(registers.RegisterRegistry),
+        "members": _class_members(registers.RegisterRegistry),
+    }
+    builder_contract = {
+        "circuits": circuits,
+        "invalid_circuits": [
+            _builder_rejection("empty", "circuit_invalid", lambda: registers.get_heating_circuit_registers("")),
+            _builder_rejection("multi_letter", "circuit_invalid", lambda: registers.get_heating_circuit_registers("AB")),
+            _builder_rejection("outside_A_G", "circuit_invalid", lambda: registers.get_heating_circuit_registers("H")),
+        ],
+        "zones": zones,
+        "invalid_zones": [
+            _builder_rejection("zone_zero", "zone_invalid", lambda: registers.get_zone_module_registers(0)),
+            _builder_rejection("zone_eleven", "zone_invalid", lambda: registers.get_zone_module_registers(11)),
+        ],
+        "rooms": rooms,
+        "invalid_rooms": [
+            _builder_rejection("room_zero", "room_invalid", lambda: registers.get_zone_module_registers(1, room_count=0)),
+            _builder_rejection("room_nine", "room_invalid", lambda: registers.get_zone_module_registers(1, room_count=9)),
+        ],
+        "models": model_summaries,
+        "features": feature_summaries,
+        "model_info_precedence": {
+            "requested_manual_circuit": "G",
+            "requested_manual_zones": 10,
+            "actual_circuits": [letter for letter in "ABCDEFG" if f"hc_{letter.lower()}_flow_temp" in precedence_map],
+            "actual_zone_modules": sum(f"zm{zone}_mode_heat_cool" in precedence_map for zone in range(1, 11)),
+        },
+        "lookup_defaults": {
+            "core_keys": sorted(registers.CORE_REGISTERS),
+            "get_all_default_count": len(registers.get_all_registers()),
+            "full_default_count": len(registers.build_register_map()),
+        },
+        "detection_registers": detection,
+        "registry_surface": registry_surface,
+    }
+    return _fixture_root(
+        manifest,
+        upstream_snapshot={
+            "path": "tests/fixtures/register_schema_v1.json",
+            "sha256": hashlib.sha256(snapshot_bytes).hexdigest(),
+        },
+        maps=current_schema["maps"],
+        documented_overlaps=[
+            {"address": 1393, "names": ["hc_a_mode", "humidity_sensor"]},
+            {"address": 1442, "names": ["hc_a_heating_limit", "hc_g_heating_curve"]},
+            {"address": 1484, "names": ["hc_a_cooling_limit", "hc_g_room_setpoint_cool_eco"]},
+        ],
+        builder_contract=builder_contract,
+    )
+
+
+def _scenario(name: str, configuration: Any, operation: Any, expected_result: Any) -> dict[str, Any]:
+    return {
+        "name": name,
+        "configuration": configuration,
+        "transport_responses": [],
+        "clock": [],
+        "operation": operation,
+        "expected_result": expected_result,
+        "expected_requests": [],
+        "expected_state": {},
+    }
+
+
+def _behavior_fixture(manifest: Mapping[str, Any], client_module: Any, registers: Any) -> dict[str, Any]:
+    codec = client_module.ModbusCodec
+    scenarios = [
+        _scenario(
+            "normalize_exceptional_numbers",
+            {},
+            {"kind": "normalize_value", "values": ["NaN", "+Infinity", "-Infinity", "-0"]},
+            normalize_contract_value([float("nan"), float("inf"), float("-inf"), -0.0]),
+        ),
+        _scenario(
+            "primitive_float_low_word_first",
+            {},
+            {"kind": "codec_encode_float32", "value": 1.0},
+            codec.encode_float32(1.0),
+        ),
+        _scenario(
+            "invalid_circuit_boundary",
+            {"circuits": ["H"]},
+            {"kind": "build_register_map"},
+            _builder_rejection("outside_A_G", "circuit_invalid", lambda: registers.build_register_map(circuits=["H"]))["error"],
+        ),
+        _scenario(
+            "documented_humidity_overlap",
+            {"circuits": list("ABCDEFG")},
+            {"kind": "register_overlap", "address": 1393},
+            {
+                "humidity": {"address": 1392, "count": 2},
+                "heating_circuit_mode": {"address": 1393, "count": 1},
+            },
+        ),
+    ]
+    return _fixture_root(manifest, operation_kinds=["normalize_value", "codec_encode_float32", "build_register_map", "register_overlap"], scenarios=scenarios)
+
+
+def generate_fixtures(manifest: Mapping[str, Any], checkout: Path) -> dict[Path, bytes]:
+    # This is the first upstream execution point. Every caller reaches it only
+    # after ``verify_checkout`` and output-root validation have succeeded.
+    sys.path.insert(0, os.fspath(checkout))
+    try:
+        import idm_heatpump  # type: ignore[import-not-found]
+        from idm_heatpump import client as client_module  # type: ignore[import-not-found]
+        from idm_heatpump import const as constants  # type: ignore[import-not-found]
+        from idm_heatpump import registers  # type: ignore[import-not-found]
+
+        public_api, public_classes = _public_fixtures(manifest, checkout, idm_heatpump)
+        fixtures = {
+            OUTPUT_PATHS[0]: public_api,
+            OUTPUT_PATHS[1]: public_classes,
+            OUTPUT_PATHS[2]: _codec_fixture(manifest, client_module),
+            OUTPUT_PATHS[3]: _register_fixture(manifest, checkout, client_module, constants, registers),
+            OUTPUT_PATHS[4]: _behavior_fixture(manifest, client_module, registers),
+            OUTPUT_PATHS[5]: _fixture_root(
+                manifest,
+                evidence_kind="deferred_marker",
+                deferred_to_phase=4,
+                release_blocking=True,
+                reason="Navigator 10 WebSocket and Navigator 2.0 HTTP parity require Phase 4 executable evidence",
+                scenarios=[],
+            ),
+        }
+        return {path: canonical_json_bytes(value) for path, value in fixtures.items()}
+    finally:
+        try:
+            sys.path.remove(os.fspath(checkout))
+        except ValueError:
+            pass
+
+
+def write_fixtures(artifacts: Mapping[Path, bytes], output_root: Path) -> None:
+    if set(artifacts) != set(OUTPUT_PATHS):
+        fail("fixture_invalid", "generator did not produce the exact output allowlist")
+    for relative_path in OUTPUT_PATHS:
+        destination = output_root / relative_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(artifacts[relative_path])
+
+
 def parse_arguments(arguments: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", required=True)
@@ -304,10 +988,12 @@ def main(arguments: list[str] | None = None) -> int:
     checkout = verify_checkout(manifest, Path(args.upstream_dir))
     output_root = validate_output_root(args.output_root, repository_root)
 
-    # The import boundary deliberately remains below every admission check.
-    # Fixture extraction is added by the next task.
-    del checkout, output_root
-    fail("fixture_invalid", "semantic fixture extraction is not implemented")
+    artifacts = generate_fixtures(manifest, checkout)
+    if args.check:
+        fail("fixture_invalid", "check mode is implemented by the next task")
+    write_fixtures(artifacts, output_root)
+    print(f"Generated {len(artifacts)} pinned semantic fixtures at {output_root}")
+    return 0
 
 
 if __name__ == "__main__":

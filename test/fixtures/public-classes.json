@@ -1,0 +1,4156 @@
+{
+  "baseline": {
+    "git_commit": "ad121ebf34a5f5e37204371c026927d77efcd15c",
+    "git_tag": "v0.7.6",
+    "parity_schema_version": 1,
+    "python_package": "idm-heatpump-api",
+    "python_version": "0.7.6",
+    "repository": "https://github.com/Xerolux/idm-heatpump-api"
+  },
+  "classes": [
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_POSITIONAL",
+            "name": "args"
+          },
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs"
+          }
+        ],
+        "return_annotation": null,
+        "signature": "(self, /, *args, **kwargs)",
+        "source": "inherited_or_declared_init"
+      },
+      "members": [],
+      "public_names": [
+        "AuthenticationError",
+        "IdmWebAuthenticationError"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebAuthenticationError",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "args",
+            "kwargs"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_POSITIONAL",
+            "name": "args"
+          },
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs"
+          }
+        ],
+        "return_annotation": null,
+        "signature": "(self, /, *args, **kwargs)",
+        "source": "inherited_or_declared_init"
+      },
+      "members": [],
+      "public_names": [
+        "ConnectionError",
+        "IdmWebConnectionError"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebConnectionError",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "args",
+            "kwargs"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_POSITIONAL",
+            "name": "args"
+          },
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs"
+          }
+        ],
+        "return_annotation": null,
+        "signature": "(self, /, *args, **kwargs)",
+        "source": "inherited_or_declared_init"
+      },
+      "members": [],
+      "public_names": [
+        "CsrfError",
+        "IdmWebCsrfError"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebCsrfError",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "args",
+            "kwargs"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "float",
+            "default": {
+              "kind": "value",
+              "value": 5.0
+            },
+            "kind": "KEYWORD_ONLY",
+            "name": "initial"
+          },
+          {
+            "annotation": "float",
+            "default": {
+              "kind": "value",
+              "value": 3.0
+            },
+            "kind": "KEYWORD_ONLY",
+            "name": "multiplier"
+          },
+          {
+            "annotation": "float",
+            "default": {
+              "kind": "value",
+              "value": 300.0
+            },
+            "kind": "KEYWORD_ONLY",
+            "name": "maximum"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(*, initial: 'float' = 5.0, multiplier: 'float' = 3.0, maximum: 'float' = 300.0) -> 'None'",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "kind": "method",
+          "name": "next_delay",
+          "parameters": [],
+          "return_annotation": "float",
+          "signature": "(self) -> 'float'"
+        },
+        {
+          "kind": "method",
+          "name": "reset",
+          "parameters": [],
+          "return_annotation": "None",
+          "signature": "(self) -> 'None'"
+        }
+      ],
+      "public_names": [
+        "AdaptiveBackoff"
+      ],
+      "python_module": "idm_heatpump.client",
+      "python_name": "AdaptiveBackoff",
+      "source_group": "client",
+      "validation_boundaries": [
+        {
+          "input": {
+            "arguments": [],
+            "keywords": {
+              "initial": 5.0,
+              "maximum": 300.0,
+              "multiplier": 3.0
+            }
+          },
+          "outcome": "accepted"
+        },
+        {
+          "error": {
+            "category": "validation",
+            "code": "register_invalid",
+            "diagnostic": "initial backoff must be positive"
+          },
+          "input": {
+            "arguments": [],
+            "keywords": {
+              "initial": 0.0
+            }
+          },
+          "outcome": "rejected"
+        },
+        {
+          "error": {
+            "category": "validation",
+            "code": "register_invalid",
+            "diagnostic": "backoff multiplier must be >= 1"
+          },
+          "input": {
+            "arguments": [],
+            "keywords": {
+              "multiplier": 0.5
+            }
+          },
+          "outcome": "rejected"
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_POSITIONAL",
+            "name": "values"
+          }
+        ],
+        "return_annotation": null,
+        "signature": "(*values)",
+        "source": "class_signature"
+      },
+      "members": [],
+      "public_names": [
+        "DataType"
+      ],
+      "python_module": "idm_heatpump.client",
+      "python_name": "DataType",
+      "source_group": "client",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "values"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": true
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "enable_nav2_web"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": true
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "enable_nav10_ws"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": false
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "enable_experimental_features"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": true
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "enable_write_support"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": false
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "enable_debug_endpoints"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(enable_nav2_web: 'bool' = True, enable_nav10_ws: 'bool' = True, enable_experimental_features: 'bool' = False, enable_write_support: 'bool' = True, enable_debug_endpoints: 'bool' = False) -> None",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": false
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "enable_debug_endpoints"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": false
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "enable_experimental_features"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": true
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "enable_nav10_ws"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": true
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "enable_nav2_web"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": true
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "enable_write_support"
+        }
+      ],
+      "public_names": [
+        "FeatureFlags"
+      ],
+      "python_module": "idm_heatpump.client",
+      "python_name": "FeatureFlags",
+      "source_group": "client",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "enable_nav2_web",
+            "enable_nav10_ws",
+            "enable_experimental_features",
+            "enable_write_support",
+            "enable_debug_endpoints"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "navigator_type"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "modbus_connected"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "firmware"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "last_error"
+          },
+          {
+            "annotation": "tuple[str, ...]",
+            "default": {
+              "kind": "value",
+              "value": []
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "permanently_failed_registers"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": false
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "connection_suspect"
+          },
+          {
+            "annotation": "tuple[str, ...]",
+            "default": {
+              "kind": "value",
+              "value": []
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "batch_unsafe_registers"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(navigator_type: 'str', modbus_connected: 'bool', firmware: 'str | None' = None, last_error: 'str | None' = None, permanently_failed_registers: 'tuple[str, ...]' = (), connection_suspect: 'bool' = False, batch_unsafe_registers: 'tuple[str, ...]' = ()) -> None",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "annotation": "tuple[str, ...]",
+          "default": {
+            "kind": "value",
+            "value": []
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "batch_unsafe_registers"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": false
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "connection_suspect"
+        },
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "firmware"
+        },
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "last_error"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "modbus_connected"
+        },
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "navigator_type"
+        },
+        {
+          "annotation": "tuple[str, ...]",
+          "default": {
+            "kind": "value",
+            "value": []
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "permanently_failed_registers"
+        }
+      ],
+      "public_names": [
+        "IdmClientDiagnostics"
+      ],
+      "python_module": "idm_heatpump.client",
+      "python_name": "IdmClientDiagnostics",
+      "source_group": "client",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "navigator_type",
+            "modbus_connected",
+            "firmware",
+            "last_error",
+            "permanently_failed_registers",
+            "connection_suspect",
+            "batch_unsafe_registers"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "host"
+          },
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "pin"
+          },
+          {
+            "annotation": "int",
+            "default": {
+              "kind": "value",
+              "value": 61220
+            },
+            "kind": "KEYWORD_ONLY",
+            "name": "port"
+          },
+          {
+            "annotation": "float",
+            "default": {
+              "kind": "value",
+              "value": 8.0
+            },
+            "kind": "KEYWORD_ONLY",
+            "name": "timeout"
+          },
+          {
+            "annotation": "float",
+            "default": {
+              "kind": "value",
+              "value": 0.05
+            },
+            "kind": "KEYWORD_ONLY",
+            "name": "request_delay"
+          },
+          {
+            "annotation": "float",
+            "default": {
+              "kind": "value",
+              "value": 0.25
+            },
+            "kind": "KEYWORD_ONLY",
+            "name": "reconnect_base_delay"
+          },
+          {
+            "annotation": "float",
+            "default": {
+              "kind": "value",
+              "value": 5.0
+            },
+            "kind": "KEYWORD_ONLY",
+            "name": "reconnect_max_delay"
+          },
+          {
+            "annotation": "int",
+            "default": {
+              "kind": "value",
+              "value": 3
+            },
+            "kind": "KEYWORD_ONLY",
+            "name": "max_reconnect_attempts"
+          },
+          {
+            "annotation": "Any | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "KEYWORD_ONLY",
+            "name": "session"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(host: 'str', pin: 'str', *, port: 'int' = 61220, timeout: 'float' = 8.0, request_delay: 'float' = 0.05, reconnect_base_delay: 'float' = 0.25, reconnect_max_delay: 'float' = 5.0, max_reconnect_attempts: 'int' = 3, session: 'Any | None' = None) -> 'None'",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "kind": "method",
+          "name": "close",
+          "parameters": [],
+          "return_annotation": "None",
+          "signature": "(self) -> 'None'"
+        },
+        {
+          "kind": "method",
+          "name": "connect",
+          "parameters": [],
+          "return_annotation": "None",
+          "signature": "(self) -> 'None'"
+        },
+        {
+          "kind": "method",
+          "name": "diagnostics",
+          "parameters": [],
+          "return_annotation": "IdmWebDiagnostics",
+          "signature": "(self) -> 'IdmWebDiagnostics'"
+        },
+        {
+          "kind": "method",
+          "name": "get_cached_data",
+          "parameters": [],
+          "return_annotation": "IdmWebData | None",
+          "signature": "(self) -> 'IdmWebData | None'"
+        },
+        {
+          "kind": "property",
+          "name": "model_name",
+          "readable": true,
+          "return_annotation": "str",
+          "writable": false
+        },
+        {
+          "kind": "method",
+          "name": "read_data",
+          "parameters": [
+            {
+              "annotation": "tuple[str, ...]",
+              "default": {
+                "kind": "value",
+                "value": [
+                  "4768",
+                  "4775",
+                  "4782",
+                  "4789",
+                  "4754",
+                  "13259"
+                ]
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "setting_ids"
+            },
+            {
+              "annotation": "bool",
+              "default": {
+                "kind": "value",
+                "value": false
+              },
+              "kind": "KEYWORD_ONLY",
+              "name": "include_raw"
+            }
+          ],
+          "return_annotation": "IdmWebData",
+          "signature": "(self, setting_ids: 'tuple[str, ...]' = ('4768', '4775', '4782', '4789', '4754', '13259'), *, include_raw: 'bool' = False) -> 'IdmWebData'"
+        },
+        {
+          "kind": "method",
+          "name": "read_notifications",
+          "parameters": [
+            {
+              "annotation": "bool",
+              "default": {
+                "kind": "value",
+                "value": false
+              },
+              "kind": "KEYWORD_ONLY",
+              "name": "include_raw"
+            }
+          ],
+          "return_annotation": "IdmWebNotifications",
+          "signature": "(self, *, include_raw: 'bool' = False) -> 'IdmWebNotifications'"
+        },
+        {
+          "kind": "method",
+          "name": "read_statistics",
+          "parameters": [
+            {
+              "annotation": "int",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "statistic_type"
+            },
+            {
+              "annotation": "int",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "period_type"
+            },
+            {
+              "annotation": "str",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "prefix"
+            },
+            {
+              "annotation": "bool",
+              "default": {
+                "kind": "value",
+                "value": false
+              },
+              "kind": "KEYWORD_ONLY",
+              "name": "include_raw"
+            }
+          ],
+          "return_annotation": "IdmWebData",
+          "signature": "(self, statistic_type: 'int', period_type: 'int', prefix: 'str', *, include_raw: 'bool' = False) -> 'IdmWebData'"
+        }
+      ],
+      "public_names": [
+        "IdmNavigator10WebClient"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmNavigator10WebClient",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "host",
+            "pin",
+            "port",
+            "timeout",
+            "request_delay",
+            "reconnect_base_delay",
+            "reconnect_max_delay",
+            "max_reconnect_attempts",
+            "session"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "host"
+          },
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "pin"
+          },
+          {
+            "annotation": "float",
+            "default": {
+              "kind": "value",
+              "value": 8.0
+            },
+            "kind": "KEYWORD_ONLY",
+            "name": "timeout"
+          },
+          {
+            "annotation": "Any | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "KEYWORD_ONLY",
+            "name": "session"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(host: 'str', pin: 'str', *, timeout: 'float' = 8.0, session: 'Any | None' = None) -> 'None'",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "kind": "method",
+          "name": "capabilities",
+          "parameters": [],
+          "return_annotation": "dict[str, bool]",
+          "signature": "(self) -> 'dict[str, bool]'"
+        },
+        {
+          "kind": "method",
+          "name": "close",
+          "parameters": [],
+          "return_annotation": "None",
+          "signature": "(self) -> 'None'"
+        },
+        {
+          "kind": "method",
+          "name": "connect",
+          "parameters": [],
+          "return_annotation": "None",
+          "signature": "(self) -> 'None'"
+        },
+        {
+          "kind": "method",
+          "name": "detect",
+          "parameters": [],
+          "return_annotation": "bool",
+          "signature": "(self) -> 'bool'"
+        },
+        {
+          "kind": "method",
+          "name": "diagnostics",
+          "parameters": [],
+          "return_annotation": "IdmWebDiagnostics",
+          "signature": "(self) -> 'IdmWebDiagnostics'"
+        },
+        {
+          "kind": "method",
+          "name": "get_cached_data",
+          "parameters": [],
+          "return_annotation": "IdmWebData | None",
+          "signature": "(self) -> 'IdmWebData | None'"
+        },
+        {
+          "kind": "method",
+          "name": "login",
+          "parameters": [],
+          "return_annotation": "None",
+          "signature": "(self) -> 'None'"
+        },
+        {
+          "kind": "property",
+          "name": "model_name",
+          "readable": true,
+          "return_annotation": "str",
+          "writable": false
+        },
+        {
+          "kind": "method",
+          "name": "read_data",
+          "parameters": [
+            {
+              "annotation": "tuple[str, ...]",
+              "default": {
+                "kind": "value",
+                "value": [
+                  "/data/settings.php",
+                  "/data/heatpump.php",
+                  "/data/info.php",
+                  "/data/state.php",
+                  "/data/status.php",
+                  "/data/values.php"
+                ]
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "paths"
+            },
+            {
+              "annotation": "bool",
+              "default": {
+                "kind": "value",
+                "value": false
+              },
+              "kind": "KEYWORD_ONLY",
+              "name": "include_raw"
+            }
+          ],
+          "return_annotation": "IdmWebData",
+          "signature": "(self, paths: 'tuple[str, ...]' = ('/data/settings.php', '/data/heatpump.php', '/data/info.php', '/data/state.php', '/data/status.php', '/data/values.php'), *, include_raw: 'bool' = False) -> 'IdmWebData'"
+        },
+        {
+          "kind": "method",
+          "name": "read_extra_data",
+          "parameters": [],
+          "return_annotation": "dict[str, Any]",
+          "signature": "(self) -> 'dict[str, Any]'"
+        }
+      ],
+      "public_names": [
+        "IdmNavigator20WebClient"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmNavigator20WebClient",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "host",
+            "pin",
+            "timeout",
+            "session"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "model_name"
+          },
+          {
+            "annotation": "list[str]",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "active_heating_circuits"
+          },
+          {
+            "annotation": "int",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "zone_modules"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "has_solar"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "has_isc"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "has_pv"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "has_cascade"
+          },
+          {
+            "annotation": "set[str]",
+            "default": {
+              "kind": "python_literal",
+              "text": "<factory>",
+              "type": "_HAS_DEFAULT_FACTORY_CLASS"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "features"
+          },
+          {
+            "annotation": "float | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "firmware_version"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(model_name: 'str', active_heating_circuits: 'list[str]', zone_modules: 'int', has_solar: 'bool', has_isc: 'bool', has_pv: 'bool', has_cascade: 'bool', features: 'set[str]' = <factory>, firmware_version: 'float | None' = None) -> None",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "annotation": "list[str]",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "active_heating_circuits"
+        },
+        {
+          "annotation": "set[str]",
+          "default": {
+            "kind": "factory",
+            "module": "builtins",
+            "qualname": "set"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "features"
+        },
+        {
+          "annotation": "float | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "firmware_version"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "has_cascade"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "has_isc"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "has_pv"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "has_solar"
+        },
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "model_name"
+        },
+        {
+          "annotation": "int",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "zone_modules"
+        },
+        {
+          "kind": "property",
+          "name": "is_pro",
+          "readable": true,
+          "return_annotation": "bool",
+          "writable": false
+        }
+      ],
+      "public_names": [
+        "IdmModelInfo"
+      ],
+      "python_module": "idm_heatpump.client",
+      "python_name": "IdmModelInfo",
+      "source_group": "client",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "model_name",
+            "active_heating_circuits",
+            "zone_modules",
+            "has_solar",
+            "has_isc",
+            "has_pv",
+            "has_cascade",
+            "features",
+            "firmware_version"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "host"
+          },
+          {
+            "annotation": "int",
+            "default": {
+              "kind": "value",
+              "value": 502
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "port"
+          },
+          {
+            "annotation": "int",
+            "default": {
+              "kind": "value",
+              "value": 1
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "slave_id"
+          },
+          {
+            "annotation": "float",
+            "default": {
+              "kind": "value",
+              "value": 10.0
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "timeout"
+          },
+          {
+            "annotation": "int",
+            "default": {
+              "kind": "value",
+              "value": 3
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "max_retries"
+          },
+          {
+            "annotation": "int",
+            "default": {
+              "kind": "value",
+              "value": 0
+            },
+            "kind": "KEYWORD_ONLY",
+            "name": "pymodbus_retries"
+          },
+          {
+            "annotation": "int",
+            "default": {
+              "kind": "value",
+              "value": 40
+            },
+            "kind": "KEYWORD_ONLY",
+            "name": "max_group_size"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(host: 'str', port: 'int' = 502, slave_id: 'int' = 1, timeout: 'float' = 10.0, max_retries: 'int' = 3, *, pymodbus_retries: 'int' = 0, max_group_size: 'int' = 40) -> 'None'",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "kind": "method",
+          "name": "clear_last_error_context",
+          "parameters": [],
+          "return_annotation": "None",
+          "signature": "(self) -> 'None'"
+        },
+        {
+          "kind": "method",
+          "name": "connect",
+          "parameters": [],
+          "return_annotation": "None",
+          "signature": "(self) -> 'None'"
+        },
+        {
+          "kind": "method",
+          "name": "decode_value",
+          "parameters": [
+            {
+              "annotation": "list[int]",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "registers"
+            },
+            {
+              "annotation": "RegisterDef",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "reg"
+            }
+          ],
+          "return_annotation": "Any",
+          "signature": "(self, registers: 'list[int]', reg: 'RegisterDef') -> 'Any'"
+        },
+        {
+          "kind": "method",
+          "name": "detect_model",
+          "parameters": [
+            {
+              "annotation": "bool",
+              "default": {
+                "kind": "value",
+                "value": true
+              },
+              "kind": "KEYWORD_ONLY",
+              "name": "read_firmware"
+            }
+          ],
+          "return_annotation": "IdmModelInfo",
+          "signature": "(self, *, read_firmware: 'bool' = True) -> 'IdmModelInfo'"
+        },
+        {
+          "kind": "method",
+          "name": "disconnect",
+          "parameters": [],
+          "return_annotation": "None",
+          "signature": "(self) -> 'None'"
+        },
+        {
+          "kind": "method",
+          "name": "encode_value",
+          "parameters": [
+            {
+              "annotation": "Any",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "value"
+            },
+            {
+              "annotation": "RegisterDef",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "reg"
+            }
+          ],
+          "return_annotation": "list[int]",
+          "signature": "(self, value: 'Any', reg: 'RegisterDef') -> 'list[int]'"
+        },
+        {
+          "kind": "method",
+          "name": "force_reconnect",
+          "parameters": [],
+          "return_annotation": "None",
+          "signature": "(self) -> 'None'"
+        },
+        {
+          "kind": "method",
+          "name": "get_active_cyclic_writes",
+          "parameters": [],
+          "return_annotation": "dict[str, float]",
+          "signature": "(self) -> 'dict[str, float]'"
+        },
+        {
+          "kind": "method",
+          "name": "get_batch_unsafe_registers",
+          "parameters": [],
+          "return_annotation": "tuple[str, ...]",
+          "signature": "(self) -> 'tuple[str, ...]'"
+        },
+        {
+          "kind": "method",
+          "name": "get_diagnostics",
+          "parameters": [],
+          "return_annotation": "IdmClientDiagnostics",
+          "signature": "(self) -> 'IdmClientDiagnostics'"
+        },
+        {
+          "kind": "method",
+          "name": "get_expired_cyclic_writes",
+          "parameters": [],
+          "return_annotation": "set[str]",
+          "signature": "(self) -> 'set[str]'"
+        },
+        {
+          "kind": "method",
+          "name": "get_last_error_context",
+          "parameters": [],
+          "return_annotation": "ModbusErrorContext | None",
+          "signature": "(self) -> 'ModbusErrorContext | None'"
+        },
+        {
+          "kind": "method",
+          "name": "get_unsupported_registers",
+          "parameters": [],
+          "return_annotation": "tuple[str, ...]",
+          "signature": "(self) -> 'tuple[str, ...]'"
+        },
+        {
+          "kind": "property",
+          "name": "host",
+          "readable": true,
+          "return_annotation": "str",
+          "writable": false
+        },
+        {
+          "kind": "property",
+          "name": "is_connected",
+          "readable": true,
+          "return_annotation": "bool",
+          "writable": false
+        },
+        {
+          "kind": "method",
+          "name": "mark_batch_unsafe",
+          "parameters": [
+            {
+              "annotation": "RegisterDef | str",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "VAR_POSITIONAL",
+              "name": "registers"
+            }
+          ],
+          "return_annotation": "None",
+          "signature": "(self, *registers: 'RegisterDef | str') -> 'None'"
+        },
+        {
+          "kind": "property",
+          "name": "model_info",
+          "readable": true,
+          "return_annotation": "IdmModelInfo | None",
+          "writable": false
+        },
+        {
+          "kind": "property",
+          "name": "model_name",
+          "readable": true,
+          "return_annotation": "str",
+          "writable": false
+        },
+        {
+          "kind": "property",
+          "name": "port",
+          "readable": true,
+          "return_annotation": "int",
+          "writable": false
+        },
+        {
+          "kind": "method",
+          "name": "probe_register",
+          "parameters": [
+            {
+              "annotation": "int",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "address"
+            },
+            {
+              "annotation": "int",
+              "default": {
+                "kind": "value",
+                "value": 1
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "count"
+            },
+            {
+              "annotation": "int | None",
+              "default": {
+                "kind": "value",
+                "value": null
+              },
+              "kind": "KEYWORD_ONLY",
+              "name": "max_retries"
+            },
+            {
+              "annotation": "float | None",
+              "default": {
+                "kind": "value",
+                "value": null
+              },
+              "kind": "KEYWORD_ONLY",
+              "name": "timeout"
+            }
+          ],
+          "return_annotation": "list[int] | None",
+          "signature": "(self, address: 'int', count: 'int' = 1, *, max_retries: 'int | None' = None, timeout: 'float | None' = None) -> 'list[int] | None'"
+        },
+        {
+          "kind": "method",
+          "name": "read_batch",
+          "parameters": [
+            {
+              "annotation": "list[RegisterDef]",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "register_list"
+            }
+          ],
+          "return_annotation": "dict[str, Any]",
+          "signature": "(self, register_list: 'list[RegisterDef]') -> 'dict[str, Any]'"
+        },
+        {
+          "kind": "method",
+          "name": "read_register",
+          "parameters": [
+            {
+              "annotation": "RegisterDef",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "reg"
+            }
+          ],
+          "return_annotation": "Any",
+          "signature": "(self, reg: 'RegisterDef') -> 'Any'"
+        },
+        {
+          "kind": "method",
+          "name": "read_value",
+          "parameters": [
+            {
+              "annotation": "str",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "key"
+            }
+          ],
+          "return_annotation": "Any",
+          "signature": "(self, key: 'str') -> 'Any'"
+        },
+        {
+          "kind": "method",
+          "name": "reset_cyclic_write_state",
+          "parameters": [
+            {
+              "annotation": "RegisterDef | None",
+              "default": {
+                "kind": "value",
+                "value": null
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "reg"
+            }
+          ],
+          "return_annotation": "None",
+          "signature": "(self, reg: 'RegisterDef | None' = None) -> 'None'"
+        },
+        {
+          "kind": "method",
+          "name": "reset_failed_registers",
+          "parameters": [],
+          "return_annotation": "None",
+          "signature": "(self) -> 'None'"
+        },
+        {
+          "kind": "method",
+          "name": "reset_write_throttle",
+          "parameters": [
+            {
+              "annotation": "RegisterDef | None",
+              "default": {
+                "kind": "value",
+                "value": null
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "reg"
+            }
+          ],
+          "return_annotation": "None",
+          "signature": "(self, reg: 'RegisterDef | None' = None) -> 'None'"
+        },
+        {
+          "kind": "method",
+          "name": "set_value",
+          "parameters": [
+            {
+              "annotation": "str",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "key"
+            },
+            {
+              "annotation": "Any",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "value"
+            },
+            {
+              "annotation": "bool",
+              "default": {
+                "kind": "value",
+                "value": false
+              },
+              "kind": "KEYWORD_ONLY",
+              "name": "dry_run"
+            }
+          ],
+          "return_annotation": "WriteSafetyResult",
+          "signature": "(self, key: 'str', value: 'Any', *, dry_run: 'bool' = False) -> 'WriteSafetyResult'"
+        },
+        {
+          "kind": "method",
+          "name": "simulate_write",
+          "parameters": [
+            {
+              "annotation": "RegisterDef | str",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "reg"
+            },
+            {
+              "annotation": "Any",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "value"
+            },
+            {
+              "annotation": "bool",
+              "default": {
+                "kind": "value",
+                "value": true
+              },
+              "kind": "KEYWORD_ONLY",
+              "name": "dry_run"
+            },
+            {
+              "annotation": "bool",
+              "default": {
+                "kind": "value",
+                "value": false
+              },
+              "kind": "KEYWORD_ONLY",
+              "name": "allow_custom_register"
+            }
+          ],
+          "return_annotation": "WriteSafetyResult",
+          "signature": "(self, reg: 'RegisterDef | str', value: 'Any', *, dry_run: 'bool' = True, allow_custom_register: 'bool' = False) -> 'WriteSafetyResult'"
+        },
+        {
+          "kind": "method",
+          "name": "write_register",
+          "parameters": [
+            {
+              "annotation": "RegisterDef",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "reg"
+            },
+            {
+              "annotation": "Any",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "value"
+            },
+            {
+              "annotation": "bool",
+              "default": {
+                "kind": "value",
+                "value": false
+              },
+              "kind": "KEYWORD_ONLY",
+              "name": "allow_custom_register"
+            }
+          ],
+          "return_annotation": "None",
+          "signature": "(self, reg: 'RegisterDef', value: 'Any', *, allow_custom_register: 'bool' = False) -> 'None'"
+        }
+      ],
+      "public_names": [
+        "IdmModbusClient"
+      ],
+      "python_module": "idm_heatpump.client",
+      "python_name": "IdmModbusClient",
+      "source_group": "client",
+      "validation_boundaries": [
+        {
+          "input": {
+            "arguments": [
+              "example.invalid"
+            ],
+            "keywords": {}
+          },
+          "outcome": "accepted"
+        },
+        {
+          "error": {
+            "category": "validation",
+            "code": "register_invalid",
+            "diagnostic": "Host must not be empty"
+          },
+          "input": {
+            "arguments": [
+              ""
+            ],
+            "keywords": {}
+          },
+          "outcome": "rejected"
+        },
+        {
+          "error": {
+            "category": "validation",
+            "code": "register_invalid",
+            "diagnostic": "Port must be between 1 and 65535, got 0"
+          },
+          "input": {
+            "arguments": [
+              "example.invalid"
+            ],
+            "keywords": {
+              "port": 0
+            }
+          },
+          "outcome": "rejected"
+        },
+        {
+          "error": {
+            "category": "validation",
+            "code": "register_invalid",
+            "diagnostic": "Slave ID must be between 1 and 247, got 248"
+          },
+          "input": {
+            "arguments": [
+              "example.invalid"
+            ],
+            "keywords": {
+              "slave_id": 248
+            }
+          },
+          "outcome": "rejected"
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "string"
+          }
+        ],
+        "return_annotation": null,
+        "signature": "(string)",
+        "source": "class_signature"
+      },
+      "members": [],
+      "public_names": [
+        "IllegalAddressError"
+      ],
+      "python_module": "idm_heatpump.client",
+      "python_name": "IllegalAddressError",
+      "source_group": "client",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "string"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [],
+        "return_annotation": null,
+        "signature": "()",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "kind": "staticmethod",
+          "name": "decode_float32",
+          "parameters": [
+            {
+              "annotation": "list[int]",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "registers"
+            },
+            {
+              "annotation": "bool",
+              "default": {
+                "kind": "value",
+                "value": false
+              },
+              "kind": "KEYWORD_ONLY",
+              "name": "swapped"
+            }
+          ],
+          "return_annotation": "float",
+          "signature": "(registers: 'list[int]', *, swapped: 'bool' = False) -> 'float'"
+        },
+        {
+          "kind": "staticmethod",
+          "name": "decode_int16",
+          "parameters": [
+            {
+              "annotation": "int",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "register"
+            }
+          ],
+          "return_annotation": "int",
+          "signature": "(register: 'int') -> 'int'"
+        },
+        {
+          "kind": "staticmethod",
+          "name": "decode_int8",
+          "parameters": [
+            {
+              "annotation": "int",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "register"
+            }
+          ],
+          "return_annotation": "int",
+          "signature": "(register: 'int') -> 'int'"
+        },
+        {
+          "kind": "staticmethod",
+          "name": "encode_float32",
+          "parameters": [
+            {
+              "annotation": "float",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "value"
+            },
+            {
+              "annotation": "bool",
+              "default": {
+                "kind": "value",
+                "value": false
+              },
+              "kind": "KEYWORD_ONLY",
+              "name": "swapped"
+            }
+          ],
+          "return_annotation": "list[int]",
+          "signature": "(value: 'float', *, swapped: 'bool' = False) -> 'list[int]'"
+        },
+        {
+          "kind": "staticmethod",
+          "name": "encode_int16",
+          "parameters": [
+            {
+              "annotation": "int",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "value"
+            }
+          ],
+          "return_annotation": "int",
+          "signature": "(value: 'int') -> 'int'"
+        },
+        {
+          "kind": "staticmethod",
+          "name": "encode_int8",
+          "parameters": [
+            {
+              "annotation": "int",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "value"
+            }
+          ],
+          "return_annotation": "int",
+          "signature": "(value: 'int') -> 'int'"
+        }
+      ],
+      "public_names": [
+        "ModbusCodec"
+      ],
+      "python_module": "idm_heatpump.client",
+      "python_name": "ModbusCodec",
+      "source_group": "client",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "NavigatorWebModel",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "model"
+          },
+          {
+            "annotation": "dict[str, IdmWebValue]",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "values"
+          },
+          {
+            "annotation": "dict[str, str]",
+            "default": {
+              "kind": "python_literal",
+              "text": "<factory>",
+              "type": "_HAS_DEFAULT_FACTORY_CLASS"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "raw_responses"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(model: 'NavigatorWebModel', values: 'dict[str, IdmWebValue]', raw_responses: 'dict[str, str]' = <factory>) -> None",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "annotation": "NavigatorWebModel",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "model"
+        },
+        {
+          "annotation": "dict[str, str]",
+          "default": {
+            "kind": "factory",
+            "module": "builtins",
+            "qualname": "dict"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "raw_responses"
+        },
+        {
+          "annotation": "dict[str, IdmWebValue]",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "values"
+        },
+        {
+          "kind": "method",
+          "name": "get_numeric",
+          "parameters": [
+            {
+              "annotation": "str",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "name"
+            },
+            {
+              "annotation": "float | None",
+              "default": {
+                "kind": "value",
+                "value": null
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "default"
+            }
+          ],
+          "return_annotation": "float | None",
+          "signature": "(self, name: 'str', default: 'float | None' = None) -> 'float | None'"
+        },
+        {
+          "kind": "method",
+          "name": "get_value",
+          "parameters": [
+            {
+              "annotation": "str",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "name"
+            },
+            {
+              "annotation": "str | None",
+              "default": {
+                "kind": "value",
+                "value": null
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "default"
+            }
+          ],
+          "return_annotation": "str | None",
+          "signature": "(self, name: 'str', default: 'str | None' = None) -> 'str | None'"
+        },
+        {
+          "kind": "property",
+          "name": "heatpump_model",
+          "readable": true,
+          "return_annotation": "str | None",
+          "writable": false
+        },
+        {
+          "kind": "property",
+          "name": "navigator_version",
+          "readable": true,
+          "return_annotation": "str",
+          "writable": false
+        },
+        {
+          "kind": "property",
+          "name": "simple_values",
+          "readable": true,
+          "return_annotation": "dict[str, str]",
+          "writable": false
+        },
+        {
+          "kind": "property",
+          "name": "software_version",
+          "readable": true,
+          "return_annotation": "str | None",
+          "writable": false
+        }
+      ],
+      "public_names": [
+        "IdmWebData"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebData",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "model",
+            "values",
+            "raw_responses"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_POSITIONAL",
+            "name": "args"
+          },
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs"
+          }
+        ],
+        "return_annotation": null,
+        "signature": "(self, /, *args, **kwargs)",
+        "source": "inherited_or_declared_init"
+      },
+      "members": [],
+      "public_names": [
+        "IdmWebDependencyError"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebDependencyError",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "args",
+            "kwargs"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "navigator_type"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": false
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "websocket_connected"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": false
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "web_data_enabled"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "firmware"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "api_version"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "model"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "serial_number"
+          },
+          {
+            "annotation": "float | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "last_success_monotonic"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "last_error"
+          },
+          {
+            "annotation": "float | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "last_reconnect_monotonic"
+          },
+          {
+            "annotation": "int",
+            "default": {
+              "kind": "value",
+              "value": 0
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "reconnect_attempts"
+          },
+          {
+            "annotation": "tuple[str, ...]",
+            "default": {
+              "kind": "value",
+              "value": []
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "used_endpoints"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": false
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "cached"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(navigator_type: 'str', websocket_connected: 'bool' = False, web_data_enabled: 'bool' = False, firmware: 'str | None' = None, api_version: 'str | None' = None, model: 'str | None' = None, serial_number: 'str | None' = None, last_success_monotonic: 'float | None' = None, last_error: 'str | None' = None, last_reconnect_monotonic: 'float | None' = None, reconnect_attempts: 'int' = 0, used_endpoints: 'tuple[str, ...]' = (), cached: 'bool' = False) -> None",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "api_version"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": false
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "cached"
+        },
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "firmware"
+        },
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "last_error"
+        },
+        {
+          "annotation": "float | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "last_reconnect_monotonic"
+        },
+        {
+          "annotation": "float | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "last_success_monotonic"
+        },
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "model"
+        },
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "navigator_type"
+        },
+        {
+          "annotation": "int",
+          "default": {
+            "kind": "value",
+            "value": 0
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "reconnect_attempts"
+        },
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "serial_number"
+        },
+        {
+          "annotation": "tuple[str, ...]",
+          "default": {
+            "kind": "value",
+            "value": []
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "used_endpoints"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": false
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "web_data_enabled"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": false
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "websocket_connected"
+        }
+      ],
+      "public_names": [
+        "IdmWebDiagnostics"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebDiagnostics",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "navigator_type",
+            "websocket_connected",
+            "web_data_enabled",
+            "firmware",
+            "api_version",
+            "model",
+            "serial_number",
+            "last_success_monotonic",
+            "last_error",
+            "last_reconnect_monotonic",
+            "reconnect_attempts",
+            "used_endpoints",
+            "cached"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_POSITIONAL",
+            "name": "args"
+          },
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs"
+          }
+        ],
+        "return_annotation": null,
+        "signature": "(self, /, *args, **kwargs)",
+        "source": "inherited_or_declared_init"
+      },
+      "members": [],
+      "public_names": [
+        "IdmWebError"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebError",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "args",
+            "kwargs"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "code"
+          },
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "message"
+          },
+          {
+            "annotation": "int | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "timestamp"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "severity"
+          },
+          {
+            "annotation": "int | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "quit_type"
+          },
+          {
+            "annotation": "bool | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "deferrable"
+          },
+          {
+            "annotation": "dict[str, Any]",
+            "default": {
+              "kind": "python_literal",
+              "text": "<factory>",
+              "type": "_HAS_DEFAULT_FACTORY_CLASS"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "raw"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(code: 'str', message: 'str', timestamp: 'int | None' = None, severity: 'str | None' = None, quit_type: 'int | None' = None, deferrable: 'bool | None' = None, raw: 'dict[str, Any]' = <factory>) -> None",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "code"
+        },
+        {
+          "annotation": "bool | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "deferrable"
+        },
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "message"
+        },
+        {
+          "annotation": "int | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "quit_type"
+        },
+        {
+          "annotation": "dict[str, Any]",
+          "default": {
+            "kind": "factory",
+            "module": "builtins",
+            "qualname": "dict"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "raw"
+        },
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "severity"
+        },
+        {
+          "annotation": "int | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "timestamp"
+        }
+      ],
+      "public_names": [
+        "IdmWebNotification"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebNotification",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "code",
+            "message",
+            "timestamp",
+            "severity",
+            "quit_type",
+            "deferrable",
+            "raw"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "tuple[IdmWebNotification, ...]",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "current"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "raw_response"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(current: 'tuple[IdmWebNotification, ...]', raw_response: 'str | None' = None) -> None",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "annotation": "tuple[IdmWebNotification, ...]",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "current"
+        },
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "raw_response"
+        },
+        {
+          "kind": "property",
+          "name": "count",
+          "readable": true,
+          "return_annotation": "int",
+          "writable": false
+        },
+        {
+          "kind": "property",
+          "name": "summary",
+          "readable": true,
+          "return_annotation": "str",
+          "writable": false
+        }
+      ],
+      "public_names": [
+        "IdmWebNotifications"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebNotifications",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "current",
+            "raw_response"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_POSITIONAL",
+            "name": "args"
+          },
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs"
+          }
+        ],
+        "return_annotation": null,
+        "signature": "(self, /, *args, **kwargs)",
+        "source": "inherited_or_declared_init"
+      },
+      "members": [],
+      "public_names": [
+        "IdmWebPinRejectedError",
+        "PinRejectedError"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebPinRejectedError",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "args",
+            "kwargs"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_POSITIONAL",
+            "name": "args"
+          },
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs"
+          }
+        ],
+        "return_annotation": null,
+        "signature": "(self, /, *args, **kwargs)",
+        "source": "inherited_or_declared_init"
+      },
+      "members": [],
+      "public_names": [
+        "IdmWebProtocolError",
+        "ProtocolError"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebProtocolError",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "args",
+            "kwargs"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_POSITIONAL",
+            "name": "args"
+          },
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs"
+          }
+        ],
+        "return_annotation": null,
+        "signature": "(self, /, *args, **kwargs)",
+        "source": "inherited_or_declared_init"
+      },
+      "members": [],
+      "public_names": [
+        "IdmWebResponseError"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebResponseError",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "args",
+            "kwargs"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_POSITIONAL",
+            "name": "args"
+          },
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs"
+          }
+        ],
+        "return_annotation": null,
+        "signature": "(self, /, *args, **kwargs)",
+        "source": "inherited_or_declared_init"
+      },
+      "members": [],
+      "public_names": [
+        "IdmWebTimeoutError",
+        "TimeoutError"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebTimeoutError",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "args",
+            "kwargs"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_POSITIONAL",
+            "name": "args"
+          },
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs"
+          }
+        ],
+        "return_annotation": null,
+        "signature": "(self, /, *args, **kwargs)",
+        "source": "inherited_or_declared_init"
+      },
+      "members": [],
+      "public_names": [
+        "IdmWebWebSocketError",
+        "WebSocketError"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebWebSocketError",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "args",
+            "kwargs"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "name"
+          },
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "value"
+          },
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "raw_key"
+          },
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "value",
+              "value": ""
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "raw_description"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "unit"
+          },
+          {
+            "annotation": "float | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "numeric_value"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(name: 'str', value: 'str', raw_key: 'str', raw_description: 'str' = '', unit: 'str | None' = None, numeric_value: 'float | None' = None) -> None",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "name"
+        },
+        {
+          "annotation": "float | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "numeric_value"
+        },
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "value",
+            "value": ""
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "raw_description"
+        },
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "raw_key"
+        },
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "unit"
+        },
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "value"
+        }
+      ],
+      "public_names": [
+        "IdmWebValue"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebValue",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "name",
+            "value",
+            "raw_key",
+            "raw_description",
+            "unit",
+            "numeric_value"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "key"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "preferred_unit"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "device_class"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "state_class"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": true
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "enabled_by_default"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(key: 'str', preferred_unit: 'str | None' = None, device_class: 'str | None' = None, state_class: 'str | None' = None, enabled_by_default: 'bool' = True) -> None",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "device_class"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": true
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "enabled_by_default"
+        },
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "key"
+        },
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "preferred_unit"
+        },
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "state_class"
+        }
+      ],
+      "public_names": [
+        "IdmWebValueDescription"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebValueDescription",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "key",
+            "preferred_unit",
+            "device_class",
+            "state_class",
+            "enabled_by_default"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "operation"
+          },
+          {
+            "annotation": "int",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "address"
+          },
+          {
+            "annotation": "int",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "count"
+          },
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "register_type"
+          },
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "error_type"
+          },
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "message"
+          },
+          {
+            "annotation": "int",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "attempt"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(operation: 'str', address: 'int', count: 'int', register_type: 'str', error_type: 'str', message: 'str', attempt: 'int') -> None",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "annotation": "int",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "address"
+        },
+        {
+          "annotation": "int",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "attempt"
+        },
+        {
+          "annotation": "int",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "count"
+        },
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "error_type"
+        },
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "message"
+        },
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "operation"
+        },
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "register_type"
+        }
+      ],
+      "public_names": [
+        "ModbusErrorContext"
+      ],
+      "python_module": "idm_heatpump.client",
+      "python_name": "ModbusErrorContext",
+      "source_group": "client",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "operation",
+            "address",
+            "count",
+            "register_type",
+            "error_type",
+            "message",
+            "attempt"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "float",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "interval"
+          },
+          {
+            "annotation": "Any",
+            "default": {
+              "kind": "callable",
+              "module": "time",
+              "qualname": "monotonic"
+            },
+            "kind": "KEYWORD_ONLY",
+            "name": "clock"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(interval: 'float', *, clock: 'Any' = <built-in function monotonic>) -> 'None'",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "kind": "method",
+          "name": "allow",
+          "parameters": [],
+          "return_annotation": "bool",
+          "signature": "(self) -> 'bool'"
+        },
+        {
+          "kind": "property",
+          "name": "interval",
+          "readable": true,
+          "return_annotation": "float",
+          "writable": false
+        },
+        {
+          "kind": "method",
+          "name": "mark",
+          "parameters": [],
+          "return_annotation": "None",
+          "signature": "(self) -> 'None'"
+        },
+        {
+          "kind": "method",
+          "name": "remaining",
+          "parameters": [],
+          "return_annotation": "float",
+          "signature": "(self) -> 'float'"
+        }
+      ],
+      "public_names": [
+        "PollRateLimiter"
+      ],
+      "python_module": "idm_heatpump.client",
+      "python_name": "PollRateLimiter",
+      "source_group": "client",
+      "validation_boundaries": [
+        {
+          "input": {
+            "arguments": [
+              0.0
+            ],
+            "keywords": {}
+          },
+          "outcome": "accepted"
+        },
+        {
+          "error": {
+            "category": "validation",
+            "code": "register_invalid",
+            "diagnostic": "poll interval must be >= 0"
+          },
+          "input": {
+            "arguments": [
+              -1.0
+            ],
+            "keywords": {}
+          },
+          "outcome": "rejected"
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "int",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "address"
+          },
+          {
+            "annotation": "DataType",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "datatype"
+          },
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "name"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "unit"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": false
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "writable"
+          },
+          {
+            "annotation": "float | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "min_val"
+          },
+          {
+            "annotation": "float | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "max_val"
+          },
+          {
+            "annotation": "dict[int, str] | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "enum_options"
+          },
+          {
+            "annotation": "float",
+            "default": {
+              "kind": "value",
+              "value": 1.0
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "multiplier"
+          },
+          {
+            "annotation": "RegisterType",
+            "default": {
+              "kind": "value",
+              "value": "input"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "register_type"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": false
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "eeprom_sensitive"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": false
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "cyclic_required"
+          },
+          {
+            "annotation": "float | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "cyclic_write_ttl"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": false
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "binary"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": true
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "enabled_by_default"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "state_class"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "icon"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": false
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "write_only"
+          },
+          {
+            "annotation": "set[int] | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "exclude_from_write"
+          },
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "value",
+              "value": "official_idm_modbus"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "source"
+          },
+          {
+            "annotation": "str",
+            "default": {
+              "kind": "value",
+              "value": "MODBUS TCP NAVIGATOR 10 2025-06-18 plus Navigator 2.0/Pro legacy docs"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "source_version"
+          },
+          {
+            "annotation": "tuple[str, ...]",
+            "default": {
+              "kind": "python_literal",
+              "text": "<factory>",
+              "type": "_HAS_DEFAULT_FACTORY_CLASS"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "supported_models"
+          },
+          {
+            "annotation": "tuple[int | float | str, ...]",
+            "default": {
+              "kind": "value",
+              "value": []
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "sentinel_values"
+          },
+          {
+            "annotation": "str | None",
+            "default": {
+              "kind": "value",
+              "value": null
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "last_verified"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(address: 'int', datatype: 'DataType', name: 'str', unit: 'str | None' = None, writable: 'bool' = False, min_val: 'float | None' = None, max_val: 'float | None' = None, enum_options: 'dict[int, str] | None' = None, multiplier: 'float' = 1.0, register_type: 'RegisterType' = <RegisterType.INPUT: 'input'>, eeprom_sensitive: 'bool' = False, cyclic_required: 'bool' = False, cyclic_write_ttl: 'float | None' = None, binary: 'bool' = False, enabled_by_default: 'bool' = True, state_class: 'str | None' = None, icon: 'str | None' = None, write_only: 'bool' = False, exclude_from_write: 'set[int] | None' = None, source: 'str' = 'official_idm_modbus', source_version: 'str' = 'MODBUS TCP NAVIGATOR 10 2025-06-18 plus Navigator 2.0/Pro legacy docs', supported_models: 'tuple[str, ...]' = <factory>, sentinel_values: 'tuple[int | float | str, ...]' = (), last_verified: 'str | None' = None) -> None",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "annotation": "int",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "address"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": false
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "binary"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": false
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "cyclic_required"
+        },
+        {
+          "annotation": "float | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "cyclic_write_ttl"
+        },
+        {
+          "annotation": "DataType",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "datatype"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": false
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "eeprom_sensitive"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": true
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "enabled_by_default"
+        },
+        {
+          "annotation": "dict[int, str] | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "enum_options"
+        },
+        {
+          "annotation": "set[int] | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "exclude_from_write"
+        },
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "icon"
+        },
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "last_verified"
+        },
+        {
+          "annotation": "float | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "max_val"
+        },
+        {
+          "annotation": "float | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "min_val"
+        },
+        {
+          "annotation": "float",
+          "default": {
+            "kind": "value",
+            "value": 1.0
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "multiplier"
+        },
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "name"
+        },
+        {
+          "annotation": "RegisterType",
+          "default": {
+            "kind": "value",
+            "value": "input"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "register_type"
+        },
+        {
+          "annotation": "tuple[int | float | str, ...]",
+          "default": {
+            "kind": "value",
+            "value": []
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "sentinel_values"
+        },
+        {
+          "annotation": "int",
+          "default": {
+            "kind": "required"
+          },
+          "init": false,
+          "kind": "attribute",
+          "name": "size"
+        },
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "value",
+            "value": "official_idm_modbus"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "source"
+        },
+        {
+          "annotation": "str",
+          "default": {
+            "kind": "value",
+            "value": "MODBUS TCP NAVIGATOR 10 2025-06-18 plus Navigator 2.0/Pro legacy docs"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "source_version"
+        },
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "state_class"
+        },
+        {
+          "annotation": "tuple[str, ...]",
+          "default": {
+            "kind": "factory",
+            "module": "idm_heatpump.client",
+            "qualname": "RegisterDef.<lambda>"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "supported_models"
+        },
+        {
+          "annotation": "str | None",
+          "default": {
+            "kind": "value",
+            "value": null
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "unit"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": false
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "writable"
+        },
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": false
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "write_only"
+        },
+        {
+          "kind": "property",
+          "name": "write_class",
+          "readable": true,
+          "return_annotation": "WriteClass",
+          "writable": false
+        }
+      ],
+      "public_names": [
+        "RegisterDef"
+      ],
+      "python_module": "idm_heatpump.client",
+      "python_name": "RegisterDef",
+      "source_group": "client",
+      "validation_boundaries": [
+        {
+          "input": {
+            "arguments": [
+              0,
+              "UCHAR",
+              "boundary"
+            ],
+            "keywords": {}
+          },
+          "outcome": "accepted"
+        },
+        {
+          "error": {
+            "category": "validation",
+            "code": "register_invalid",
+            "diagnostic": "Register address must be non-negative, got -1"
+          },
+          "input": {
+            "arguments": [
+              -1,
+              "UCHAR",
+              "boundary"
+            ],
+            "keywords": {}
+          },
+          "outcome": "rejected"
+        },
+        {
+          "error": {
+            "category": "validation",
+            "code": "register_invalid",
+            "diagnostic": "Multiplier must be finite and non-zero, got 0"
+          },
+          "input": {
+            "arguments": [
+              1,
+              "UCHAR",
+              "boundary"
+            ],
+            "keywords": {
+              "multiplier": 0
+            }
+          },
+          "outcome": "rejected"
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "dict[str, RegisterDef]",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "registers"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(registers: 'dict[str, RegisterDef]') -> None",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "annotation": "dict[str, RegisterDef]",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "registers"
+        },
+        {
+          "kind": "method",
+          "name": "by_address",
+          "parameters": [
+            {
+              "annotation": "int",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "address"
+            },
+            {
+              "annotation": "str",
+              "default": {
+                "kind": "value",
+                "value": "input"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "register_type"
+            }
+          ],
+          "return_annotation": "RegisterDef | None",
+          "signature": "(self, address: 'int', register_type: 'str' = 'input') -> 'RegisterDef | None'"
+        },
+        {
+          "kind": "method",
+          "name": "get",
+          "parameters": [
+            {
+              "annotation": "str",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "key"
+            }
+          ],
+          "return_annotation": "RegisterDef | None",
+          "signature": "(self, key: 'str') -> 'RegisterDef | None'"
+        },
+        {
+          "kind": "method",
+          "name": "require",
+          "parameters": [
+            {
+              "annotation": "str",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "key"
+            }
+          ],
+          "return_annotation": "RegisterDef",
+          "signature": "(self, key: 'str') -> 'RegisterDef'"
+        },
+        {
+          "kind": "method",
+          "name": "to_schema",
+          "parameters": [],
+          "return_annotation": "list[dict[str, Any]]",
+          "signature": "(self) -> 'list[dict[str, Any]]'"
+        },
+        {
+          "kind": "method",
+          "name": "writable",
+          "parameters": [],
+          "return_annotation": "dict[str, RegisterDef]",
+          "signature": "(self) -> 'dict[str, RegisterDef]'"
+        }
+      ],
+      "public_names": [
+        "RegisterRegistry"
+      ],
+      "python_module": "idm_heatpump.registers",
+      "python_name": "RegisterRegistry",
+      "source_group": "registers",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "registers"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_POSITIONAL",
+            "name": "values"
+          }
+        ],
+        "return_annotation": null,
+        "signature": "(*values)",
+        "source": "class_signature"
+      },
+      "members": [],
+      "public_names": [
+        "RegisterType"
+      ],
+      "python_module": "idm_heatpump.client",
+      "python_name": "RegisterType",
+      "source_group": "client",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "values"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": null,
+            "default": {
+              "kind": "required"
+            },
+            "kind": "VAR_POSITIONAL",
+            "name": "values"
+          }
+        ],
+        "return_annotation": null,
+        "signature": "(*values)",
+        "source": "class_signature"
+      },
+      "members": [],
+      "public_names": [
+        "WriteClass"
+      ],
+      "python_module": "idm_heatpump.client",
+      "python_name": "WriteClass",
+      "source_group": "client",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "values"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
+            "annotation": "'RegisterDef'",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "register"
+          },
+          {
+            "annotation": "Any",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "requested_value"
+          },
+          {
+            "annotation": "tuple[int, ...]",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "encoded_registers"
+          },
+          {
+            "annotation": "bool",
+            "default": {
+              "kind": "value",
+              "value": false
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "dry_run"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(register: \"'RegisterDef'\", requested_value: 'Any', encoded_registers: 'tuple[int, ...]', dry_run: 'bool' = False) -> None",
+        "source": "class_signature"
+      },
+      "members": [
+        {
+          "annotation": "bool",
+          "default": {
+            "kind": "value",
+            "value": false
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "dry_run"
+        },
+        {
+          "annotation": "tuple[int, ...]",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "encoded_registers"
+        },
+        {
+          "annotation": "'RegisterDef'",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "register"
+        },
+        {
+          "annotation": "Any",
+          "default": {
+            "kind": "required"
+          },
+          "init": true,
+          "kind": "attribute",
+          "name": "requested_value"
+        }
+      ],
+      "public_names": [
+        "WriteSafetyResult"
+      ],
+      "python_module": "idm_heatpump.client",
+      "python_name": "WriteSafetyResult",
+      "source_group": "client",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "register",
+            "requested_value",
+            "encoded_registers",
+            "dry_run"
+          ]
+        }
+      ]
+    }
+  ],
+  "generator_version": "1",
+  "schema_version": 1
+}
