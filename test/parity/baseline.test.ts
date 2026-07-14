@@ -245,7 +245,7 @@ describe("exact upstream checkout verifier", () => {
   it("verifies a clean detached full-history checkout and reports the full identity", () => {
     const result = runVerifier(manifestPath, baselineCheckout);
 
-    expect(result.status).toBe(0);
+    expect(result.status, result.stderr).toBe(0);
     expect(result.stderr).toBe("");
     expect(result.stdout).toContain(canonicalRepository);
     expect(result.stdout).toContain("idm-heatpump-api@0.7.6");
@@ -333,7 +333,7 @@ describe("exact upstream checkout verifier", () => {
 
     const result = runVerifier(literalManifest, checkout);
 
-    expect(result.status).toBe(0);
+    expect(result.status, result.stderr).toBe(0);
     expect(readFileSync(literalManifest, "utf8")).toContain(pinnedCommit);
     expect(() => readFileSync(join(temporaryDirectory, "SHOULD_NOT_EXIST"))).toThrow();
   });
@@ -366,7 +366,7 @@ describe("exact upstream checkout verifier", () => {
     );
 
     const withTag = runVerifier(manifestPath, shallowCheckout);
-    expect(withTag.status).toBe(0);
+    expect(withTag.status, withTag.stderr).toBe(0);
     expect(withTag.stdout).toContain(pinnedCommit);
   }, 30_000);
 });
