@@ -1,0 +1,27 @@
+{
+  "source_path": "/mnt/c/Users/basti/Documents/GitHub/idm-heatpump-node/docs/IMPLEMENTATION-PLAN.md",
+  "type": "SPEC",
+  "confidence": "medium",
+  "manifest_override": false,
+  "title": "Implementierungsplan",
+  "summary": "Definiert Architektur, Paketstruktur, Implementierungsphasen und Abnahmekriterien für die vollständige TypeScript-Portierung der IDM-Wärmepumpen-API.",
+  "scope": [
+    "TypeScript-Paket",
+    "Paketstruktur",
+    "Modbus-Transport",
+    "Register und Codec",
+    "Modell- und Feature-Erkennung",
+    "Write-Sicherheit",
+    "Web-Supplement",
+    "Cross-Repository-Parität",
+    "Release-Vorbereitung"
+  ],
+  "cross_refs": [
+    "docs/PARITY-CONTRACT.md",
+    "UPSTREAM-PARITY.json",
+    "docs/API-PARITY.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

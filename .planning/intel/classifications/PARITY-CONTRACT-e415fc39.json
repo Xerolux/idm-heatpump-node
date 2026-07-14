@@ -1,0 +1,31 @@
+{
+  "source_path": "/mnt/c/Users/basti/Documents/GitHub/idm-heatpump-node/docs/PARITY-CONTRACT.md",
+  "type": "SPEC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Funktionsparitätsvertrag",
+  "summary": "Definiert den technischen Verhaltensvertrag und die Release-Nachweise für Funktionsparität zwischen der Python-Referenz und dem TypeScript-Paket.",
+  "scope": [
+    "idm-heatpump-api",
+    "@xerolux/idm-heatpump",
+    "public API",
+    "register schema",
+    "codec",
+    "Modbus transport and batching",
+    "detection and state behavior",
+    "error resilience",
+    "write safety",
+    "web supplement",
+    "cross-repository contract harness",
+    "API parity matrix",
+    "release gate"
+  ],
+  "cross_refs": [
+    "UPSTREAM-PARITY.json",
+    "docs/API-PARITY.md",
+    "docs/compatibility-matrix.json"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}
