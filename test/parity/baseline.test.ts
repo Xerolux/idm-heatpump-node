@@ -57,7 +57,11 @@ describe("upstream parity baseline manifest", () => {
   const invalidShapeCases: readonly InvalidManifestCase[] = [
     ["null", () => null, BaselineValidationCode.NOT_OBJECT],
     ["an array", () => [], BaselineValidationCode.NOT_OBJECT],
-    ["an unknown field", () => ({ ...validManifest(), branch: "main" }), BaselineValidationCode.UNKNOWN_FIELD],
+    [
+      "an unknown field",
+      () => ({ ...validManifest(), branch: "main" }),
+      BaselineValidationCode.UNKNOWN_FIELD,
+    ],
     [
       "a missing field",
       () => {
