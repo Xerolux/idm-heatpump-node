@@ -93,7 +93,9 @@ function fixturePath(checkout: DisposableCheckout, name: (typeof FIXTURE_NAMES)[
   return join(checkout.output, "test/fixtures", name);
 }
 
-function fixtureSnapshot(checkout: DisposableCheckout): Readonly<Record<string, { readonly bytes: Buffer; readonly mtimeMs: number }>> {
+function fixtureSnapshot(
+  checkout: DisposableCheckout,
+): Readonly<Record<string, { readonly bytes: Buffer; readonly mtimeMs: number }>> {
   return Object.fromEntries(
     FIXTURE_NAMES.map((name) => {
       const path = fixturePath(checkout, name);
@@ -198,7 +200,11 @@ describe("verified Python contract generator", () => {
   it("verifies before import for wrong origins and branch-only references", () => {
     const wrongOrigin = createExactCheckout();
     requireSuccess(
-      run("git", ["remote", "set-url", "origin", "https://example.invalid/wrong"], wrongOrigin.checkout),
+      run(
+        "git",
+        ["remote", "set-url", "origin", "https://example.invalid/wrong"],
+        wrongOrigin.checkout,
+      ),
       "wrong origin setup",
     );
 
@@ -290,13 +296,19 @@ describe("verified Python contract generator", () => {
     }
 
     const publicApi = fixtures["public-api.json"] as FixtureRoot & {
-      readonly symbols: readonly { readonly name: string; readonly source_group: string; readonly export_boundary: string }[];
+      readonly symbols: readonly {
+        readonly name: string;
+        readonly source_group: string;
+        readonly export_boundary: string;
+      }[];
       readonly counts: { readonly total: number; readonly root: number; readonly web: number };
       readonly aliases: readonly { readonly name: string; readonly target: string }[];
     };
     expect(publicApi.symbols).toHaveLength(89);
     expect(publicApi.counts).toEqual({ total: 89, root: 59, web: 30 });
-    expect(publicApi.symbols.map(({ name }) => name)).toEqual([...new Set(publicApi.symbols.map(({ name }) => name))]);
+    expect(publicApi.symbols.map(({ name }) => name)).toEqual([
+      ...new Set(publicApi.symbols.map(({ name }) => name)),
+    ]);
     expect(publicApi.aliases.map(({ name }) => name)).toEqual(
       expect.arrayContaining([
         "AuthenticationError",
@@ -312,8 +324,15 @@ describe("verified Python contract generator", () => {
     const publicClasses = fixtures["public-classes.json"] as FixtureRoot & {
       readonly classes: readonly {
         readonly public_names: readonly string[];
-        readonly constructor: { readonly signature: string; readonly parameters: readonly unknown[] };
-        readonly members: readonly { readonly name: string; readonly kind: string; readonly signature?: string }[];
+        readonly constructor: {
+          readonly signature: string;
+          readonly parameters: readonly unknown[];
+        };
+        readonly members: readonly {
+          readonly name: string;
+          readonly kind: string;
+          readonly signature?: string;
+        }[];
         readonly validation_boundaries: readonly unknown[];
       }[];
     };
@@ -321,7 +340,9 @@ describe("verified Python contract generator", () => {
     expect(classNames).toContain("RegisterDef");
     expect(classNames).toContain("IdmModbusClient");
     expect(classNames).toContain("IdmWebData");
-    expect(publicClasses.classes.every(({ constructor }) => constructor.parameters.length >= 0)).toBe(true);
+    expect(
+      publicClasses.classes.every(({ constructor }) => constructor.parameters.length >= 0),
+    ).toBe(true);
     const forbiddenClassKeys = [
       "typescript_symbol",
       "representation",
@@ -339,7 +360,9 @@ describe("verified Python contract generator", () => {
         readonly register: { readonly cases: readonly { readonly id: string }[] };
       };
     };
-    const codecIds = [...codecs.layers.primitive.cases, ...codecs.layers.register.cases].map(({ id }) => id);
+    const codecIds = [...codecs.layers.primitive.cases, ...codecs.layers.register.cases].map(
+      ({ id }) => id,
+    );
     expect(codecIds).toEqual(
       expect.arrayContaining([
         "primitive_float32_low_word_first",
@@ -364,19 +387,48 @@ describe("verified Python contract generator", () => {
 
     const registerSchema = fixtures["register-schema.json"] as FixtureRoot & {
       readonly maps: Readonly<Record<string, Readonly<Record<string, Record<string, unknown>>>>>;
-      readonly documented_overlaps: readonly { readonly address: number; readonly names: readonly string[] }[];
+      readonly documented_overlaps: readonly {
+        readonly address: number;
+        readonly names: readonly string[];
+      }[];
       readonly builder_contract: Readonly<Record<string, unknown>>;
     };
-    expect(Object.fromEntries(Object.entries(registerSchema.maps).map(([name, map]) => [name, Object.keys(map).length]))).toEqual({
+    expect(
+      Object.fromEntries(
+        Object.entries(registerSchema.maps).map(([name, map]) => [name, Object.keys(map).length]),
+      ),
+    ).toEqual({
       default: 267,
       navigator_10_full: 587,
       navigator_20_circuit_a: 105,
     });
     const expectedRegisterFields = [
-      "address", "datatype", "name", "unit", "writable", "min_val", "max_val", "enum_options",
-      "multiplier", "register_type", "eeprom_sensitive", "cyclic_required", "cyclic_write_ttl", "binary",
-      "enabled_by_default", "state_class", "icon", "write_only", "write_class", "exclude_from_write",
-      "source", "source_version", "supported_models", "sentinel_values", "last_verified", "size",
+      "address",
+      "datatype",
+      "name",
+      "unit",
+      "writable",
+      "min_val",
+      "max_val",
+      "enum_options",
+      "multiplier",
+      "register_type",
+      "eeprom_sensitive",
+      "cyclic_required",
+      "cyclic_write_ttl",
+      "binary",
+      "enabled_by_default",
+      "state_class",
+      "icon",
+      "write_only",
+      "write_class",
+      "exclude_from_write",
+      "source",
+      "source_version",
+      "supported_models",
+      "sentinel_values",
+      "last_verified",
+      "size",
     ].sort();
     for (const map of Object.values(registerSchema.maps)) {
       for (const register of Object.values(map)) {
@@ -413,9 +465,9 @@ describe("verified Python contract generator", () => {
       expect(Object.keys(scenario).sort()).toEqual(scenarioFields);
     }
 
-    const allFixtureText = FIXTURE_NAMES
-      .map((name) => readFileSync(fixturePath(checkout, name), "utf8"))
-      .join("\n");
+    const allFixtureText = FIXTURE_NAMES.map((name) =>
+      readFileSync(fixturePath(checkout, name), "utf8"),
+    ).join("\n");
     expect(allFixtureText).toContain('"$number": "-0"');
     expect(allFixtureText).toContain('"$number": "NaN"');
     expect(allFixtureText).not.toMatch(/Navigator 1\.[07]/u);
@@ -444,7 +496,9 @@ describe("verified Python contract generator", () => {
     requireSuccess(cleanCheck, "clean check mode");
     const cleanCheckAfter = fixtureSnapshot(checkout);
     for (const name of FIXTURE_NAMES) {
-      expect(cleanCheckAfter[name]?.bytes.equals(cleanCheckBefore[name]?.bytes ?? Buffer.alloc(0))).toBe(true);
+      expect(
+        cleanCheckAfter[name]?.bytes.equals(cleanCheckBefore[name]?.bytes ?? Buffer.alloc(0)),
+      ).toBe(true);
       expect(cleanCheckAfter[name]?.mtimeMs).toBe(cleanCheckBefore[name]?.mtimeMs);
     }
 
@@ -459,7 +513,9 @@ describe("verified Python contract generator", () => {
     expect(driftCheck.stderr).toContain("semantic difference");
     const driftAfter = fixtureSnapshot(checkout);
     for (const name of FIXTURE_NAMES) {
-      expect(driftAfter[name]?.bytes.equals(driftBefore[name]?.bytes ?? Buffer.alloc(0))).toBe(true);
+      expect(driftAfter[name]?.bytes.equals(driftBefore[name]?.bytes ?? Buffer.alloc(0))).toBe(
+        true,
+      );
       expect(driftAfter[name]?.mtimeMs).toBe(driftBefore[name]?.mtimeMs);
     }
   }, 120_000);
