@@ -1,4 +1,12 @@
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
@@ -16,6 +24,14 @@ const PYTHON =
     : "python3.12");
 const PINNED_COMMIT = "ad121ebf34a5f5e37204371c026927d77efcd15c";
 const CANONICAL_ORIGIN = "https://github.com/Xerolux/idm-heatpump-api";
+const FIXTURE_NAMES = [
+  "public-api.json",
+  "public-classes.json",
+  "codec-vectors.json",
+  "register-schema.json",
+  "behavior-contract.json",
+  "web-contract.json",
+] as const;
 
 const temporaryDirectories: string[] = [];
 
@@ -71,6 +87,19 @@ interface FixtureRoot {
 
 function readJson<T>(path: string): T {
   return JSON.parse(readFileSync(path, "utf8")) as T;
+}
+
+function fixturePath(checkout: DisposableCheckout, name: (typeof FIXTURE_NAMES)[number]): string {
+  return join(checkout.output, "test/fixtures", name);
+}
+
+function fixtureSnapshot(checkout: DisposableCheckout): Readonly<Record<string, { readonly bytes: Buffer; readonly mtimeMs: number }>> {
+  return Object.fromEntries(
+    FIXTURE_NAMES.map((name) => {
+      const path = fixturePath(checkout, name);
+      return [name, { bytes: readFileSync(path), mtimeMs: statSync(path).mtimeMs }];
+    }),
+  );
 }
 
 function collectObjectKeys(value: unknown, keys = new Set<string>()): Set<string> {
@@ -243,17 +272,9 @@ describe("verified Python contract generator", () => {
     const result = runGenerator(checkout);
     requireSuccess(result, "fixture generation");
 
-    const fixtureNames = [
-      "public-api.json",
-      "public-classes.json",
-      "codec-vectors.json",
-      "register-schema.json",
-      "behavior-contract.json",
-      "web-contract.json",
-    ] as const;
     const fixtures = Object.fromEntries(
-      fixtureNames.map((name) => [name, readJson<FixtureRoot>(join(checkout.output, "test/fixtures", name))]),
-    ) as Record<(typeof fixtureNames)[number], FixtureRoot>;
+      FIXTURE_NAMES.map((name) => [name, readJson<FixtureRoot>(fixturePath(checkout, name))]),
+    ) as Record<(typeof FIXTURE_NAMES)[number], FixtureRoot>;
 
     for (const fixture of Object.values(fixtures)) {
       expect(fixture.schema_version).toBe(1);
@@ -392,8 +413,8 @@ describe("verified Python contract generator", () => {
       expect(Object.keys(scenario).sort()).toEqual(scenarioFields);
     }
 
-    const allFixtureText = fixtureNames
-      .map((name) => readFileSync(join(checkout.output, "test/fixtures", name), "utf8"))
+    const allFixtureText = FIXTURE_NAMES
+      .map((name) => readFileSync(fixturePath(checkout, name), "utf8"))
       .join("\n");
     expect(allFixtureText).toContain('"$number": "-0"');
     expect(allFixtureText).toContain('"$number": "NaN"');
@@ -404,5 +425,64 @@ describe("verified Python contract generator", () => {
       deferred_to_phase: 4,
       evidence_kind: "deferred_marker",
     });
+  }, 120_000);
+
+  it("is deterministic and keeps check mode byte- and mtime-non-mutating", () => {
+    const checkout = createExactCheckout();
+    requireSuccess(runGenerator(checkout), "initial fixture generation");
+    const first = fixtureSnapshot(checkout);
+
+    requireSuccess(runGenerator(checkout), "repeat fixture generation");
+    const second = fixtureSnapshot(checkout);
+    for (const name of FIXTURE_NAMES) {
+      expect(second[name]?.bytes.equals(first[name]?.bytes ?? Buffer.alloc(0))).toBe(true);
+      expect(second[name]?.bytes.toString("utf8").endsWith("\n")).toBe(true);
+    }
+
+    const cleanCheckBefore = fixtureSnapshot(checkout);
+    const cleanCheck = runGenerator(checkout, ["--check"]);
+    requireSuccess(cleanCheck, "clean check mode");
+    const cleanCheckAfter = fixtureSnapshot(checkout);
+    for (const name of FIXTURE_NAMES) {
+      expect(cleanCheckAfter[name]?.bytes.equals(cleanCheckBefore[name]?.bytes ?? Buffer.alloc(0))).toBe(true);
+      expect(cleanCheckAfter[name]?.mtimeMs).toBe(cleanCheckBefore[name]?.mtimeMs);
+    }
+
+    const changedPath = fixturePath(checkout, "public-api.json");
+    const changed = readJson<Record<string, unknown>>(changedPath);
+    writeFileSync(changedPath, `${JSON.stringify({ ...changed, drift: true }, undefined, 2)}\n`);
+    const driftBefore = fixtureSnapshot(checkout);
+    const driftCheck = runGenerator(checkout, ["--check"]);
+    expect(driftCheck.status).not.toBe(0);
+    expect(driftCheck.stderr).toContain("contract_drift");
+    expect(driftCheck.stderr).toContain("test/fixtures/public-api.json");
+    expect(driftCheck.stderr).toContain("semantic difference");
+    const driftAfter = fixtureSnapshot(checkout);
+    for (const name of FIXTURE_NAMES) {
+      expect(driftAfter[name]?.bytes.equals(driftBefore[name]?.bytes ?? Buffer.alloc(0))).toBe(true);
+      expect(driftAfter[name]?.mtimeMs).toBe(driftBefore[name]?.mtimeMs);
+    }
+  }, 120_000);
+
+  it("atomically preserves every prior fixture when staged generation fails", () => {
+    const checkout = createExactCheckout();
+    requireSuccess(runGenerator(checkout), "initial fixture generation");
+    for (const name of FIXTURE_NAMES) {
+      writeFileSync(fixturePath(checkout, name), `preserved:${name}\n`);
+    }
+    const before = fixtureSnapshot(checkout);
+
+    const failed = runGenerator(checkout, [], {
+      ...process.env,
+      IDM_CONTRACT_TEST_FAIL_AFTER_STAGE: "1",
+    });
+
+    expect(failed.status).not.toBe(0);
+    expect(failed.stderr).toContain("injected_failure");
+    const after = fixtureSnapshot(checkout);
+    for (const name of FIXTURE_NAMES) {
+      expect(after[name]?.bytes.equals(before[name]?.bytes ?? Buffer.alloc(0))).toBe(true);
+      expect(after[name]?.mtimeMs).toBe(before[name]?.mtimeMs);
+    }
   }, 120_000);
 });
