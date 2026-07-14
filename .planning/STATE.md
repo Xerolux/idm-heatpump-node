@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-07-14T23:00:22.078Z"
-last_activity: 2026-07-14 -- Phase 01 execution started
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-07-14T23:36:35.338Z"
+last_activity: 2026-07-15 -- Completed Phase 01 Plan 02
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 10
-  completed_plans: 1
-  percent: 0
+  completed_plans: 2
+  percent: 20
 ---
 
 # Project State
@@ -26,33 +26,34 @@ See: .planning/PROJECT.md (updated 2026-07-14)
 ## Current Position
 
 Phase: 01 (reproducible-semantic-contract) — EXECUTING
-Plan: 2 of 10
+Plan: 3 of 10
 Status: Ready to execute
-Last activity: 2026-07-14 -- Phase 01 execution started
+Last activity: 2026-07-15 -- Completed Phase 01 Plan 02
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
+- Total plans completed: 2
+- Average duration: 24.5 min
+- Total execution time: 49 min
 
 **By Phase:**
 
-| Phase | Plans | Total | Avg/Plan |
-| ----- | ----- | ----- | -------- |
-| -     | -     | -     | -        |
+| Phase | Plans | Total  | Avg/Plan |
+| ----- | ----- | ------ | -------- |
+| 01    | 2     | 49 min | 24.5 min |
 
 **Recent Trend:**
 
-- Last 5 plans: None
-- Trend: No execution data yet
+- Last 5 plans: 16 min, 33 min
+- Trend: Contract-generation plan added complete security and determinism coverage
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |
+| Phase 01 P02 | 33 min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,9 @@ Recent decisions affecting current work:
 - [Initialization]: `private: true` remains until complete parity and every release gate pass.
 - [Phase 01]: Baseline admission verifies the exact manifest and clean detached Git identity before upstream execution. — Generated parity evidence is authoritative only when repository, tag, full SHA, schema, and package metadata are indivisible.
 - [Phase 01]: Read pinned Python project metadata from the verified Git object. — git show of the pinned commit prevents mutable worktree content from spoofing package name or version.
+- [Phase 01]: Verify the entire pinned Python identity before import in every generator invocation. — A standalone generator must remain fail-closed even when the TypeScript baseline verifier was not run first.
+- [Phase 01]: Keep Python fact fixtures separate from future TypeScript mappings. — Authoritative source evidence must not embed Node ownership, naming, export, status, or representation choices.
+- [Phase 01]: Treat generated contract JSON as byte-authoritative and transactionally replace the fixed six-file allowlist. — One canonical serializer plus rollback-tested writes prevents formatting drift and partial fixture sets.
 
 ### Pending Todos
 
@@ -84,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-14T22:59:41.748Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-07-14T23:36:35.328Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None

@@ -39,7 +39,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 
 - [x] 01-01-PLAN.md — Establish the strict exact-baseline trust boundary before upstream execution.
-- [ ] 01-02-PLAN.md — Generate deterministic public API, codec, register, and scenario golden contracts.
+- [x] 01-02-PLAN.md — Generate deterministic public API, codec, register, and scenario golden contracts.
 - [ ] 01-03-PLAN.md — Inventory all public symbols and generate the API parity and baseline documentation.
 - [ ] 01-08-PLAN.md — Implement lossless tagged values and the strict CTR-01 scenario envelope.
 - [ ] 01-04-PLAN.md — Consume the sole API mapping to implement immutable constants, complete helper/class contracts, and exact RegisterDef semantics.
@@ -116,7 +116,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase                                      | Plans Complete | Status      | Completed |
 | ------------------------------------------ | -------------- | ----------- | --------- |
-| 1. Reproducible Semantic Contract          | 1/10           | In Progress |           |
+| 1. Reproducible Semantic Contract          | 2/10           | In Progress |           |
 | 2. Modbus Reads, Detection, and Resilience | 0/TBD          | Not started | -         |
 | 3. Safe Write Parity                       | 0/TBD          | Not started | -         |
 | 4. Optional Read-Only Web Parity           | 0/TBD          | Not started | -         |
