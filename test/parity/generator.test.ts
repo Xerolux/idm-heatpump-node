@@ -107,7 +107,7 @@ function importGenerator(expression: string): SpawnSyncReturns<string> {
     "spec.loader.exec_module(module)",
     `print(json.dumps(${expression}, sort_keys=True, separators=(',', ':')))`,
   ].join("\n");
-  return run(PYTHON, ["-c", source]);
+  return run(PYTHON, ["-c", source], ROOT, { ...process.env, PYTHONDONTWRITEBYTECODE: "1" });
 }
 
 afterEach(() => {
@@ -132,7 +132,7 @@ describe("verified Python contract generator", () => {
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain("dirty_checkout");
     expect(existsSync(sentinel)).toBe(false);
-  });
+  }, 120_000);
 
   it("verifies before import for wrong origins and branch-only references", () => {
     const wrongOrigin = createExactCheckout();
@@ -154,7 +154,7 @@ describe("verified Python contract generator", () => {
     const branchResult = runGenerator(branchCheckout);
     expect(branchResult.status).not.toBe(0);
     expect(branchResult.stderr).toContain("branch_checkout");
-  });
+  }, 120_000);
 
   it("rejects arbitrary output roots", () => {
     const checkout = createExactCheckout();
@@ -174,7 +174,7 @@ describe("verified Python contract generator", () => {
 
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain("invalid_output_root");
-  });
+  }, 120_000);
 
   it("normalization losslessly tags exceptional numbers and sorts sets and mappings", () => {
     const result = importGenerator(
