@@ -520,7 +520,7 @@ describe("verified Python contract generator", () => {
     }
   }, 120_000);
 
-  it("atomically preserves every prior fixture when staged generation fails", () => {
+  it("atomically rolls back every prior fixture when transaction replacement fails", () => {
     const checkout = createExactCheckout();
     requireSuccess(runGenerator(checkout), "initial fixture generation");
     for (const name of FIXTURE_NAMES) {
@@ -530,7 +530,7 @@ describe("verified Python contract generator", () => {
 
     const failed = runGenerator(checkout, [], {
       ...process.env,
-      IDM_CONTRACT_TEST_FAIL_AFTER_STAGE: "1",
+      IDM_CONTRACT_TEST_FAIL_AFTER_REPLACE: "1",
     });
 
     expect(failed.status).not.toBe(0);

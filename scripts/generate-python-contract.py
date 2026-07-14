@@ -1011,6 +1011,14 @@ def write_fixtures(artifacts: Mapping[Path, bytes], output_root: Path) -> None:
                     os.replace(backup, destination)
                 raise
             replaced.append((destination, backup))
+            failure_after_replace = os.environ.get(
+                "IDM_CONTRACT_TEST_FAIL_AFTER_REPLACE"
+            )
+            if failure_after_replace == str(len(replaced)):
+                fail(
+                    "injected_failure",
+                    f"test-only failure after replacing {len(replaced)} artifact(s)",
+                )
     except BaseException:
         for destination, backup in reversed(replaced):
             try:
