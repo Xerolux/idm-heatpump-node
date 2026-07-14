@@ -163,7 +163,7 @@ verglichen werden.
 gegen sie validiert und enthält:
 
 | Python-Symbol | TypeScript-Symbol | Status | Contract-Test |
-| --- | --- | --- | --- |
+| ------------- | ----------------- | ------ | ------------- |
 
 Erlaubte Statuswerte während der Entwicklung:
 

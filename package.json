@@ -1,0 +1,89 @@
+{
+  "name": "@xerolux/idm-heatpump",
+  "version": "0.1.0",
+  "description": "Unofficial Node.js client for IDM Navigator heat pumps over Modbus TCP",
+  "license": "MIT",
+  "author": "Basti (Xerolux)",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./web": {
+      "import": {
+        "types": "./dist/web/index.d.ts",
+        "default": "./dist/web/index.js"
+      },
+      "require": {
+        "types": "./dist/web/index.d.cts",
+        "default": "./dist/web/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "overrides": {
+    "esbuild": "0.28.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Xerolux/idm-heatpump-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Xerolux/idm-heatpump-node/issues"
+  },
+  "homepage": "https://github.com/Xerolux/idm-heatpump-node#readme",
+  "keywords": [
+    "idm",
+    "heatpump",
+    "modbus",
+    "modbus-tcp",
+    "navigator",
+    "home-automation",
+    "typescript"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm run pack:check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "pack:check": "npm run build && node scripts/check-package.mjs",
+    "prepack": "npm run build",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "22.20.1",
+    "@vitest/coverage-v8": "4.1.10",
+    "eslint": "10.7.0",
+    "prettier": "3.9.5",
+    "tsup": "8.5.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.64.0",
+    "vitest": "4.1.10"
+  }
+}

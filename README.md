@@ -31,6 +31,10 @@ Eine Teilimplementierung darf nicht als funktionsgleicher Port veröffentlicht
 werden. Insbesondere gibt es kein vorgezogenes Read-only-Paket ohne sichere
 Writes oder ohne das Web-Supplement.
 
+Das Manifest bleibt bis zur vollständig bestandenen Paritätsprüfung absichtlich
+auf `private: true`. Damit kann der Entwicklungsstand lokal als Tarball geprüft,
+aber nicht versehentlich auf npm veröffentlicht werden.
+
 ## Dokumente
 
 - [`AGENTS.md`](AGENTS.md) – verbindliche Arbeitsanweisung für KI-Agenten und
@@ -54,6 +58,19 @@ Writes oder ohne das Web-Supplement.
 
 Navigator 1.0/1.7 gehört zu einer anderen Protokollfamilie und ist nicht Teil
 dieses Projekts.
+
+## Entwicklung
+
+Voraussetzung ist Node.js 22 oder neuer.
+
+```bash
+npm ci
+npm run check
+```
+
+`npm run check` führt Formatprüfung, Linting, strikten Typecheck, Tests mit
+Coverage, den ESM-/CommonJS-Build und eine Kontrolle des späteren npm-Tarballs
+aus.
 
 ## Unofficial project
 
