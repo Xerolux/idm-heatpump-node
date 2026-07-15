@@ -246,11 +246,13 @@ describe("verified Python contract generator", () => {
   it("normalization losslessly tags exceptional numbers and sorts sets and mappings", () => {
     const result = importGenerator(
       "module.normalize_contract_value({'set': {3, 1, 2}, 'tuple': (1, None), " +
+        "'finite': {1e-9, 1e-10, -1e-9, -1e-10, 1e20, 1e21}, " +
         "'numbers': [float('nan'), float('inf'), float('-inf'), -0.0]})",
     );
     requireSuccess(result, "normalization probe");
 
     expect(JSON.parse(result.stdout)).toEqual({
+      finite: [-1e-9, -1e-10, 1e-10, 1e-9, 1e20, 1e21],
       numbers: [
         { $number: "NaN" },
         { $number: "+Infinity" },

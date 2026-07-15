@@ -139,6 +139,57 @@ describe("tagged contract numbers", () => {
     ]);
   });
 
+  it("uses one structural order for finite numbers, nesting, and exceptional envelopes", () => {
+    const finiteValues = [
+      -1e21, -1e20, -1e16, -1e15, -42.5, -1e-4, -1e-5, -1e-6, -1e-7, -1e-9, -1e-10, 1e-10, 1e-9,
+      1e-7, 1e-6, 1e-5, 1e-4, 42.5, 1e15, 1e16, 1e20, 1e21,
+    ] as const;
+
+    expect(normalizeTaggedValue(new Set([...finiteValues].reverse()))).toEqual(finiteValues);
+
+    expect(
+      normalizeTaggedValue(
+        new Set<unknown>([
+          { "10": -1e-10 },
+          { "2": 1e-10, "10": -1e-10 },
+          { "10": 1e-10 },
+          { "2": 0 },
+          ["nested"],
+          ["nested", { exponent: 1e-10 }],
+          ["nested", { exponent: 1e-9 }],
+          Number.NaN,
+          Number.NEGATIVE_INFINITY,
+          Number.POSITIVE_INFINITY,
+          { $number: "-0" },
+          "a",
+          1e-10,
+          -1e9,
+          true,
+          false,
+          null,
+        ]),
+      ),
+    ).toEqual([
+      null,
+      false,
+      true,
+      -1e9,
+      1e-10,
+      "a",
+      ["nested"],
+      ["nested", { exponent: 1e-10 }],
+      ["nested", { exponent: 1e-9 }],
+      { $number: "+Infinity" },
+      { $number: "-0" },
+      { $number: "-Infinity" },
+      { $number: "NaN" },
+      { "10": -1e-10 },
+      { "10": -1e-10, "2": 1e-10 },
+      { "10": 1e-10 },
+      { "2": 0 },
+    ]);
+  });
+
   it("rejects malformed tagged number envelopes with a stable code", () => {
     const inheritedEnvelope = Object.assign(Object.create({ inherited: true }) as object, {
       $number: "NaN",
@@ -274,7 +325,7 @@ describe("versioned CTR-01 scenario fixture", () => {
       python_version: "0.7.6",
       repository: "https://github.com/Xerolux/idm-heatpump-api",
     });
-    expect(parsed.scenarios).toHaveLength(5);
+    expect(parsed.scenarios).toHaveLength(6);
     for (const scenario of parsed.scenarios) {
       expect(Object.keys(scenario).sort()).toEqual(requiredFields);
     }
@@ -308,6 +359,39 @@ describe("versioned CTR-01 scenario fixture", () => {
         ]),
       }),
     ).toEqual(orderingResult);
+
+    const structuralResult = parsed.scenarios.find(
+      ({ name }) => name === "structural_set_ordering",
+    )?.expected_result;
+    expect(
+      parseTaggedValue(
+        normalizeTaggedValue({
+          finite: new Set([
+            1e21, 1e20, 1e16, 1e15, 42.5, 1e-4, 1e-5, 1e-6, 1e-7, 1e-9, 1e-10, -1e-10, -1e-9, -1e-7,
+            -1e-6, -1e-5, -1e-4, -42.5, -1e15, -1e16, -1e20, -1e21,
+          ]),
+          mixed: new Set<unknown>([
+            { "10": -1e-10 },
+            { "2": 1e-10, "10": -1e-10 },
+            { "10": 1e-10 },
+            { "2": 0 },
+            ["nested"],
+            ["nested", { exponent: 1e-10 }],
+            ["nested", { exponent: 1e-9 }],
+            { $number: "NaN" },
+            { $number: "-Infinity" },
+            { $number: "+Infinity" },
+            { $number: "-0" },
+            "a",
+            1e-10,
+            -1e9,
+            true,
+            false,
+            null,
+          ]),
+        }),
+      ),
+    ).toEqual(structuralResult);
   });
 
   it("rejects every root and baseline provenance mutation", () => {

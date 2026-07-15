@@ -23,7 +23,7 @@ import subprocess
 import sys
 import tempfile
 import tomllib
-from collections.abc import Mapping, Sequence, Set
+from collections.abc import Iterator, Mapping, Sequence, Set
 from pathlib import Path
 from typing import Any, NoReturn
 
@@ -74,8 +74,23 @@ def fail(code: str, diagnostic: str) -> NoReturn:
     raise ContractError(code, diagnostic[:MAX_PROCESS_OUTPUT])
 
 
-def _sort_key(value: Any) -> str:
-    return json.dumps(value, ensure_ascii=False, allow_nan=False, sort_keys=True, separators=(",", ":"))
+def _structural_sort_key(value: Any) -> tuple[Any, ...]:
+    """Return the closed language-neutral ordering key for normalized values."""
+    if value is None:
+        return (0,)
+    if isinstance(value, bool):
+        return (1, value)
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        if isinstance(value, float) and (not math.isfinite(value) or (value == 0.0 and math.copysign(1.0, value) < 0)):
+            fail("invalid_number_tag", "exceptional numbers must use the reserved envelope")
+        return (2, value)
+    if isinstance(value, str):
+        return (3, value)
+    if isinstance(value, list):
+        return (4, tuple(_structural_sort_key(item) for item in value))
+    if isinstance(value, dict):
+        return (5, tuple((key, _structural_sort_key(value[key])) for key in sorted(value)))
+    fail("invalid_contract_value", f"unsupported normalized type: {type(value).__name__}")
 
 
 def normalize_contract_value(value: Any) -> Any:
@@ -111,7 +126,7 @@ def normalize_contract_value(value: Any) -> Any:
         return {key: normalized[key] for key in sorted(normalized)}
     if isinstance(value, Set) and not isinstance(value, (str, bytes, bytearray)):
         items = [normalize_contract_value(item) for item in value]
-        return sorted(items, key=_sort_key)
+        return sorted(items, key=_structural_sort_key)
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         return [normalize_contract_value(item) for item in value]
     fail("invalid_contract_value", f"unsupported contract value type: {type(value).__name__}")
@@ -936,6 +951,71 @@ def _scenario(name: str, configuration: Any, operation: Any, expected_result: An
     }
 
 
+class _HashableMapping(Mapping[str, Any]):
+    """Identity-hashable mapping used only to exercise normalized set ordering."""
+
+    def __init__(self, values: Mapping[str, Any]) -> None:
+        self._values = dict(values)
+
+    def __getitem__(self, key: str) -> Any:
+        return self._values[key]
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._values)
+
+    def __len__(self) -> int:
+        return len(self._values)
+
+    __hash__ = object.__hash__
+
+
+def _structural_ordering_vectors() -> dict[str, Any]:
+    finite = {
+        -1e21,
+        -1e20,
+        -1e16,
+        -1e15,
+        -42.5,
+        -1e-4,
+        -1e-5,
+        -1e-6,
+        -1e-7,
+        -1e-9,
+        -1e-10,
+        1e-10,
+        1e-9,
+        1e-7,
+        1e-6,
+        1e-5,
+        1e-4,
+        42.5,
+        1e15,
+        1e16,
+        1e20,
+        1e21,
+    }
+    mixed = {
+        _HashableMapping({"10": -1e-10}),
+        _HashableMapping({"2": 1e-10, "10": -1e-10}),
+        _HashableMapping({"10": 1e-10}),
+        _HashableMapping({"2": 0}),
+        ("nested",),
+        ("nested", _HashableMapping({"exponent": 1e-10})),
+        ("nested", _HashableMapping({"exponent": 1e-9})),
+        _HashableMapping({"$number": "NaN"}),
+        _HashableMapping({"$number": "-Infinity"}),
+        _HashableMapping({"$number": "+Infinity"}),
+        _HashableMapping({"$number": "-0"}),
+        "a",
+        1e-10,
+        -1e9,
+        True,
+        False,
+        None,
+    }
+    return normalize_contract_value({"finite": finite, "mixed": mixed})
+
+
 def _behavior_fixture(manifest: Mapping[str, Any], client_module: Any, registers: Any) -> dict[str, Any]:
     codec = client_module.ModbusCodec
     scenarios = [
@@ -955,6 +1035,20 @@ def _behavior_fixture(manifest: Mapping[str, Any], client_module: Any, registers
                     "nested": {"2": "two", "10": "ten", "😀": {"2": 2, "10": 10}, "": True},
                 }
             ),
+        ),
+        _scenario(
+            "structural_set_ordering",
+            {},
+            {
+                "kind": "normalize_value",
+                "values": [
+                    "finite_numbers",
+                    "nested_arrays",
+                    "nested_objects",
+                    "exceptional_envelopes",
+                ],
+            },
+            _structural_ordering_vectors(),
         ),
         _scenario(
             "primitive_float_low_word_first",

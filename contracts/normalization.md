@@ -11,7 +11,7 @@ not listed here is a semantic difference and must fail parity verification.
 | `None`                   | `null`                                           | `null`                        |
 | tuple                    | array in original order                          | `readonly` array              |
 | list                     | array in original order                          | `readonly` array              |
-| set/frozenset            | array sorted by canonical JSON value             | immutable set-like collection |
+| set/frozenset            | array sorted by the structural order below       | immutable set-like collection |
 | enum member              | the recursively normalized enum value            | frozen `as const` value       |
 | mapping                  | object with string keys sorted lexicographically | readonly record/map boundary  |
 | `snake_case` public name | documented mapping entry only                    | `camelCase` public name       |
@@ -19,6 +19,27 @@ not listed here is a semantic difference and must fail parity verification.
 Mapping keys that are Python integers are converted to their decimal strings.
 Other non-string mapping keys are rejected. A conversion that creates duplicate
 string keys is rejected. Array order is semantic and is never sorted.
+
+## Structural set order
+
+Normalized set values use one language-neutral structural key. JSON text and
+runtime-specific number formatting are never part of this key. Values are
+ordered first by this closed type rank:
+
+1. `null`;
+2. boolean (`false`, then `true`);
+3. finite number, by mathematical numeric value;
+4. string, by Unicode code point;
+5. array, lexicographically by the structural keys of its elements, with a
+   shorter equal prefix first;
+6. object, lexicographically by its entries, with keys sorted and compared by
+   Unicode code point, then values compared recursively, and a shorter equal
+   prefix first.
+
+Numerically equal finite values have the same structural key regardless of
+fixed or exponential JSON spelling. Exceptional-number envelopes are objects
+and follow the same recursive object ordering. Two structurally equal
+normalized values are semantically equal for ordering purposes.
 
 ## Exceptional numbers
 

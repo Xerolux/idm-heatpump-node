@@ -96,6 +96,97 @@
       "clock": [],
       "configuration": {},
       "expected_requests": [],
+      "expected_result": {
+        "finite": [
+          -1e+21,
+          -1e+20,
+          -1e+16,
+          -1000000000000000.0,
+          -42.5,
+          -0.0001,
+          -1e-05,
+          -1e-06,
+          -1e-07,
+          -1e-09,
+          -1e-10,
+          1e-10,
+          1e-09,
+          1e-07,
+          1e-06,
+          1e-05,
+          0.0001,
+          42.5,
+          1000000000000000.0,
+          1e+16,
+          1e+20,
+          1e+21
+        ],
+        "mixed": [
+          null,
+          false,
+          true,
+          -1000000000.0,
+          1e-10,
+          "a",
+          [
+            "nested"
+          ],
+          [
+            "nested",
+            {
+              "exponent": 1e-10
+            }
+          ],
+          [
+            "nested",
+            {
+              "exponent": 1e-09
+            }
+          ],
+          {
+            "$number": "+Infinity"
+          },
+          {
+            "$number": "-0"
+          },
+          {
+            "$number": "-Infinity"
+          },
+          {
+            "$number": "NaN"
+          },
+          {
+            "10": -1e-10
+          },
+          {
+            "10": -1e-10,
+            "2": 1e-10
+          },
+          {
+            "10": 1e-10
+          },
+          {
+            "2": 0
+          }
+        ]
+      },
+      "expected_state": {},
+      "name": "structural_set_ordering",
+      "operation": {
+        "kind": "normalize_value",
+        "values": [
+          "finite_numbers",
+          "nested_arrays",
+          "nested_objects",
+          "exceptional_envelopes"
+        ]
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {},
+      "expected_requests": [],
       "expected_result": [
         0,
         16256

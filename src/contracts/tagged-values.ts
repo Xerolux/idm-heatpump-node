@@ -285,9 +285,7 @@ function transformSet(
     const items = [...value].map((item) =>
       transformValue(item, "normalize", state, depth + 1),
     ) as NormalizedContractValue[];
-    items.sort((left, right) =>
-      compareUnicodeCodePoints(canonicalContractJson(left), canonicalContractJson(right)),
-    );
+    items.sort(compareContractValues);
     return Object.freeze(items);
   });
 }
@@ -378,4 +376,4 @@ export function normalizeTaggedValue(value: unknown): NormalizedContractValue {
 export function parseTaggedValue(value: unknown): ParsedContractValue {
   return transformValue(value, "parse", initialState(), 0) as ParsedContractValue;
 }
-import { canonicalContractJson, compareUnicodeCodePoints } from "./canonical-order.js";
+import { compareContractValues, compareUnicodeCodePoints } from "./canonical-order.js";
