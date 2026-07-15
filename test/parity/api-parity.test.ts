@@ -384,9 +384,7 @@ describe("checked mapping export closure", () => {
     const expectedRuntimeSymbols = apiMapping.mappings
       .filter(
         ({ export_path, status, typescript_symbol }) =>
-          export_path === "." &&
-          status === "complete" &&
-          !typeOnlySymbols.has(typescript_symbol),
+          export_path === "." && status === "complete" && !typeOnlySymbols.has(typescript_symbol),
       )
       .map(({ typescript_symbol }) => typescript_symbol)
       .sort();
@@ -408,9 +406,7 @@ describe("checked mapping export closure", () => {
       "getSystemRegisters",
     ];
 
-    expect(rootSource).toContain(
-      'export type { RegisterDef } from "./registers/definitions.js";',
-    );
+    expect(rootSource).toContain('export type { RegisterDef } from "./registers/definitions.js";');
     for (const symbol of forbiddenSymbols) {
       expect(rootExports, symbol).not.toHaveProperty(symbol);
       expect(rootSource, symbol).not.toContain(symbol);
