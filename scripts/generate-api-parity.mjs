@@ -13,6 +13,8 @@ import {
 import { basename, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { isEvidenceTestPath, validateEvidencePath } from "./evidence-path.mjs";
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PATHS = Object.freeze({
   mapping: resolve(ROOT, "contracts/api-mapping.json"),
@@ -658,14 +660,18 @@ function validateMapping(value, expectedBaseline, publicApi, publicClasses, rele
       "mapping_schema_invalid",
       256,
     );
-    if (!/^test\/.+\.test\.ts$/u.test(row.contract_test)) {
+    if (!isEvidenceTestPath(row.contract_test)) {
       fail("mapping_schema_invalid", `Invalid contract test path for ${row.python_symbol}`);
     }
-    if (row.status === "complete" && !existsSync(resolve(ROOT, row.contract_test))) {
-      fail(
-        "mapping_complete_evidence_missing",
-        `Complete evidence is missing for ${row.python_symbol}`,
-      );
+    if (row.status === "complete") {
+      try {
+        validateEvidencePath(ROOT, row.contract_test);
+      } catch (error) {
+        fail(
+          "mapping_complete_evidence_invalid",
+          `Complete evidence is invalid for ${row.python_symbol}: ${String(error)}`,
+        );
+      }
     }
     if (
       !Array.isArray(row.normalizations) ||

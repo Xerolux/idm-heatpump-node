@@ -6,6 +6,8 @@ import {
   readFileSync,
   rmSync,
   statSync,
+  symlinkSync,
+  truncateSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -21,6 +23,7 @@ const ROOT = resolve(import.meta.dirname, "../..");
 const GENERATOR = "scripts/generate-api-parity.mjs";
 const GENERATOR_INPUTS = [
   GENERATOR,
+  "scripts/evidence-path.mjs",
   "contracts/api-mapping.json",
   "test/fixtures/public-api.json",
   "test/fixtures/public-classes.json",
@@ -165,6 +168,26 @@ function runGenerator(
     maxBuffer: 8 * 1024 * 1024,
     shell: false,
     timeout: 30_000,
+  });
+}
+
+function prepareReleaseMapping(project: string, contractTest: string): void {
+  mutateProjectJson<ApiMapping>(project, "contracts/api-mapping.json", (mapping) => {
+    for (const row of mapping.mappings as ApiMappingRow[]) {
+      if (row.status === "planned" || row.status === "partial") {
+        (row as { status: string }).status = "not_applicable";
+        (row as { not_applicable_rationale?: string }).not_applicable_rationale =
+          "Test-only reviewed release fixture for standalone evidence validation.";
+      }
+    }
+    const complete = requireDefined(
+      mapping.mappings.find(({ status }) => status === "complete"),
+      "complete mapping row",
+    );
+    (complete as { contract_test: string }).contract_test = contractTest;
+  });
+  mutateProjectJson<{ parity_status: string }>(project, "UPSTREAM-PARITY.json", (manifest) => {
+    manifest.parity_status = "complete";
   });
 }
 
@@ -421,6 +444,58 @@ describe("checked mapping export closure", () => {
 });
 
 describe("generated API and baseline documentation", () => {
+  it("release mode rejects escaped, directory, symlink, empty, and oversized evidence", () => {
+    const cases: readonly {
+      readonly path: string;
+      readonly setup?: (project: string, path: string) => void;
+    }[] = [
+      { path: "test/../../outside.test.ts" },
+      {
+        path: "test/evidence/directory.test.ts",
+        setup: (project, path) => mkdirSync(resolve(project, path), { recursive: true }),
+      },
+      {
+        path: "test/evidence/symlink.test.ts",
+        setup(project, path) {
+          mkdirSync(dirname(resolve(project, path)), { recursive: true });
+          if (process.platform === "win32") {
+            symlinkSync(resolve(project, "test/registers"), resolve(project, path), "junction");
+          } else {
+            symlinkSync(
+              resolve(project, "test/registers/register-def.test.ts"),
+              resolve(project, path),
+              "file",
+            );
+          }
+        },
+      },
+      {
+        path: "test/evidence/empty.test.ts",
+        setup(project, path) {
+          mkdirSync(dirname(resolve(project, path)), { recursive: true });
+          writeFileSync(resolve(project, path), "");
+        },
+      },
+      {
+        path: "test/evidence/oversized.test.ts",
+        setup(project, path) {
+          mkdirSync(dirname(resolve(project, path)), { recursive: true });
+          writeFileSync(resolve(project, path), "x");
+          truncateSync(resolve(project, path), 16 * 1024 * 1024 + 1);
+        },
+      },
+    ];
+
+    for (const testCase of cases) {
+      const project = createGeneratorProject();
+      testCase.setup?.(project, testCase.path);
+      prepareReleaseMapping(project, testCase.path);
+      const result = runGenerator(project, ["--release"]);
+      expect(result.status, testCase.path).not.toBe(0);
+      expect(result.stderr, testCase.path).toMatch(/mapping_(?:schema|complete_evidence)_invalid/u);
+    }
+  });
+
   it("generator rejects mapping, inventory, class, baseline, and release status drift", () => {
     const cases: readonly {
       readonly code: string;

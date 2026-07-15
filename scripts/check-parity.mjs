@@ -16,14 +16,17 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, posix, resolve, sep } from "node:path";
+import { dirname, join, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { validateEvidencePath } from "./evidence-path.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const MANIFEST_PATH = resolve(ROOT, "UPSTREAM-PARITY.json");
 const VERIFIER_PATH = resolve(ROOT, "scripts/check-upstream-version.mjs");
 const PYTHON_GENERATOR_PATH = resolve(ROOT, "scripts/generate-python-contract.py");
 const API_GENERATOR_PATH = resolve(ROOT, "scripts/generate-api-parity.mjs");
+const EVIDENCE_VALIDATOR_PATH = resolve(ROOT, "scripts/evidence-path.mjs");
 const MAPPING_PATH = resolve(ROOT, "contracts/api-mapping.json");
 
 const EXPECTED_MANIFEST_FIELDS = Object.freeze([
@@ -415,6 +418,7 @@ function prepareShadowRoot(stageRoot) {
   mkdirSync(resolve(stageRoot, "scripts"), { recursive: true });
   mkdirSync(resolve(stageRoot, "contracts"), { recursive: true });
   copyFileSync(API_GENERATOR_PATH, resolve(stageRoot, "scripts/generate-api-parity.mjs"));
+  copyFileSync(EVIDENCE_VALIDATOR_PATH, resolve(stageRoot, "scripts/evidence-path.mjs"));
   copyFileSync(MAPPING_PATH, resolve(stageRoot, "contracts/api-mapping.json"));
   copyFileSync(MANIFEST_PATH, resolve(stageRoot, "UPSTREAM-PARITY.json"));
 
@@ -428,41 +432,21 @@ function prepareShadowRoot(stageRoot) {
     fail("evidence_invalid", "API mapping has no evidence rows");
   }
 
-  const evidenceRoot = resolve(ROOT, "test");
   const stagedEvidence = new Set();
   for (const row of mapping.mappings) {
     if (!isRecord(row) || row.status !== "complete") {
       continue;
     }
     const relativePath = row.contract_test;
-    if (
-      typeof relativePath !== "string" ||
-      !/^test\/[A-Za-z0-9._/-]+\.test\.ts$/u.test(relativePath) ||
-      relativePath.split("/").includes("..")
-    ) {
-      fail("evidence_invalid", `Invalid complete evidence path: ${String(relativePath)}`);
-    }
     if (stagedEvidence.has(relativePath)) {
       continue;
     }
 
-    const source = resolve(ROOT, relativePath);
-    if (!source.startsWith(`${evidenceRoot}${sep}`)) {
-      fail("evidence_invalid", `Complete evidence escapes the test root: ${relativePath}`);
-    }
-    let stats;
+    let source;
     try {
-      stats = lstatSync(source);
+      source = validateEvidencePath(ROOT, relativePath, MAX_ARTIFACT_BYTES);
     } catch (error) {
-      fail("evidence_invalid", `Complete evidence is missing: ${relativePath}: ${String(error)}`);
-    }
-    if (
-      !stats.isFile() ||
-      stats.isSymbolicLink() ||
-      stats.size === 0 ||
-      stats.size > MAX_ARTIFACT_BYTES
-    ) {
-      fail("evidence_invalid", `Complete evidence is not a bounded regular file: ${relativePath}`);
+      fail("evidence_invalid", `Invalid complete evidence: ${String(error)}`);
     }
 
     const destination = resolve(stageRoot, relativePath);
