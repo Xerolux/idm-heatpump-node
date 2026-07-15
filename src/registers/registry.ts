@@ -27,6 +27,19 @@ interface ModelOption {
   readonly modelInfo?: IdmModelInfo | null;
 }
 
+function pythonNumberText(value: number): string {
+  if (Number.isNaN(value)) return "nan";
+  if (value === Number.POSITIVE_INFINITY) return "inf";
+  if (value === Number.NEGATIVE_INFINITY) return "-inf";
+  return String(value);
+}
+
+function requirePythonRangeInteger(value: number): void {
+  if (!Number.isInteger(value)) {
+    throw new TypeError("'float' object cannot be interpreted as an integer");
+  }
+}
+
 export interface RegisterRegistrySchemaEntry {
   readonly key: string;
   readonly address: number;
@@ -140,20 +153,20 @@ function validateOptions(options: BuildRegisterMapOptions): {
   if (!(zoneModules >= 0 && zoneModules <= 10)) {
     throw new SemanticValidationError(
       "zone_invalid",
-      `zone_modules must be 0-10, got ${String(zoneModules)}`,
+      `zone_modules must be 0-10, got ${pythonNumberText(zoneModules)}`,
     );
   }
   if (!(roomsPerZone >= 1 && roomsPerZone <= MAX_ROOMS_PER_ZONE)) {
     throw new SemanticValidationError(
       "room_invalid",
-      `rooms_per_zone must be 1-${String(MAX_ROOMS_PER_ZONE)}, got ${String(roomsPerZone)}`,
+      `rooms_per_zone must be 1-${String(MAX_ROOMS_PER_ZONE)}, got ${pythonNumberText(roomsPerZone)}`,
     );
   }
   const modelInfo = options.modelInfo ?? null;
   if (modelInfo !== null && !(modelInfo.zoneModules >= 0 && modelInfo.zoneModules <= 10)) {
     throw new SemanticValidationError(
       "zone_invalid",
-      `zone_modules must be 0-10, got ${String(modelInfo.zoneModules)}`,
+      `zone_modules must be 0-10, got ${pythonNumberText(modelInfo.zoneModules)}`,
     );
   }
   return { circuits, zoneModules, roomsPerZone, modelInfo };
@@ -183,6 +196,8 @@ export function buildRegisterMap(
     activeZoneModules = zoneModules;
     maps.push(getSolarRegisters(), getIscRegisters(), getPvRegisters(), getCascadeRegisters());
   }
+
+  requirePythonRangeInteger(activeZoneModules);
 
   for (const circuit of activeCircuits) {
     try {

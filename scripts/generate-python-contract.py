@@ -700,6 +700,24 @@ def _builder_rejection(identifier: str, code: str, callback: Any) -> dict[str, A
     fail("fixture_invalid", f"expected builder rejection did not occur: {identifier}")
 
 
+def _builder_count_outcome(identifier: str, inputs: Any, callback: Any) -> dict[str, Any]:
+    try:
+        result = callback()
+    except (TypeError, ValueError) as error:
+        return {
+            "id": identifier,
+            "input": normalize_contract_value(inputs),
+            "outcome": "rejected",
+            "error": {"python_type": type(error).__name__, "diagnostic": str(error)[:240]},
+        }
+    return {
+        "id": identifier,
+        "input": normalize_contract_value(inputs),
+        "outcome": "accepted",
+        "register_count": len(result),
+    }
+
+
 def _model_info(client_module: Any, model: str, circuits: list[str], zones: int, **features: bool) -> Any:
     return client_module.IdmModelInfo(
         model_name=model,
@@ -826,6 +844,30 @@ def _register_fixture(manifest: Mapping[str, Any], checkout: Path, client_module
         zone_modules=10,
         rooms_per_zone=8,
     )
+    zero_zone_model = _model_info(client_module, constants.MODEL_NAVIGATOR_20, [], 0)
+    one_zone_model = _model_info(client_module, constants.MODEL_NAVIGATOR_20, [], 1)
+    count_boundaries = [
+        _builder_count_outcome("direct_fractional_room", {"room_count": 1.5}, lambda: registers.get_zone_module_registers(1, room_count=1.5)),
+        _builder_count_outcome("direct_nan_room", {"room_count": float("nan")}, lambda: registers.get_zone_module_registers(1, room_count=float("nan"))),
+        _builder_count_outcome("direct_positive_infinite_room", {"room_count": float("inf")}, lambda: registers.get_zone_module_registers(1, room_count=float("inf"))),
+        _builder_count_outcome("direct_negative_infinite_room", {"room_count": float("-inf")}, lambda: registers.get_zone_module_registers(1, room_count=float("-inf"))),
+        _builder_count_outcome("manual_fractional_zone_active", {"zone_modules": 1.5}, lambda: registers.build_register_map(zone_modules=1.5)),
+        _builder_count_outcome("manual_nan_zone", {"zone_modules": float("nan")}, lambda: registers.build_register_map(zone_modules=float("nan"))),
+        _builder_count_outcome("manual_positive_infinite_zone", {"zone_modules": float("inf")}, lambda: registers.build_register_map(zone_modules=float("inf"))),
+        _builder_count_outcome("manual_negative_infinite_zone", {"zone_modules": float("-inf")}, lambda: registers.build_register_map(zone_modules=float("-inf"))),
+        _builder_count_outcome("manual_fractional_room_ignored_without_zones", {"zone_modules": 0, "rooms_per_zone": 1.5}, lambda: registers.build_register_map(zone_modules=0, rooms_per_zone=1.5)),
+        _builder_count_outcome("manual_fractional_room_active", {"zone_modules": 1, "rooms_per_zone": 1.5}, lambda: registers.build_register_map(zone_modules=1, rooms_per_zone=1.5)),
+        _builder_count_outcome("manual_nan_room_ignored_without_zones", {"zone_modules": 0, "rooms_per_zone": float("nan")}, lambda: registers.build_register_map(zone_modules=0, rooms_per_zone=float("nan"))),
+        _builder_count_outcome("manual_positive_infinite_room_ignored_without_zones", {"zone_modules": 0, "rooms_per_zone": float("inf")}, lambda: registers.build_register_map(zone_modules=0, rooms_per_zone=float("inf"))),
+        _builder_count_outcome("manual_negative_infinite_room_ignored_without_zones", {"zone_modules": 0, "rooms_per_zone": float("-inf")}, lambda: registers.build_register_map(zone_modules=0, rooms_per_zone=float("-inf"))),
+        _builder_count_outcome("model_ignores_fractional_manual_counts", {"model_zone_modules": 0, "zone_modules": 1.5, "rooms_per_zone": 1.5}, lambda: registers.build_register_map(model_info=zero_zone_model, zone_modules=1.5, rooms_per_zone=1.5)),
+        _builder_count_outcome("model_does_not_ignore_nan_manual_zone", {"model_zone_modules": 0, "zone_modules": float("nan")}, lambda: registers.build_register_map(model_info=zero_zone_model, zone_modules=float("nan"))),
+        _builder_count_outcome("model_fractional_zone_active", {"model_zone_modules": 1.5}, lambda: registers.build_register_map(model_info=_model_info(client_module, constants.MODEL_NAVIGATOR_20, [], 1.5))),
+        _builder_count_outcome("model_nan_zone", {"model_zone_modules": float("nan")}, lambda: registers.build_register_map(model_info=_model_info(client_module, constants.MODEL_NAVIGATOR_20, [], float("nan")))),
+        _builder_count_outcome("model_positive_infinite_zone", {"model_zone_modules": float("inf")}, lambda: registers.build_register_map(model_info=_model_info(client_module, constants.MODEL_NAVIGATOR_20, [], float("inf")))),
+        _builder_count_outcome("model_negative_infinite_zone", {"model_zone_modules": float("-inf")}, lambda: registers.build_register_map(model_info=_model_info(client_module, constants.MODEL_NAVIGATOR_20, [], float("-inf")))),
+        _builder_count_outcome("model_fractional_room_active", {"model_zone_modules": 1, "rooms_per_zone": 1.5}, lambda: registers.build_register_map(model_info=one_zone_model, rooms_per_zone=1.5)),
+    ]
     detection = [_serialize_register(register) for register in registers.get_detection_registers()]
     registry_surface = {
         "constructor": _class_constructor_fact(registers.RegisterRegistry),
@@ -844,6 +886,7 @@ def _register_fixture(manifest: Mapping[str, Any], checkout: Path, client_module
             _builder_rejection("zone_eleven", "zone_invalid", lambda: registers.get_zone_module_registers(11)),
         ],
         "rooms": rooms,
+        "count_boundaries": count_boundaries,
         "invalid_rooms": [
             _builder_rejection("room_zero", "room_invalid", lambda: registers.get_zone_module_registers(1, room_count=0)),
             _builder_rejection("room_nine", "room_invalid", lambda: registers.get_zone_module_registers(1, room_count=9)),

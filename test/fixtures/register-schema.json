@@ -164,6 +164,257 @@
         "register_count": 16
       }
     ],
+    "count_boundaries": [
+      {
+        "error": {
+          "diagnostic": "'float' object cannot be interpreted as an integer",
+          "python_type": "TypeError"
+        },
+        "id": "direct_fractional_room",
+        "input": {
+          "room_count": 1.5
+        },
+        "outcome": "rejected"
+      },
+      {
+        "error": {
+          "diagnostic": "Room count must be 1-8, got nan",
+          "python_type": "ValueError"
+        },
+        "id": "direct_nan_room",
+        "input": {
+          "room_count": {
+            "$number": "NaN"
+          }
+        },
+        "outcome": "rejected"
+      },
+      {
+        "error": {
+          "diagnostic": "Room count must be 1-8, got inf",
+          "python_type": "ValueError"
+        },
+        "id": "direct_positive_infinite_room",
+        "input": {
+          "room_count": {
+            "$number": "+Infinity"
+          }
+        },
+        "outcome": "rejected"
+      },
+      {
+        "error": {
+          "diagnostic": "Room count must be 1-8, got -inf",
+          "python_type": "ValueError"
+        },
+        "id": "direct_negative_infinite_room",
+        "input": {
+          "room_count": {
+            "$number": "-Infinity"
+          }
+        },
+        "outcome": "rejected"
+      },
+      {
+        "error": {
+          "diagnostic": "'float' object cannot be interpreted as an integer",
+          "python_type": "TypeError"
+        },
+        "id": "manual_fractional_zone_active",
+        "input": {
+          "zone_modules": 1.5
+        },
+        "outcome": "rejected"
+      },
+      {
+        "error": {
+          "diagnostic": "zone_modules must be 0-10, got nan",
+          "python_type": "ValueError"
+        },
+        "id": "manual_nan_zone",
+        "input": {
+          "zone_modules": {
+            "$number": "NaN"
+          }
+        },
+        "outcome": "rejected"
+      },
+      {
+        "error": {
+          "diagnostic": "zone_modules must be 0-10, got inf",
+          "python_type": "ValueError"
+        },
+        "id": "manual_positive_infinite_zone",
+        "input": {
+          "zone_modules": {
+            "$number": "+Infinity"
+          }
+        },
+        "outcome": "rejected"
+      },
+      {
+        "error": {
+          "diagnostic": "zone_modules must be 0-10, got -inf",
+          "python_type": "ValueError"
+        },
+        "id": "manual_negative_infinite_zone",
+        "input": {
+          "zone_modules": {
+            "$number": "-Infinity"
+          }
+        },
+        "outcome": "rejected"
+      },
+      {
+        "id": "manual_fractional_room_ignored_without_zones",
+        "input": {
+          "rooms_per_zone": 1.5,
+          "zone_modules": 0
+        },
+        "outcome": "accepted",
+        "register_count": 267
+      },
+      {
+        "error": {
+          "diagnostic": "'float' object cannot be interpreted as an integer",
+          "python_type": "TypeError"
+        },
+        "id": "manual_fractional_room_active",
+        "input": {
+          "rooms_per_zone": 1.5,
+          "zone_modules": 1
+        },
+        "outcome": "rejected"
+      },
+      {
+        "error": {
+          "diagnostic": "rooms_per_zone must be 1-8, got nan",
+          "python_type": "ValueError"
+        },
+        "id": "manual_nan_room_ignored_without_zones",
+        "input": {
+          "rooms_per_zone": {
+            "$number": "NaN"
+          },
+          "zone_modules": 0
+        },
+        "outcome": "rejected"
+      },
+      {
+        "error": {
+          "diagnostic": "rooms_per_zone must be 1-8, got inf",
+          "python_type": "ValueError"
+        },
+        "id": "manual_positive_infinite_room_ignored_without_zones",
+        "input": {
+          "rooms_per_zone": {
+            "$number": "+Infinity"
+          },
+          "zone_modules": 0
+        },
+        "outcome": "rejected"
+      },
+      {
+        "error": {
+          "diagnostic": "rooms_per_zone must be 1-8, got -inf",
+          "python_type": "ValueError"
+        },
+        "id": "manual_negative_infinite_room_ignored_without_zones",
+        "input": {
+          "rooms_per_zone": {
+            "$number": "-Infinity"
+          },
+          "zone_modules": 0
+        },
+        "outcome": "rejected"
+      },
+      {
+        "id": "model_ignores_fractional_manual_counts",
+        "input": {
+          "model_zone_modules": 0,
+          "rooms_per_zone": 1.5,
+          "zone_modules": 1.5
+        },
+        "outcome": "accepted",
+        "register_count": 89
+      },
+      {
+        "error": {
+          "diagnostic": "zone_modules must be 0-10, got nan",
+          "python_type": "ValueError"
+        },
+        "id": "model_does_not_ignore_nan_manual_zone",
+        "input": {
+          "model_zone_modules": 0,
+          "zone_modules": {
+            "$number": "NaN"
+          }
+        },
+        "outcome": "rejected"
+      },
+      {
+        "error": {
+          "diagnostic": "'float' object cannot be interpreted as an integer",
+          "python_type": "TypeError"
+        },
+        "id": "model_fractional_zone_active",
+        "input": {
+          "model_zone_modules": 1.5
+        },
+        "outcome": "rejected"
+      },
+      {
+        "error": {
+          "diagnostic": "zone_modules must be 0-10, got nan",
+          "python_type": "ValueError"
+        },
+        "id": "model_nan_zone",
+        "input": {
+          "model_zone_modules": {
+            "$number": "NaN"
+          }
+        },
+        "outcome": "rejected"
+      },
+      {
+        "error": {
+          "diagnostic": "zone_modules must be 0-10, got inf",
+          "python_type": "ValueError"
+        },
+        "id": "model_positive_infinite_zone",
+        "input": {
+          "model_zone_modules": {
+            "$number": "+Infinity"
+          }
+        },
+        "outcome": "rejected"
+      },
+      {
+        "error": {
+          "diagnostic": "zone_modules must be 0-10, got -inf",
+          "python_type": "ValueError"
+        },
+        "id": "model_negative_infinite_zone",
+        "input": {
+          "model_zone_modules": {
+            "$number": "-Infinity"
+          }
+        },
+        "outcome": "rejected"
+      },
+      {
+        "error": {
+          "diagnostic": "'float' object cannot be interpreted as an integer",
+          "python_type": "TypeError"
+        },
+        "id": "model_fractional_room_active",
+        "input": {
+          "model_zone_modules": 1,
+          "rooms_per_zone": 1.5
+        },
+        "outcome": "rejected"
+      }
+    ],
     "detection_registers": [
       {
         "address": 1000,

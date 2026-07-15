@@ -46,6 +46,7 @@ interface ApiMappingFixture {
 
 interface RegisterSchemaFixture {
   readonly builder_contract: Readonly<{
+    count_boundaries: readonly CountBoundary[];
     circuits: readonly Readonly<{
       letter: string;
       register_count: number;
@@ -83,6 +84,13 @@ interface RegisterSchemaFixture {
   readonly maps: Readonly<{
     default: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
   }>;
+}
+
+interface CountBoundary {
+  readonly id: string;
+  readonly outcome: "accepted" | "rejected";
+  readonly register_count?: number;
+  readonly error?: Readonly<{ python_type: "TypeError" | "ValueError"; diagnostic: string }>;
 }
 
 interface InvalidBoundary {
@@ -362,6 +370,135 @@ describe("parametric register builders and mapping closure", () => {
         rooms.last_relay_address,
       );
     }
+  });
+
+  it("matches pinned Python fractional, non-finite, and precedence count outcomes", () => {
+    const zeroZoneModel = modelInfo({
+      modelName: "Navigator 2.0",
+      activeHeatingCircuits: [],
+      zoneModules: 0,
+    });
+    const oneZoneModel = modelInfo({
+      modelName: "Navigator 2.0",
+      activeHeatingCircuits: [],
+      zoneModules: 1,
+    });
+    const callbacks = new Map<string, () => ReadonlyMap<string, RegisterDef>>([
+      ["direct_fractional_room", () => getZoneModuleRegisters(1, 1.5)],
+      ["direct_nan_room", () => getZoneModuleRegisters(1, Number.NaN)],
+      ["direct_positive_infinite_room", () => getZoneModuleRegisters(1, Number.POSITIVE_INFINITY)],
+      ["direct_negative_infinite_room", () => getZoneModuleRegisters(1, Number.NEGATIVE_INFINITY)],
+      ["manual_fractional_zone_active", () => buildRegisterMap({ zoneModules: 1.5 })],
+      ["manual_nan_zone", () => buildRegisterMap({ zoneModules: Number.NaN })],
+      [
+        "manual_positive_infinite_zone",
+        () => buildRegisterMap({ zoneModules: Number.POSITIVE_INFINITY }),
+      ],
+      [
+        "manual_negative_infinite_zone",
+        () => buildRegisterMap({ zoneModules: Number.NEGATIVE_INFINITY }),
+      ],
+      [
+        "manual_fractional_room_ignored_without_zones",
+        () => buildRegisterMap({ zoneModules: 0, roomsPerZone: 1.5 }),
+      ],
+      [
+        "manual_fractional_room_active",
+        () => buildRegisterMap({ zoneModules: 1, roomsPerZone: 1.5 }),
+      ],
+      [
+        "manual_nan_room_ignored_without_zones",
+        () => buildRegisterMap({ zoneModules: 0, roomsPerZone: Number.NaN }),
+      ],
+      [
+        "manual_positive_infinite_room_ignored_without_zones",
+        () => buildRegisterMap({ zoneModules: 0, roomsPerZone: Number.POSITIVE_INFINITY }),
+      ],
+      [
+        "manual_negative_infinite_room_ignored_without_zones",
+        () => buildRegisterMap({ zoneModules: 0, roomsPerZone: Number.NEGATIVE_INFINITY }),
+      ],
+      [
+        "model_ignores_fractional_manual_counts",
+        () => buildRegisterMap({ modelInfo: zeroZoneModel, zoneModules: 1.5, roomsPerZone: 1.5 }),
+      ],
+      [
+        "model_does_not_ignore_nan_manual_zone",
+        () => buildRegisterMap({ modelInfo: zeroZoneModel, zoneModules: Number.NaN }),
+      ],
+      [
+        "model_fractional_zone_active",
+        () =>
+          buildRegisterMap({
+            modelInfo: modelInfo({
+              modelName: "Navigator 2.0",
+              activeHeatingCircuits: [],
+              zoneModules: 1.5,
+            }),
+          }),
+      ],
+      [
+        "model_nan_zone",
+        () =>
+          buildRegisterMap({
+            modelInfo: modelInfo({
+              modelName: "Navigator 2.0",
+              activeHeatingCircuits: [],
+              zoneModules: Number.NaN,
+            }),
+          }),
+      ],
+      [
+        "model_positive_infinite_zone",
+        () =>
+          buildRegisterMap({
+            modelInfo: modelInfo({
+              modelName: "Navigator 2.0",
+              activeHeatingCircuits: [],
+              zoneModules: Number.POSITIVE_INFINITY,
+            }),
+          }),
+      ],
+      [
+        "model_negative_infinite_zone",
+        () =>
+          buildRegisterMap({
+            modelInfo: modelInfo({
+              modelName: "Navigator 2.0",
+              activeHeatingCircuits: [],
+              zoneModules: Number.NEGATIVE_INFINITY,
+            }),
+          }),
+      ],
+      [
+        "model_fractional_room_active",
+        () => buildRegisterMap({ modelInfo: oneZoneModel, roomsPerZone: 1.5 }),
+      ],
+    ]);
+
+    for (const expected of readFixture().builder_contract.count_boundaries) {
+      const callback = callbacks.get(expected.id);
+      if (callback === undefined) throw new Error(`Missing count callback: ${expected.id}`);
+      try {
+        const result = callback();
+        expect({ outcome: "accepted", register_count: result.size }, expected.id).toEqual({
+          outcome: expected.outcome,
+          register_count: expected.register_count,
+        });
+      } catch (error) {
+        expect(
+          {
+            outcome: "rejected",
+            error: {
+              python_type: error instanceof TypeError ? "TypeError" : "ValueError",
+              diagnostic: error instanceof Error ? error.message : String(error),
+            },
+          },
+          expected.id,
+        ).toEqual({ outcome: expected.outcome, error: expected.error });
+      }
+    }
+    expect(callbacks.size).toBe(readFixture().builder_contract.count_boundaries.length);
   });
 
   it("matches model gates, independent feature gates, and model-info precedence", () => {

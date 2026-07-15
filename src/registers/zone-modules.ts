@@ -4,6 +4,13 @@ import { DataType } from "../types.js";
 import type { RegisterDef, RegisterDefInput } from "./definitions.js";
 import { buildRegisterDefinitions } from "./map-utils.js";
 
+function pythonNumberText(value: number): string {
+  if (Number.isNaN(value)) return "nan";
+  if (value === Number.POSITIVE_INFINITY) return "inf";
+  if (value === Number.NEGATIVE_INFINITY) return "-inf";
+  return String(value);
+}
+
 export function getZoneModuleRegisters(
   zoneIndex: number,
   roomCount = 6,
@@ -17,8 +24,11 @@ export function getZoneModuleRegisters(
   if (!(roomCount >= 1 && roomCount <= MAX_ROOMS_PER_ZONE)) {
     throw new SemanticValidationError(
       "room_invalid",
-      `Room count must be 1-${String(MAX_ROOMS_PER_ZONE)}, got ${String(roomCount)}`,
+      `Room count must be 1-${String(MAX_ROOMS_PER_ZONE)}, got ${pythonNumberText(roomCount)}`,
     );
+  }
+  if (!Number.isInteger(roomCount)) {
+    throw new TypeError("'float' object cannot be interpreted as an integer");
   }
 
   const base = 2000 + (zoneIndex - 1) * 65;
