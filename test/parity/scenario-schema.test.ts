@@ -247,8 +247,9 @@ describe("versioned CTR-01 scenario fixture", () => {
       "operation_kinds",
       "scenarios",
     ]) {
-      const fixture = clonedFixture();
-      delete fixture[field];
+      const fixture = Object.fromEntries(
+        Object.entries(clonedFixture()).filter(([key]) => key !== field),
+      );
       expectScenarioCode(() => parseScenarioContract(fixture), "fixture_invalid");
     }
 
@@ -309,7 +310,10 @@ describe("versioned CTR-01 scenario fixture", () => {
     ] as const;
     for (const field of requiredFields) {
       const fixture = clonedFixture();
-      delete scenariosOf(fixture)[0]?.[field];
+      const scenarios = scenariosOf(fixture);
+      const first = scenarios[0];
+      if (first === undefined) throw new Error("Expected first scenario");
+      scenarios[0] = Object.fromEntries(Object.entries(first).filter(([key]) => key !== field));
       expectScenarioCode(() => parseScenarioContract(fixture), "scenario_invalid");
     }
 
