@@ -387,3 +387,47 @@ describe("npm parity entry points and private package boundary", () => {
     ).toEqual([]);
   });
 });
+
+describe("GitHub Actions workflow contract", () => {
+  const workflow = readFileSync(resolve(root, ".github/workflows/ci.yml"), "utf8");
+
+  it("keeps read-only Node 22 and Node 24 validation with SHA-pinned actions", () => {
+    expect(workflow).toMatch(/permissions:\s*\n\s+contents: read/u);
+    expect(workflow).not.toMatch(/contents:\s*write|id-token:\s*write|packages:\s*write/u);
+    expect(workflow).toMatch(/matrix:[\s\S]*?node:\s*\n\s+- 22\s*\n\s+- 24/u);
+
+    const actionReferences = [...workflow.matchAll(/^\s*uses:\s*([^\s#]+).*$/gmu)].map(
+      (match) => match[1],
+    );
+    expect(actionReferences.length).toBeGreaterThanOrEqual(5);
+    expect(actionReferences.every((reference) => /@[0-9a-f]{40}$/u.test(reference))).toBe(true);
+  });
+
+  it("runs exact Python 3.12 parity:check from a full-tag workflow checkout", () => {
+    const manifest = JSON.parse(readFileSync(resolve(root, "UPSTREAM-PARITY.json"), "utf8")) as {
+      readonly git_commit: string;
+      readonly git_tag: string;
+      readonly python_version: string;
+    };
+    const parityJob = workflow.match(/^  parity:\s*$([\s\S]*)/mu)?.[1] ?? "";
+
+    expect(manifest).toMatchObject({
+      python_version: "0.7.6",
+      git_tag: pinnedTag,
+      git_commit: pinnedCommit,
+    });
+    expect(parityJob).toMatch(/python-version:\s*["']?3\.12["']?/u);
+    expect(parityJob).toMatch(/fetch-depth:\s*0/u);
+    expect(parityJob).toMatch(/fetch-tags:\s*true/u);
+    expect(parityJob).toMatch(/run:\s*npm ci/u);
+    expect(parityJob.match(/run:\s*npm run parity:check/gu)).toHaveLength(1);
+    expect(parityJob).not.toMatch(
+      /parity:generate|generate-python-contract|generate-api-parity|pip\s+install/u,
+    );
+  });
+
+  it("keeps the workflow free of secrets, environments, and device inputs", () => {
+    expect(workflow).not.toMatch(/\bsecrets\.|^\s*environment:|IDM_(?:HOST|PORT|SLAVE|PIN)/mu);
+    expect(workflow).not.toMatch(/workflow_call:|repository_dispatch:|schedule:/u);
+  });
+});
