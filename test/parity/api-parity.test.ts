@@ -380,21 +380,17 @@ describe("Phase-1 class representation mapping", () => {
 
 describe("checked mapping export closure", () => {
   it("exports exactly the complete Phase-1 root runtime symbols from the checked mapping", () => {
-    const typeOnlySymbols = new Set(["RegisterDef"]);
     const expectedRuntimeSymbols = apiMapping.mappings
-      .filter(
-        ({ export_path, status, typescript_symbol }) =>
-          export_path === "." && status === "complete" && !typeOnlySymbols.has(typescript_symbol),
-      )
+      .filter(({ export_path, status }) => export_path === "." && status === "complete")
       .map(({ typescript_symbol }) => typescript_symbol)
       .sort();
 
     expect(Object.keys(rootExports).sort()).toEqual(expectedRuntimeSymbols);
     expect(Object.keys(webExports)).toEqual([]);
-    expect(expectedRuntimeSymbols).toHaveLength(52);
+    expect(expectedRuntimeSymbols).toHaveLength(53);
   });
 
-  it("keeps the type-only mapping explicit and internal or later symbols unexported", () => {
+  it("keeps internal or later symbols unexported", () => {
     const rootSource = readFileSync(resolve(ROOT, "src/index.ts"), "utf8");
     const webSource = readFileSync(resolve(ROOT, "src/web/index.ts"), "utf8");
     const forbiddenSymbols = [
@@ -406,7 +402,11 @@ describe("checked mapping export closure", () => {
       "getSystemRegisters",
     ];
 
-    expect(rootSource).toContain('export type { RegisterDef } from "./registers/definitions.js";');
+    expect(rootExports.RegisterDef.create).toBeTypeOf("function");
+    expect(rootSource).toContain('export { RegisterDef } from "./registers/definitions.js";');
+    expect(rootSource).toContain(
+      'export type { RegisterDefInput } from "./registers/definitions.js";',
+    );
     for (const symbol of forbiddenSymbols) {
       expect(rootExports, symbol).not.toHaveProperty(symbol);
       expect(rootSource, symbol).not.toContain(symbol);

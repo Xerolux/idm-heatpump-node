@@ -70,7 +70,7 @@ try {
     [
       "--input-type=module",
       "--eval",
-      'await Promise.all([import("@xerolux/idm-heatpump"), import("@xerolux/idm-heatpump/web")]);',
+      'const [{ RegisterDef, DataType }] = await Promise.all([import("@xerolux/idm-heatpump"), import("@xerolux/idm-heatpump/web")]); const value = RegisterDef.create({ address: 1, datatype: DataType.UCHAR, name: "esm" }); if (value.name !== "esm" || !Object.isFrozen(value)) throw new Error("ESM RegisterDef factory failed");',
     ],
     smokeDirectory,
   );
@@ -79,7 +79,27 @@ try {
     [
       "--input-type=commonjs",
       "--eval",
-      'require("@xerolux/idm-heatpump"); require("@xerolux/idm-heatpump/web");',
+      'const { RegisterDef, DataType } = require("@xerolux/idm-heatpump"); require("@xerolux/idm-heatpump/web"); const value = RegisterDef.create({ address: 2, datatype: DataType.UCHAR, name: "cjs" }); if (value.name !== "cjs" || !Object.isFrozen(value)) throw new Error("CJS RegisterDef factory failed");',
+    ],
+    smokeDirectory,
+  );
+  writeFileSync(
+    join(smokeDirectory, "consumer.ts"),
+    'import { DataType, RegisterDef, type RegisterDefInput } from "@xerolux/idm-heatpump";\nconst input: RegisterDefInput = { address: 3, datatype: DataType.UCHAR, name: "types" };\nconst value: RegisterDef = RegisterDef.create(input);\nvoid value;\n',
+  );
+  run(
+    process.execPath,
+    [
+      resolve(root, "node_modules/typescript/bin/tsc"),
+      "--noEmit",
+      "--strict",
+      "--target",
+      "ES2022",
+      "--module",
+      "NodeNext",
+      "--moduleResolution",
+      "NodeNext",
+      "consumer.ts",
     ],
     smokeDirectory,
   );

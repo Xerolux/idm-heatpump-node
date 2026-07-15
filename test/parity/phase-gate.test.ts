@@ -385,7 +385,7 @@ describe("npm parity entry points and private package boundary", () => {
         /^(?:scripts|test|contracts|docs|\.planning|UPSTREAM-PARITY\.json)(?:\/|$)/u.test(path),
       ),
     ).toEqual([]);
-  });
+  }, 30_000);
 });
 
 describe("GitHub Actions workflow contract", () => {
@@ -443,7 +443,7 @@ describe("Phase 1 truthful documentation and closure", () => {
     expect(readme).toContain(pinnedCommit);
     expect(readme).toContain("npm run parity:check");
     expect(readme).toContain("npm run parity:generate");
-    expect(readme).toMatch(/53[\s\S]*52[\s\S]*RegisterDef/u);
+    expect(readme).toMatch(/53[\s\S]*53[\s\S]*RegisterDef/u);
     for (const plannedArea of ["Transport", "Erkennung", "Writes", "Web", "Release"]) {
       expect(readme, plannedArea).toContain(plannedArea);
     }

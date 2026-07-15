@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { SemanticValidationError } from "../../src/errors.js";
 import {
   createRegisterDef,
-  type RegisterDef,
+  RegisterDef,
   type RegisterDefInput,
 } from "../../src/registers/definitions.js";
 import { DataType, RegisterType, WriteClass } from "../../src/types.js";
@@ -53,6 +53,14 @@ function baseInput(overrides: Partial<RegisterDefInput> = {}): RegisterDefInput 
 }
 
 describe("immutable RegisterDef factory", () => {
+  it("exposes the mapped runtime factory while retaining the type namespace", () => {
+    const definition: RegisterDef = RegisterDef.create(baseInput());
+
+    expect(definition.name).toBe("test_register");
+    expect(RegisterDef.create).toBe(createRegisterDef);
+    expect(Object.isFrozen(RegisterDef)).toBe(true);
+  });
+
   it("consumes the sole mapping representation and closes all 26 Python members", () => {
     const row = mapping.mappings.find(({ python_symbol }) => python_symbol === "RegisterDef");
     const fact = publicClasses.classes.find(({ python_name }) => python_name === "RegisterDef");

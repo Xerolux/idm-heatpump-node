@@ -37,8 +37,8 @@ durchgeführt.
 
 Die Paritätsmatrix enthält 89 öffentliche Python-Symbole. Davon sind 53
 Phase-1-Zuordnungen vollständig implementiert und durch fokussierte
-Contract-Tests belegt: 52 Runtime-Exporte und der reine Type-Export
-RegisterDef.
+Contract-Tests belegt: 53 Runtime-Exporte einschließlich der unveränderlichen
+`RegisterDef.create(...)`-Factory mit zugehörigen TypeScript-Typen.
 
 Der aktuelle Paket-Root stellt bereit:
 

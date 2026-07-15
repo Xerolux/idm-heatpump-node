@@ -38,7 +38,8 @@ export {
 export { ModbusCodec } from "./codec.js";
 export { AdaptiveBackoff, PollRateLimiter } from "./timing.js";
 export { DataType, FeatureFlags, IdmModelInfo, RegisterType, WriteClass } from "./types.js";
-export type { RegisterDef } from "./registers/definitions.js";
+export { RegisterDef } from "./registers/definitions.js";
+export type { RegisterDefInput } from "./registers/definitions.js";
 export {
   buildRegisterMap,
   CORE_REGISTERS,

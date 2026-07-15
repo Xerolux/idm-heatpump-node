@@ -285,3 +285,8 @@ export function createRegisterDef(input: RegisterDefInput): RegisterDef {
   };
   return Object.freeze(definition);
 }
+
+/** Public runtime counterpart of Python's constructible ``RegisterDef`` class. */
+export const RegisterDef = Object.freeze({
+  create: createRegisterDef,
+});
