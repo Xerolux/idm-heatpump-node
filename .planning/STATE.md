@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-05-PLAN.md
-last_updated: "2026-07-15T01:20:52.942Z"
-last_activity: 2026-07-15 -- Completed Phase 01 Plan 05
+stopped_at: Completed 01-06-PLAN.md
+last_updated: "2026-07-15T01:47:16.345Z"
+last_activity: 2026-07-15 -- Completed Phase 01 Plan 06
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 10
-  completed_plans: 6
-  percent: 60
+  completed_plans: 7
+  percent: 70
 ---
 
 # Project State
@@ -26,30 +26,30 @@ See: .planning/PROJECT.md (updated 2026-07-14)
 ## Current Position
 
 Phase: 01 (reproducible-semantic-contract) — EXECUTING
-Plan: 7 of 10
+Plan: 8 of 10
 Status: Ready to execute
-Last activity: 2026-07-15 -- Completed Phase 01 Plan 05
+Last activity: 2026-07-15 -- Completed Phase 01 Plan 06
 
-Progress: [██████░░░░] 60%
+Progress: [███████░░░] 70%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: 20 min
-- Total execution time: 119 min
+- Total execution time: 141 min
 
 **By Phase:**
 
 | Phase | Plans | Total   | Avg/Plan |
 | ----- | ----- | ------- | -------- |
-| 01    | 6     | 119 min | 20 min   |
+| 01    | 7     | 141 min | 20 min   |
 
 **Recent Trend:**
 
-- Last 5 plans: 33 min, 27 min, 16 min, 12 min, 15 min
-- Trend: Bit-exact primitive and register-aware codec parity closed with exact Python rounding and datatype domains
+- Last 5 plans: 27 min, 16 min, 12 min, 15 min, 22 min
+- Trend: Exact semantic parity now covers primitive codecs and the complete model- and feature-aware register schema
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |
@@ -58,6 +58,7 @@ _Updated after each plan completion_
 | Phase 01 P08 | 16 min | 2 tasks | 3 files |
 | Phase 01 P04 | 12 min | 2 tasks | 7 files |
 | Phase 01 P05 | 15 min | 2 tasks | 3 files |
+| Phase 01 P06 | 22 min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,9 @@ Recent decisions affecting current work:
 - [Phase 01]: Separate primitive exceptional-number bits from register-aware unavailable handling. — Pinned Python preserves primitive NaN/infinity/-0 but maps only high-level raw non-finite FLOAT values to null.
 - [Phase 01]: Keep decodeValue and encodeValue internal until their owning client phase. — The sole API mapping owns only public ModbusCodec here; root/helper promotion would prematurely claim IdmModbusClient parity.
 - [Phase 01]: Implement CPython rounding from exact IEEE-754 values with BigInt arithmetic. — JavaScript Math.round and decimal shortcuts diverge on half-even and binary-float tie-sensitive values.
+- [Phase 01]: Construct all static and generated registers through the sole createRegisterDef validation boundary. — Static catalogs and parameterized builders must inherit one exact validation and immutability contract.
+- [Phase 01]: Preserve exact documented starts and allow official occupied-range overlaps between independent logical data points. — Logical overlaps are authoritative request identities, not address-map defects.
+- [Phase 01]: Keep the complete 26-field parity serializer independent from the abbreviated runtime registry schema. — Contract evidence must not depend on a convenience projection with different fields.
 
 ### Pending Todos
 
@@ -105,6 +109,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-15T01:20:52.931Z
-Stopped at: Completed 01-05-PLAN.md
+Last session: 2026-07-15T01:47:16.336Z
+Stopped at: Completed 01-06-PLAN.md
 Resume file: None
