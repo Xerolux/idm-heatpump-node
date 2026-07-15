@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import {
   cpSync,
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
@@ -256,6 +257,34 @@ describe.sequential("parity orchestrator phase gate", () => {
     expectNoNewTemporaryEntries(beforeTemporary);
   }, 180_000);
 
+  it("ignores poisoned Python import state and never executes sitecustomize or shadow modules", () => {
+    const poisonRoot = join(temporaryDirectory, "poisoned-python-environment");
+    const siteSentinel = join(temporaryDirectory, "sitecustomize-executed.txt");
+    const moduleSentinel = join(temporaryDirectory, "shadow-pymodbus-imported.txt");
+    mkdirSync(join(poisonRoot, "pymodbus"), { recursive: true });
+    writeFileSync(
+      join(poisonRoot, "sitecustomize.py"),
+      `from pathlib import Path\nPath(${JSON.stringify(siteSentinel)}).write_text("executed")\n`,
+    );
+    writeFileSync(
+      join(poisonRoot, "pymodbus", "__init__.py"),
+      `from pathlib import Path\nPath(${JSON.stringify(moduleSentinel)}).write_text("imported")\nraise RuntimeError("shadow pymodbus must not load")\n`,
+    );
+
+    const result = runOrchestrator("check", exactCheckout, {
+      ...process.env,
+      PYTHONHOME: poisonRoot,
+      PYTHONPATH: poisonRoot,
+      PYTHONSTARTUP: join(poisonRoot, "sitecustomize.py"),
+      PYTHONUSERBASE: poisonRoot,
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain("Parity check passed");
+    expect(existsSync(siteSentinel)).toBe(false);
+    expect(existsSync(moduleSentinel)).toBe(false);
+  }, 180_000);
+
   it("uses bounded shell-free fixed process invocations and no ambient checkout fallback", () => {
     const source = readFileSync(orchestrator, "utf8");
 
@@ -263,6 +292,9 @@ describe.sequential("parity orchestrator phase gate", () => {
     expect(source).toContain("shell: false");
     expect(source).toContain('spawnSync("git"');
     expect(source).toContain('"pymodbus==3.12.1"');
+    expect(source).toContain('"-I"');
+    expect(source).toContain('"-i"');
+    expect(source).toContain("REFERENCE_ENVIRONMENT_ALLOWLIST");
     expect(source).toContain('"scripts/generate-python-contract.py"');
     expect(source).toContain('"scripts/generate-api-parity.mjs"');
     expect(source).not.toContain("IDM_HEATPUMP_API_DIR");

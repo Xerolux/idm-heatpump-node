@@ -67,6 +67,33 @@ const TEST_FORWARD_ENVIRONMENT = Object.freeze([
   "IDM_CONTRACT_TEST_FAIL_AFTER_STAGE",
   "IDM_CONTRACT_TEST_FAIL_AFTER_REPLACE",
 ]);
+const REFERENCE_ENVIRONMENT_ALLOWLIST = new Set(
+  [
+    "COMSPEC",
+    "HOME",
+    "HTTP_PROXY",
+    "HTTPS_PROXY",
+    "LANG",
+    "LC_ALL",
+    "LC_CTYPE",
+    "NO_PROXY",
+    "PATH",
+    "PATHEXT",
+    "REQUESTS_CA_BUNDLE",
+    "SSL_CERT_DIR",
+    "SSL_CERT_FILE",
+    "SYSTEMROOT",
+    "TEMP",
+    "TMP",
+    "TMPDIR",
+    "TZ",
+    "USERPROFILE",
+    "WINDIR",
+    "WSLENV",
+    "WSL_DISTRO_NAME",
+    "WSL_INTEROP",
+  ].map((name) => name.toUpperCase()),
+);
 
 class ParityError extends Error {
   constructor(code, message) {
@@ -92,16 +119,15 @@ function boundedDiagnostic(result) {
 }
 
 function referenceEnvironment() {
-  const excluded = new Set([
-    "GIT_DIR",
-    "GIT_WORK_TREE",
-    ["IDM", "HEATPUMP", "API", "DIR"].join("_"),
-  ]);
-  return Object.fromEntries(
-    Object.entries(process.env).filter(
-      ([name]) => !name.startsWith("GIT_CONFIG_") && !excluded.has(name),
+  const environment = Object.fromEntries(
+    Object.entries(process.env).filter(([name]) =>
+      REFERENCE_ENVIRONMENT_ALLOWLIST.has(name.toUpperCase()),
     ),
   );
+  for (const name of TEST_FORWARD_ENVIRONMENT) {
+    if (process.env[name] === "1") environment[name] = "1";
+  }
+  return environment;
 }
 
 function runProcess(command, args, purpose, options = {}) {
@@ -258,10 +284,11 @@ function verifyCheckout(checkout) {
   ).stdout;
 }
 
-function probe(command, args) {
+function probe(command, args, environment = referenceEnvironment()) {
   const result = spawnSync(command, args, {
     cwd: ROOT,
     encoding: "utf8",
+    env: environment,
     maxBuffer: MAX_PROCESS_OUTPUT_BYTES,
     shell: false,
     timeout: SHORT_TIMEOUT_MS,
@@ -276,13 +303,32 @@ function toWslPath(path) {
   }).stdout;
 }
 
-function pythonEnvironmentAssignments() {
-  const assignments = [];
+function pythonEnvironment(temporaryParent) {
+  const environment = referenceEnvironment();
+  if (process.platform === "win32") {
+    environment.TEMP = temporaryParent;
+    environment.TMP = temporaryParent;
+  } else {
+    environment.TMPDIR = temporaryParent;
+  }
+  return environment;
+}
+
+function wslIsolatedEnvironmentArguments(temporaryParent) {
+  const assignments = [
+    "/usr/bin/env",
+    "-i",
+    "HOME=/tmp",
+    "LANG=C.UTF-8",
+    "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    `TMPDIR=${toWslPath(temporaryParent)}`,
+  ];
+  for (const name of ["HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY"]) {
+    const value = process.env[name] ?? process.env[name.toLowerCase()];
+    if (value !== undefined && value.length > 0) assignments.push(`${name}=${value}`);
+  }
   for (const name of TEST_FORWARD_ENVIRONMENT) {
-    const value = process.env[name];
-    if (value === "1") {
-      assignments.push(`${name}=1`);
-    }
+    if (process.env[name] === "1") assignments.push(`${name}=1`);
   }
   return assignments;
 }
@@ -292,6 +338,7 @@ function findPython312() {
     if (
       probe("py", [
         "-3.12",
+        "-I",
         "-c",
         "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')",
       ])
@@ -301,7 +348,9 @@ function findPython312() {
     if (
       probe("wsl.exe", [
         "--exec",
+        ...wslIsolatedEnvironmentArguments(tmpdir()),
         "python3.12",
+        "-I",
         "-c",
         "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')",
       ])
@@ -310,6 +359,7 @@ function findPython312() {
     }
   } else if (
     probe("python3.12", [
+      "-I",
       "-c",
       "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')",
     ])
@@ -326,10 +376,9 @@ function pythonPath(runtime, path) {
 function runPython(runtime, executable, args, purpose, temporaryParent) {
   if (runtime.kind === "wsl") {
     const environmentArguments = [
-      "/usr/bin/env",
-      `TMPDIR=${toWslPath(temporaryParent)}`,
-      ...pythonEnvironmentAssignments(),
+      ...wslIsolatedEnvironmentArguments(temporaryParent),
       executable,
+      "-I",
       ...args,
     ];
     return runProcess(runtime.command, [...runtime.prefix, ...environmentArguments], purpose, {
@@ -339,10 +388,11 @@ function runPython(runtime, executable, args, purpose, temporaryParent) {
     });
   }
   const command = executable === "python3.12" ? runtime.command : executable;
-  const commandArguments = executable === "python3.12" ? [...runtime.prefix, ...args] : args;
+  const commandArguments =
+    executable === "python3.12" ? [...runtime.prefix, "-I", ...args] : ["-I", ...args];
   return runProcess(command, commandArguments, purpose, {
     code: "python_reference_failed",
-    env: referenceEnvironment(),
+    env: pythonEnvironment(temporaryParent),
     timeout: PYTHON_TIMEOUT_MS,
   });
 }
