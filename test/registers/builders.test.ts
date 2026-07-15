@@ -417,7 +417,7 @@ describe("parametric register builders and mapping closure", () => {
   it("isolates every public map result from hostile mutation", () => {
     const first = buildRegisterMap();
     expect(() =>
-      (first as Map<string, RegisterDef>).set("poison", first.get("outdoor_temp")!),
+      (first as Map<string, RegisterDef>).set("poison", getRegister("outdoor_temp")),
     ).toThrow(TypeError);
     const second = buildRegisterMap();
     expect(second.has("poison")).toBe(false);

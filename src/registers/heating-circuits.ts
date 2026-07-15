@@ -1,12 +1,12 @@
 import { ACTIVE_HC_MODE_OPTIONS, CIRCUIT_MODE_OPTIONS } from "../constants.js";
 import { SemanticValidationError } from "../errors.js";
 import { DataType } from "../types.js";
-import type { RegisterDefInput } from "./definitions.js";
+import type { RegisterDef, RegisterDefInput } from "./definitions.js";
 import { buildRegisterDefinitions } from "./map-utils.js";
 
 export function getHeatingCircuitRegisters(
   circuitLetter: string,
-): ReadonlyMap<string, import("./definitions.js").RegisterDef> {
+): ReadonlyMap<string, RegisterDef> {
   if (typeof circuitLetter !== "string") {
     throw new SemanticValidationError(
       "circuit_invalid",
