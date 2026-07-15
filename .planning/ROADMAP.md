@@ -46,7 +46,7 @@ Plans:
 - [x] 01-05-PLAN.md — Port mapping-named primitive and register-aware codecs with bit-exact golden parity.
 - [x] 01-06-PLAN.md — Port the mapping-named register catalog, builders, gates, registry, and serializer.
 - [x] 01-07-PLAN.md — Establish guaranteed self-provisioning exact-baseline npm parity flows.
-- [ ] 01-09-PLAN.md — Promote evidenced mappings, regenerate API-only artifacts with `parity:api`, non-mutatingly check Python fixtures, then expose root exports.
+- [x] 01-09-PLAN.md — Promote evidenced mappings, regenerate API-only artifacts with `parity:api`, non-mutatingly check Python fixtures, then expose root exports.
 - [ ] 01-10-PLAN.md — Integrate exact parity CI, truthful private documentation, and the final phase gate.
 
 ### Phase 2: Modbus Reads, Detection, and Resilience
@@ -116,7 +116,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase                                      | Plans Complete | Status      | Completed |
 | ------------------------------------------ | -------------- | ----------- | --------- |
-| 1. Reproducible Semantic Contract          | 8/10           | In Progress |           |
+| 1. Reproducible Semantic Contract          | 9/10           | In Progress |           |
 | 2. Modbus Reads, Detection, and Resilience | 0/TBD          | Not started | -         |
 | 3. Safe Write Parity                       | 0/TBD          | Not started | -         |
 | 4. Optional Read-Only Web Parity           | 0/TBD          | Not started | -         |

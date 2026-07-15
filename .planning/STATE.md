@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-07-PLAN.md
-last_updated: "2026-07-15T02:26:53.297Z"
-last_activity: 2026-07-15 -- Completed Phase 01 Plan 07
+stopped_at: Completed 01-09-PLAN.md
+last_updated: "2026-07-15T14:35:46.309Z"
+last_activity: 2026-07-15 -- Completed Phase 01 Plan 09
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 10
-  completed_plans: 8
-  percent: 80
+  completed_plans: 9
+  percent: 90
 ---
 
 # Project State
@@ -26,30 +26,30 @@ See: .planning/PROJECT.md (updated 2026-07-14)
 ## Current Position
 
 Phase: 01 (reproducible-semantic-contract) — EXECUTING
-Plan: 9 of 10
+Plan: 10 of 10
 Status: Ready to execute
-Last activity: 2026-07-15 -- Completed Phase 01 Plan 07
+Last activity: 2026-07-15 -- Completed Phase 01 Plan 09
 
-Progress: [████████░░] 80%
+Progress: [█████████░] 90%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 8
-- Average duration: 23 min
-- Total execution time: 185 min
+- Total plans completed: 9
+- Average duration: 100 min
+- Total execution time: 15h
 
 **By Phase:**
 
-| Phase | Plans | Total   | Avg/Plan |
-| ----- | ----- | ------- | -------- |
-| 01    | 8     | 185 min | 23 min   |
+| Phase | Plans | Total | Avg/Plan |
+| ----- | ----- | ----- | -------- |
+| 01    | 9     | 15h   | 100 min  |
 
 **Recent Trend:**
 
-- Last 5 plans: 16 min, 12 min, 15 min, 22 min, 44 min
-- Trend: Exact semantic evidence now has a self-provisioning, non-mutating, package-safe parity gate
+- Last 5 plans: 12 min, 15 min, 22 min, 44 min, 11h 55m (interrupted)
+- Trend: Checked Phase-1 mappings now close exactly against the runtime package namespace
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |
@@ -60,6 +60,7 @@ _Updated after each plan completion_
 | Phase 01 P05 | 15 min | 2 tasks | 3 files |
 | Phase 01 P06 | 22 min | 3 tasks | 11 files |
 | Phase 01 P07 | 44 min | 2 tasks | 3 files |
+| Phase 01 P09 | 11h 55m | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -95,6 +96,9 @@ Recent decisions affecting current work:
 - [Phase 01]: Verify cloned source in a sanitized child environment before any upstream import. — Prevents Git URL rewrites or ambient checkout state from affecting admitted identity.
 - [Phase 01]: Stage six Python fixtures and two API documents together before byte-checking or transactional promotion. — Makes check mode structurally non-mutating and generate mode rollback-safe.
 - [Phase 01]: Keep parity:api API-only; exact Python lifecycle belongs to parity:generate and parity:check. — Preserves Plan 01-09 promotion ownership without regenerating Python facts.
+- [Phase 01]: Complete exactly the 53 implemented owner-Phase-1 rows; keep all 36 later-owned rows planned. — Prevents status claims from preceding full implementation and focused evidence.
+- [Phase 01]: Expose 52 runtime values and RegisterDef as an explicit type-only export. — Makes the root namespace equal the checked mapping without leaking internal or later-phase symbols.
+- [Phase 01]: Stage only bounded regular contract-test files for complete rows inside the parity shadow root. — Keeps complete-row evidence validation isolated, deterministic, and non-mutating.
 
 ### Pending Todos
 
@@ -113,6 +117,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-15T02:26:30.515Z
-Stopped at: Completed 01-07-PLAN.md
+Last session: 2026-07-15T14:35:46.295Z
+Stopped at: Completed 01-09-PLAN.md
 Resume file: None
