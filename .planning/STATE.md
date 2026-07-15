@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-03-PLAN.md
-last_updated: "2026-07-15T00:08:23.325Z"
-last_activity: 2026-07-15 -- Completed Phase 01 Plan 03
+stopped_at: Completed 01-08-PLAN.md
+last_updated: "2026-07-15T00:32:36.006Z"
+last_activity: 2026-07-15 -- Completed Phase 01 Plan 08
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 10
-  completed_plans: 3
-  percent: 30
+  completed_plans: 4
+  percent: 40
 ---
 
 # Project State
@@ -26,35 +26,36 @@ See: .planning/PROJECT.md (updated 2026-07-14)
 ## Current Position
 
 Phase: 01 (reproducible-semantic-contract) — EXECUTING
-Plan: 4 of 10
+Plan: 5 of 10
 Status: Ready to execute
-Last activity: 2026-07-15 -- Completed Phase 01 Plan 03
+Last activity: 2026-07-15 -- Completed Phase 01 Plan 08
 
-Progress: [███░░░░░░░] 30%
+Progress: [████░░░░░░] 40%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 3
-- Average duration: 25.3 min
-- Total execution time: 76 min
+- Total plans completed: 4
+- Average duration: 23 min
+- Total execution time: 92 min
 
 **By Phase:**
 
 | Phase | Plans | Total  | Avg/Plan |
 | ----- | ----- | ------ | -------- |
-| 01    | 3     | 76 min | 25.3 min |
+| 01    | 4     | 92 min | 23 min   |
 
 **Recent Trend:**
 
-- Last 5 plans: 16 min, 33 min, 27 min
-- Trend: API ownership and generated parity evidence completed after the baseline and contract generators
+- Last 5 plans: 16 min, 33 min, 27 min, 16 min
+- Trend: Contract parsing closed the lossless tagged-value and strict scenario boundary after generated parity evidence
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |
 | Phase 01 P02 | 33 min | 3 tasks | 10 files |
 | Phase 01 P03 | 27 min | 2 tasks | 7 files |
+| Phase 01 P08 | 16 min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,10 @@ Recent decisions affecting current work:
 - [Phase 01]: Keep all 89 mappings planned until their owning implementation and evidence plan promotes them in Plan 01-09.
 - [Phase 01]: Preserve all seven Python web aliases as independent `./web` contract rows.
 - [Phase 01]: Treat `API-PARITY.md` and `BASELINE.md` as transactional generated projections, never editable authorities.
+- [Phase 01]: Reserve one exact one-key envelope for NaN, both infinities, and negative zero; reject raw exceptional numbers during contract parsing.
+- [Phase 01]: Keep scenario schema version 1 closed to the four generated Phase-1 semantic operations; later runtime operations require schema evolution.
+- [Phase 01]: Validate Modbus words only in named transport/request envelope fields so direct codec values retain pinned datatype-specific domains.
+- [Phase 01]: Treat controlled clock entries as finite non-negative monotonic timestamps while preserving event order.
 
 ### Pending Todos
 
@@ -92,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-15T00:08:23.314Z
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-07-15T00:32:35.995Z
+Stopped at: Completed 01-08-PLAN.md
 Resume file: None
