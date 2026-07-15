@@ -3,3 +3,5 @@ dist/
 node_modules/
 package-lock.json
 test/fixtures/*.json
+docs/API-PARITY.md
+docs/BASELINE.md

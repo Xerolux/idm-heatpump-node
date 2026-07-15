@@ -110,6 +110,13 @@ function counterpart(row: ApiMappingRow, pythonName: string): string {
     : pythonName;
 }
 
+function requireDefined<T>(value: T | undefined, label: string): T {
+  if (value === undefined) {
+    throw new Error(`Missing test fixture value: ${label}`);
+  }
+  return value;
+}
+
 function collectKeys(value: unknown, target = new Set<string>()): Set<string> {
   if (Array.isArray(value)) {
     for (const item of value) {
@@ -297,15 +304,19 @@ describe("Phase-1 class representation mapping", () => {
     const pollRateLimiter = apiMapping.mappings.find(
       ({ python_symbol }) => python_symbol === "PollRateLimiter",
     );
-    expect(counterpart(pollRateLimiter!, "interval")).toBe("interval");
-    expect(counterpart(pollRateLimiter!, "remaining")).toBe("remaining");
+    expect(counterpart(requireDefined(pollRateLimiter, "PollRateLimiter"), "interval")).toBe(
+      "interval",
+    );
+    expect(counterpart(requireDefined(pollRateLimiter, "PollRateLimiter"), "remaining")).toBe(
+      "remaining",
+    );
 
     const registry = apiMapping.mappings.find(
       ({ python_symbol }) => python_symbol === "RegisterRegistry",
     );
     expect(
       ["get", "require", "by_address", "writable", "to_schema"].map((member) =>
-        counterpart(registry!, member),
+        counterpart(requireDefined(registry, "RegisterRegistry"), member),
       ),
     ).toEqual(["get", "require", "byAddress", "writable", "toSchema"]);
   });
@@ -358,7 +369,9 @@ describe("generated API and baseline documentation", () => {
         code: "mapping_duplicate_python_symbol",
         mutate(project) {
           mutateProjectJson<ApiMapping>(project, "contracts/api-mapping.json", (mapping) => {
-            (mapping.mappings as ApiMappingRow[]).push(mapping.mappings[0]!);
+            (mapping.mappings as ApiMappingRow[]).push(
+              requireDefined(mapping.mappings[0], "first mapping row"),
+            );
           });
         },
       },
@@ -382,9 +395,10 @@ describe("generated API and baseline documentation", () => {
         code: "mapping_class_inventory_mismatch",
         mutate(project) {
           mutateProjectJson<ApiMapping>(project, "contracts/api-mapping.json", (mapping) => {
-            const row = mapping.mappings.find(
-              ({ python_symbol }) => python_symbol === "PollRateLimiter",
-            )!;
+            const row = requireDefined(
+              mapping.mappings.find(({ python_symbol }) => python_symbol === "PollRateLimiter"),
+              "PollRateLimiter mapping row",
+            );
             (row.representation as { python_class?: string }).python_class = "WrongClass";
           });
         },
@@ -400,7 +414,7 @@ describe("generated API and baseline documentation", () => {
       {
         args: ["--release"],
         code: "mapping_release_status_incomplete",
-        mutate() {},
+        mutate: () => undefined,
       },
       {
         code: "baseline_inventory_mismatch",
