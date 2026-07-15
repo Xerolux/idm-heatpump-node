@@ -269,3 +269,60 @@ describe.sequential("parity orchestrator phase gate", () => {
     expect(source).not.toMatch(/\bexecSync\b|\bexecFileSync\b/u);
   });
 });
+
+describe("npm parity entry points and private package boundary", () => {
+  it("wires all npm parity commands to fixed repository scripts", () => {
+    const packageJson = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as {
+      readonly private?: boolean;
+      readonly scripts?: Readonly<Record<string, string>>;
+    };
+
+    expect(packageJson.scripts?.["parity:generate"]).toBe("node scripts/check-parity.mjs generate");
+    expect(packageJson.scripts?.["parity:api"]).toBe("node scripts/generate-api-parity.mjs");
+    expect(packageJson.scripts?.["parity:check"]).toBe("node scripts/check-parity.mjs check");
+    expect(packageJson.private).toBe(true);
+  });
+
+  it("keeps Python, Git, contracts, fixtures, and tooling outside runtime dependencies and package", () => {
+    const packageJson = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as {
+      readonly dependencies?: Readonly<Record<string, string>>;
+      readonly devDependencies?: Readonly<Record<string, string>>;
+      readonly files?: readonly string[];
+      readonly private?: boolean;
+      readonly scripts?: Readonly<Record<string, string>>;
+    };
+    expect(packageJson.private).toBe(true);
+    expect(packageJson.dependencies ?? {}).toEqual({});
+    expect(packageJson.files).toEqual(["dist"]);
+    expect(packageJson.devDependencies).not.toHaveProperty("pymodbus");
+    expect(packageJson.scripts).toMatchObject({
+      build: "tsup",
+      check:
+        "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm run pack:check",
+      "pack:check": "npm run build && node scripts/check-package.mjs",
+      prepack: "npm run build",
+    });
+
+    const npmCli = process.env.npm_execpath;
+    expect(npmCli).toBeDefined();
+    const packed = run(process.execPath, [
+      npmCli ?? "",
+      "pack",
+      "--dry-run",
+      "--json",
+      "--ignore-scripts",
+    ]);
+    expect(packed.status, packed.stderr).toBe(0);
+    const report = JSON.parse(packed.stdout) as readonly [
+      { readonly files: readonly { readonly path: string }[] },
+    ];
+    const paths = report[0].files.map(({ path }) => path);
+    expect(paths).toContain("dist/index.js");
+    expect(paths).toContain("dist/web/index.js");
+    expect(
+      paths.filter((path) =>
+        /^(?:scripts|test|contracts|docs|\.planning|UPSTREAM-PARITY\.json)(?:\/|$)/u.test(path),
+      ),
+    ).toEqual([]);
+  });
+});
