@@ -1,5 +1,6 @@
 import {
   copyFileSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -229,7 +230,7 @@ describe("API mapping inventory", () => {
     }
   });
 
-  it("mapping status starts every implementable row as planned with final ownership and evidence", () => {
+  it("mapping promotion completes exactly the fully evidenced Phase-1 semantic surface", () => {
     const allowedNormalizations = new Set([
       "enum_to_const_union",
       "list_to_readonly_array",
@@ -243,13 +244,22 @@ describe("API mapping inventory", () => {
       "tuple_to_readonly_array",
     ]);
     const counterpartKeys = new Set<string>();
+    const completedRows = apiMapping.mappings.filter(({ status }) => status === "complete");
+
+    expect(completedRows).toHaveLength(53);
+    expect(completedRows.map(({ python_symbol }) => python_symbol)).toEqual(
+      apiMapping.mappings
+        .filter(({ owner_phase }) => owner_phase === 1)
+        .map(({ python_symbol }) => python_symbol),
+    );
 
     for (const row of apiMapping.mappings) {
-      expect(row.status, row.python_symbol).toBe("planned");
+      expect(row.status, row.python_symbol).toBe(row.owner_phase === 1 ? "complete" : "planned");
       expect(row.typescript_symbol, row.python_symbol).toMatch(/^[A-Za-z][A-Za-z0-9_]*$/);
       expect([1, 2, 3, 4], row.python_symbol).toContain(row.owner_phase);
       expect(row.evidence_category, row.python_symbol).toMatch(/^[a-z][a-z0-9_]*$/);
       expect(row.contract_test, row.python_symbol).toMatch(/^test\/.+\.test\.ts$/);
+      expect(existsSync(resolve(ROOT, row.contract_test)), row.python_symbol).toBe(true);
       expect(row.normalizations, row.python_symbol).toEqual([...new Set(row.normalizations)]);
       expect(
         row.normalizations.every((normalization) => allowedNormalizations.has(normalization)),
@@ -281,7 +291,8 @@ describe("Phase-1 class representation mapping", () => {
     );
 
     for (const row of apiMapping.mappings.filter(
-      ({ kind, owner_phase }) => kind === "class" && owner_phase === 1,
+      ({ kind, owner_phase, status }) =>
+        kind === "class" && owner_phase === 1 && status === "complete",
     )) {
       const facts = factsByPublicName.get(row.python_symbol);
       expect(facts, row.python_symbol).toBeDefined();

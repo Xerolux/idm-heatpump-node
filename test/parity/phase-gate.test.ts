@@ -271,6 +271,35 @@ describe.sequential("parity orchestrator phase gate", () => {
 });
 
 describe("npm parity entry points and private package boundary", () => {
+  it("keeps mapping promotion API-only before the non-mutating Python fixture check", () => {
+    const packageJson = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as {
+      readonly scripts?: Readonly<Record<string, string>>;
+    };
+    const mapping = JSON.parse(
+      readFileSync(resolve(root, "contracts/api-mapping.json"), "utf8"),
+    ) as {
+      readonly mappings: readonly {
+        readonly owner_phase: number;
+        readonly python_symbol: string;
+        readonly status: string;
+        readonly typescript_symbol: string;
+      }[];
+    };
+    const apiDocument = readFileSync(resolve(root, "docs/API-PARITY.md"), "utf8");
+    const completeRows = mapping.mappings.filter(({ status }) => status === "complete");
+
+    expect(packageJson.scripts?.["parity:api"]).toBe("node scripts/generate-api-parity.mjs");
+    expect(packageJson.scripts?.["parity:check"]).toBe("node scripts/check-parity.mjs check");
+    expect(completeRows).toHaveLength(53);
+    expect(completeRows.every(({ owner_phase }) => owner_phase === 1)).toBe(true);
+    for (const row of completeRows) {
+      expect(apiDocument, row.python_symbol).toContain(
+        `| \`${row.python_symbol}\` | \`${row.typescript_symbol}\` | \`.\` | 1 | \`complete\` |`,
+      );
+    }
+    expect(mapping.mappings.filter(({ status }) => status === "planned")).toHaveLength(36);
+  });
+
   it("wires all npm parity commands to fixed repository scripts", () => {
     const packageJson = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as {
       readonly private?: boolean;
