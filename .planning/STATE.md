@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 01-09-PLAN.md
-last_updated: "2026-07-15T14:35:46.309Z"
-last_activity: 2026-07-15 -- Completed Phase 01 Plan 09
+status: verifying
+stopped_at: Completed 01-10-PLAN.md
+last_updated: "2026-07-15T15:16:47.213Z"
+last_activity: 2026-07-15 -- Completed Phase 01 Plan 10
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 10
-  completed_plans: 9
-  percent: 90
+  completed_plans: 10
+  percent: 20
 ---
 
 # Project State
@@ -21,35 +21,35 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-14)
 
 **Core value:** Complete semantic and behavioral parity with the latest stable pinned `Xerolux/idm-heatpump-api` release, proven by cross-repository contracts and all release gates.
-**Current focus:** Phase 01 — reproducible-semantic-contract
+**Current focus:** Phase 01 verification — reproducible-semantic-contract
 
 ## Current Position
 
-Phase: 01 (reproducible-semantic-contract) — EXECUTING
+Phase: 01 (reproducible-semantic-contract) — VERIFYING
 Plan: 10 of 10
-Status: Ready to execute
-Last activity: 2026-07-15 -- Completed Phase 01 Plan 09
+Status: Phase complete — ready for verification
+Last activity: 2026-07-15 -- Completed Phase 01 Plan 10
 
-Progress: [█████████░] 90%
+Milestone progress: [██░░░░░░░░] 20% (Phase 01 plans: 10/10)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 9
-- Average duration: 100 min
-- Total execution time: 15h
+- Total plans completed: 10
+- Average duration: 92 min
+- Total execution time: 15h 22m
 
 **By Phase:**
 
-| Phase | Plans | Total | Avg/Plan |
-| ----- | ----- | ----- | -------- |
-| 01    | 9     | 15h   | 100 min  |
+| Phase | Plans | Total   | Avg/Plan |
+| ----- | ----- | ------- | -------- |
+| 01    | 10    | 15h 22m | 92 min   |
 
 **Recent Trend:**
 
-- Last 5 plans: 12 min, 15 min, 22 min, 44 min, 11h 55m (interrupted)
-- Trend: Checked Phase-1 mappings now close exactly against the runtime package namespace
+- Last 5 plans: 15 min, 22 min, 44 min, 11h 55m (interrupted), 22 min
+- Trend: Phase-1 semantic contracts, private documentation, and CI are ready for independent verification
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |
@@ -61,6 +61,7 @@ _Updated after each plan completion_
 | Phase 01 P06 | 22 min | 3 tasks | 11 files |
 | Phase 01 P07 | 44 min | 2 tasks | 3 files |
 | Phase 01 P09 | 11h 55m | 2 tasks | 6 files |
+| Phase 01 P10 | 22 min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,10 @@ Recent decisions affecting current work:
 - [Phase 01]: Complete exactly the 53 implemented owner-Phase-1 rows; keep all 36 later-owned rows planned. — Prevents status claims from preceding full implementation and focused evidence.
 - [Phase 01]: Expose 52 runtime values and RegisterDef as an explicit type-only export. — Makes the root namespace equal the checked mapping without leaking internal or later-phase symbols.
 - [Phase 01]: Stage only bounded regular contract-test files for complete rows inside the parity shadow root. — Keeps complete-row evidence validation isolated, deterministic, and non-mutating.
+- [Phase 01]: Delegate CI parity to npm run parity:check after full-history checkout. — Keeps exact identity verification and generation lifecycle in one audited orchestrator.
+- [Phase 01]: Pin all CI actions by full SHA under contents-read permissions. — Prevents mutable action references and avoids secrets, environments, or device inputs.
+- [Phase 01]: Document exactly 53 complete Phase-1 mappings and 36 planned runtime mappings. — Keeps the usable semantic core distinct from absent transport, write, and web behavior.
+- [Phase 01]: Keep private: true and record that no Node hardware validation was performed. — Prevents premature publication or unsupported validation claims.
 
 ### Pending Todos
 
@@ -117,6 +122,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-15T14:35:46.295Z
-Stopped at: Completed 01-09-PLAN.md
+Last session: 2026-07-15T15:16:47.203Z
+Stopped at: Completed 01-10-PLAN.md
 Resume file: None

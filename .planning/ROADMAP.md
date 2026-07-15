@@ -13,7 +13,7 @@ The existing package and tooling foundation is already delivered, so this roadma
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Reproducible Semantic Contract** - The pinned Python public API, codecs, registers, and contract artifacts have exact TypeScript counterparts.
+- [x] **Phase 1: Reproducible Semantic Contract** - The pinned Python public API, codecs, registers, and contract artifacts have exact TypeScript counterparts. (completed 2026-07-15)
 - [ ] **Phase 2: Modbus Reads, Detection, and Resilience** - Consumers receive Python-equivalent requests, values, capabilities, state, diagnostics, and recovery from the Modbus path.
 - [ ] **Phase 3: Safe Write Parity** - Consumers can plan, validate, dry-run, and execute writes with the same safety and time-dependent behavior as Python.
 - [ ] **Phase 4: Optional Read-Only Web Parity** - Consumers can opt into equivalent Navigator 10 WebSocket and Navigator 2.0 HTTP data without changing the Modbus baseline.
@@ -47,7 +47,7 @@ Plans:
 - [x] 01-06-PLAN.md — Port the mapping-named register catalog, builders, gates, registry, and serializer.
 - [x] 01-07-PLAN.md — Establish guaranteed self-provisioning exact-baseline npm parity flows.
 - [x] 01-09-PLAN.md — Promote evidenced mappings, regenerate API-only artifacts with `parity:api`, non-mutatingly check Python fixtures, then expose root exports.
-- [ ] 01-10-PLAN.md — Integrate exact parity CI, truthful private documentation, and the final phase gate.
+- [x] 01-10-PLAN.md — Integrate exact parity CI, truthful private documentation, and the final phase gate.
 
 ### Phase 2: Modbus Reads, Detection, and Resilience
 
@@ -114,10 +114,10 @@ Plans:
 **Execution Order:**
 Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
-| Phase                                      | Plans Complete | Status      | Completed |
-| ------------------------------------------ | -------------- | ----------- | --------- |
-| 1. Reproducible Semantic Contract          | 9/10           | In Progress |           |
-| 2. Modbus Reads, Detection, and Resilience | 0/TBD          | Not started | -         |
-| 3. Safe Write Parity                       | 0/TBD          | Not started | -         |
-| 4. Optional Read-Only Web Parity           | 0/TBD          | Not started | -         |
-| 5. Parity Closure and Release Assurance    | 0/TBD          | Not started | -         |
+| Phase                                      | Plans Complete | Status      | Completed  |
+| ------------------------------------------ | -------------- | ----------- | ---------- |
+| 1. Reproducible Semantic Contract          | 10/10          | Complete    | 2026-07-15 |
+| 2. Modbus Reads, Detection, and Resilience | 0/TBD          | Not started | -          |
+| 3. Safe Write Parity                       | 0/TBD          | Not started | -          |
+| 4. Optional Read-Only Web Parity           | 0/TBD          | Not started | -          |
+| 5. Parity Closure and Release Assurance    | 0/TBD          | Not started | -          |
