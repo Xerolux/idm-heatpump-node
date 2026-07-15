@@ -19,8 +19,8 @@ Requirements for the initial `0.1.0` release. The existing package/tooling found
 
 - [x] **PAR-01**: Maintainers can generate and verify `UPSTREAM-PARITY.json`, the public export inventory, `docs/API-PARITY.md`, codec vectors, and normalized golden register schemas for every relevant model/feature combination; TypeScript types, codecs, and all register builders match those contracts, including documented overlaps.
 - [x] **BASE-01**: Every parity run uses an authoritative checked baseline containing repository URL, Python package version, fixed tag, full commit SHA, and parity-schema version, and rejects branch-only or mismatched references.
-- [ ] **API-01**: Every public Python export has a documented, semantically equivalent TypeScript counterpart with equivalent defaults and validation; only the parity contract's explicit language normalizations are accepted.
-- [ ] **API-02**: `docs/API-PARITY.md` is generated from or validated against the public Python API and records each Python symbol, TypeScript counterpart, development status, and contract test; release permits only complete or explicitly reviewed legitimate `not_applicable` entries.
+- [x] **API-01**: Every public Python export has a documented, semantically equivalent TypeScript counterpart with equivalent defaults and validation; only the parity contract's explicit language normalizations are accepted.
+- [x] **API-02**: `docs/API-PARITY.md` is generated from or validated against the public Python API and records each Python symbol, TypeScript counterpart, development status, and contract test; release permits only complete or explicitly reviewed legitimate `not_applicable` entries.
 - [ ] **REG-01**: For every supported model and feature combination, normalized Python and TypeScript register schemas agree on all contract fields, preserve official logical overlaps, and introduce no substantive difference.
 - [ ] **COD-01**: Identical raw registers decode to identical domain values and identical writable values encode to identical 16-bit words, including low-word-first Float32, NaN, Infinity, integer boundaries, signs, and multipliers.
 - [x] **CTR-01**: Cross-repository CI checks out the pinned Python reference and produces language-neutral JSON scenarios containing at least `name`, `configuration`, `transport_responses`, `clock`, `operation`, `expected_result`, `expected_requests`, and `expected_state`, with only contract-approved normalization.
@@ -108,8 +108,8 @@ Each v1 requirement below derives from exactly one of the 27 ingested binding co
 | ----------- | ------- | -------- |
 | PAR-01      | Phase 1 | Complete |
 | BASE-01     | Phase 1 | Complete |
-| API-01      | Phase 1 | Pending  |
-| API-02      | Phase 1 | Pending  |
+| API-01      | Phase 1 | Complete |
+| API-02      | Phase 1 | Complete |
 | REG-01      | Phase 1 | Pending  |
 | COD-01      | Phase 1 | Pending  |
 | CTR-01      | Phase 1 | Complete |
