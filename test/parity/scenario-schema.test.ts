@@ -113,9 +113,8 @@ describe("tagged contract value bounds", () => {
         index,
       ]),
     );
-    const tooManyNodes = Array.from(
-      { length: TAGGED_VALUE_LIMITS.maxArrayLength },
-      () => Array.from({ length: 3 }, () => 0),
+    const tooManyNodes = Array.from({ length: TAGGED_VALUE_LIMITS.maxArrayLength }, () =>
+      Array.from({ length: 3 }, () => 0),
     );
 
     for (const excessive of [
@@ -144,16 +143,21 @@ describe("tagged contract value ownership", () => {
     const parsed = parseTaggedValue(input) as Readonly<{
       nested: readonly Readonly<{ value: number }>[];
     }>;
+    const parsedFirst = parsed.nested[0];
+    const inputFirst = input.nested[0];
+    if (parsedFirst === undefined || inputFirst === undefined) {
+      throw new Error("Expected one nested fixture value");
+    }
 
     expect(parsed).not.toBe(input);
     expect(parsed.nested).not.toBe(input.nested);
-    expect(parsed.nested[0]).not.toBe(input.nested[0]);
+    expect(parsedFirst).not.toBe(inputFirst);
     expect(Object.isFrozen(parsed)).toBe(true);
     expect(Object.isFrozen(parsed.nested)).toBe(true);
-    expect(Object.isFrozen(parsed.nested[0])).toBe(true);
+    expect(Object.isFrozen(parsedFirst)).toBe(true);
 
-    input.nested[0]!.value = 9;
-    expect(parsed.nested[0]!.value).toBe(1);
-    expect(() => Object.assign(parsed.nested[0]!, { value: 2 })).toThrow(TypeError);
+    inputFirst.value = 9;
+    expect(parsedFirst.value).toBe(1);
+    expect(() => Object.assign(parsedFirst, { value: 2 })).toThrow(TypeError);
   });
 });
