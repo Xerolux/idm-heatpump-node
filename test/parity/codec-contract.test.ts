@@ -47,6 +47,11 @@ function runRegisterCase(testCase: CodecCase): unknown {
 
   switch (testCase.operation) {
     case "decode_value": {
+      if (Array.isArray(input.values)) {
+        return (input.values as readonly number[]).map((value) =>
+          decodeValue(ModbusCodec.encodeFloat32(value), definition),
+        );
+      }
       const words = input.words as readonly number[];
       return Array.isArray(testCase.expected_result) && input.datatype === DataType.BOOL
         ? words.map((word) => decodeValue([word], definition))
