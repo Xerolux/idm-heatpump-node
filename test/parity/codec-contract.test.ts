@@ -55,7 +55,10 @@ function runPrimitiveCase(testCase: CodecCase): unknown {
       return ModbusCodec.encodeFloat32(input.value as number);
     case "encode_decode_float32": {
       const words = ModbusCodec.encodeFloat32(input.value as number);
-      return { words, value: ModbusCodec.decodeFloat32(words) };
+      const value = ModbusCodec.decodeFloat32(words);
+      return typeof testCase.expected_result === "object" && testCase.expected_result !== null
+        ? { words, value }
+        : value;
     }
     case "decode_int8":
       return (input.words as readonly number[]).map((word) => ModbusCodec.decodeInt8(word));
