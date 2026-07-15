@@ -210,10 +210,6 @@ function defineFrozenRecord(
   return Object.freeze(result);
 }
 
-function canonicalSortKey(value: NormalizedContractValue): string {
-  return JSON.stringify(value);
-}
-
 function transformArray(
   value: readonly unknown[],
   mode: TransformMode,
@@ -268,7 +264,7 @@ function transformMap(
     }
 
     return defineFrozenRecord(
-      [...normalized].sort(([left], [right]) => left.localeCompare(right)),
+      [...normalized].sort(([left], [right]) => compareUnicodeCodePoints(left, right)),
     ) as NormalizedContractValue;
   });
 }
@@ -289,7 +285,9 @@ function transformSet(
     const items = [...value].map((item) =>
       transformValue(item, "normalize", state, depth + 1),
     ) as NormalizedContractValue[];
-    items.sort((left, right) => canonicalSortKey(left).localeCompare(canonicalSortKey(right)));
+    items.sort((left, right) =>
+      compareUnicodeCodePoints(canonicalContractJson(left), canonicalContractJson(right)),
+    );
     return Object.freeze(items);
   });
 }
@@ -317,7 +315,7 @@ function transformRecord(
         }
         return [key, transformValue(item, mode, state, depth + 1)] as const;
       })
-      .sort(([left], [right]) => left.localeCompare(right));
+      .sort(([left], [right]) => compareUnicodeCodePoints(left, right));
     return defineFrozenRecord(entries) as NormalizedContractValue | ParsedContractValue;
   });
 }
@@ -380,3 +378,4 @@ export function normalizeTaggedValue(value: unknown): NormalizedContractValue {
 export function parseTaggedValue(value: unknown): ParsedContractValue {
   return transformValue(value, "parse", initialState(), 0) as ParsedContractValue;
 }
+import { canonicalContractJson, compareUnicodeCodePoints } from "./canonical-order.js";

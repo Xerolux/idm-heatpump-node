@@ -14,6 +14,10 @@ import {
   normalizeTaggedValue,
   parseTaggedValue,
 } from "../../src/contracts/tagged-values.js";
+import {
+  canonicalContractJson,
+  compareUnicodeCodePoints,
+} from "../../src/contracts/canonical-order.js";
 
 function expectContractCode(callback: () => unknown, code: ContractValueError["code"]): void {
   try {
@@ -87,6 +91,52 @@ describe("tagged contract numbers", () => {
       "2": { value: true },
       z: [1, 2, 3],
     });
+  });
+
+  it("matches Python code-point and recursively canonical JSON ordering", () => {
+    const strings = ["😀", "z", "ä", "a", "Z", "2", "10", "!", "_", "\uE000"];
+    expect([...strings].sort(compareUnicodeCodePoints)).toEqual([
+      "!",
+      "10",
+      "2",
+      "Z",
+      "_",
+      "a",
+      "z",
+      "ä",
+      "\uE000",
+      "😀",
+    ]);
+
+    const nested = normalizeTaggedValue(
+      new Map<string, unknown>([
+        ["2", "two"],
+        ["10", "ten"],
+        [
+          "😀",
+          new Map([
+            ["2", 2],
+            ["10", 10],
+          ]),
+        ],
+        ["\uE000", true],
+      ]),
+    );
+    expect(canonicalContractJson(nested)).toBe(
+      '{"10":"ten","2":"two","":true,"😀":{"10":10,"2":2}}',
+    );
+    expect(normalizeTaggedValue(new Set(strings))).toEqual([
+      "!",
+      "10",
+      "2",
+      "Z",
+      "_",
+      "a",
+      "z",
+      "ä",
+      "\uE000",
+      "😀",
+    ]);
   });
 
   it("rejects malformed tagged number envelopes with a stable code", () => {
@@ -224,7 +274,7 @@ describe("versioned CTR-01 scenario fixture", () => {
       python_version: "0.7.6",
       repository: "https://github.com/Xerolux/idm-heatpump-api",
     });
-    expect(parsed.scenarios).toHaveLength(4);
+    expect(parsed.scenarios).toHaveLength(5);
     for (const scenario of parsed.scenarios) {
       expect(Object.keys(scenario).sort()).toEqual(requiredFields);
     }
@@ -237,6 +287,27 @@ describe("versioned CTR-01 scenario fixture", () => {
     expect(exceptionalResult[1]).toBe(Number.POSITIVE_INFINITY);
     expect(exceptionalResult[2]).toBe(Number.NEGATIVE_INFINITY);
     expect(Object.is(exceptionalResult[3], -0)).toBe(true);
+
+    const orderingResult = parsed.scenarios.find(
+      ({ name }) => name === "canonical_unicode_ordering",
+    )?.expected_result;
+    expect(
+      normalizeTaggedValue({
+        strings: new Set(["😀", "z", "ä", "a", "Z", "2", "10", "!", "_", "\uE000"]),
+        nested: new Map<string, unknown>([
+          ["2", "two"],
+          ["10", "ten"],
+          [
+            "😀",
+            new Map([
+              ["2", 2],
+              ["10", 10],
+            ]),
+          ],
+          ["\uE000", true],
+        ]),
+      }),
+    ).toEqual(orderingResult);
   });
 
   it("rejects every root and baseline provenance mutation", () => {

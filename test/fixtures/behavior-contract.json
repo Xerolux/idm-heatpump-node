@@ -50,6 +50,52 @@
       "clock": [],
       "configuration": {},
       "expected_requests": [],
+      "expected_result": {
+        "nested": {
+          "10": "ten",
+          "2": "two",
+          "": true,
+          "😀": {
+            "10": 10,
+            "2": 2
+          }
+        },
+        "strings": [
+          "!",
+          "10",
+          "2",
+          "Z",
+          "_",
+          "a",
+          "z",
+          "ä",
+          "",
+          "😀"
+        ]
+      },
+      "expected_state": {},
+      "name": "canonical_unicode_ordering",
+      "operation": {
+        "kind": "normalize_value",
+        "values": [
+          "!",
+          "10",
+          "2",
+          "Z",
+          "_",
+          "a",
+          "z",
+          "ä",
+          "",
+          "😀"
+        ]
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {},
+      "expected_requests": [],
       "expected_result": [
         0,
         16256

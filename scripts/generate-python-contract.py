@@ -903,6 +903,17 @@ def _behavior_fixture(manifest: Mapping[str, Any], client_module: Any, registers
             normalize_contract_value([float("nan"), float("inf"), float("-inf"), -0.0]),
         ),
         _scenario(
+            "canonical_unicode_ordering",
+            {},
+            {"kind": "normalize_value", "values": ["!", "10", "2", "Z", "_", "a", "z", "ä", "", "😀"]},
+            normalize_contract_value(
+                {
+                    "strings": {"😀", "z", "ä", "a", "Z", "2", "10", "!", "_", ""},
+                    "nested": {"2": "two", "10": "ten", "😀": {"2": 2, "10": 10}, "": True},
+                }
+            ),
+        ),
+        _scenario(
             "primitive_float_low_word_first",
             {},
             {"kind": "codec_encode_float32", "value": 1.0},

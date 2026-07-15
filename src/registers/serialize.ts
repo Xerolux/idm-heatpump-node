@@ -1,4 +1,5 @@
 import { normalizeTaggedValue, type NormalizedContractValue } from "../contracts/tagged-values.js";
+import { compareUnicodeCodePoints } from "../contracts/canonical-order.js";
 import type { RegisterDef } from "./definitions.js";
 
 export interface SerializedRegister {
@@ -75,7 +76,7 @@ export function serializeRegisterMap(
 ): SerializedRegisterMap {
   const serialized: Record<string, SerializedRegister> = {};
   for (const [name, register] of [...registers].sort(([left], [right]) =>
-    left.localeCompare(right),
+    compareUnicodeCodePoints(left, right),
   )) {
     serialized[name] = serializeRegisterDef(register);
   }

@@ -1,4 +1,5 @@
 import { MAX_ROOMS_PER_ZONE, MODEL_NAVIGATOR_10 } from "../constants.js";
+import { compareUnicodeCodePoints } from "../contracts/canonical-order.js";
 import { SemanticValidationError } from "../errors.js";
 import { DataType, type IdmModelInfo } from "../types.js";
 import { CORE_REGISTERS, getCommonRegisters } from "./core.js";
@@ -92,7 +93,7 @@ export class RegisterRegistry {
 
   public toSchema(): readonly RegisterRegistrySchemaEntry[] {
     const schema = [...this.registers]
-      .sort(([left], [right]) => left.localeCompare(right))
+      .sort(([left], [right]) => compareUnicodeCodePoints(left, right))
       .map(([key, register]) =>
         Object.freeze({
           key,
