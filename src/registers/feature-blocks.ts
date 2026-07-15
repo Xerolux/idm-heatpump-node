@@ -1,0 +1,623 @@
+import { DataType } from "../types.js";
+import type { RegisterDefInput } from "./definitions.js";
+import { buildRegisterDefinitions } from "./map-utils.js";
+
+const CASCADE_INPUTS = [
+  {
+    address: 1200,
+    datatype: DataType.FLOAT,
+    name: "cascade_req_heating_temp",
+    unit: "°C",
+  },
+  {
+    address: 1202,
+    datatype: DataType.FLOAT,
+    name: "cascade_req_cooling_temp",
+    unit: "°C",
+  },
+  {
+    address: 1204,
+    datatype: DataType.FLOAT,
+    name: "cascade_req_dhw_temp",
+    unit: "°C",
+  },
+  {
+    address: 1206,
+    datatype: DataType.FLOAT,
+    name: "cascade_avg_flow_heating",
+    unit: "°C",
+  },
+  {
+    address: 1208,
+    datatype: DataType.FLOAT,
+    name: "cascade_avg_flow_cooling",
+    unit: "°C",
+  },
+  {
+    address: 1210,
+    datatype: DataType.FLOAT,
+    name: "cascade_avg_flow_dhw",
+    unit: "°C",
+  },
+  {
+    address: 1220,
+    datatype: DataType.UCHAR,
+    name: "cascade_min_power_heating",
+    unit: "%",
+    writable: true,
+    minVal: 0,
+    maxVal: 100,
+  },
+  {
+    address: 1221,
+    datatype: DataType.UCHAR,
+    name: "cascade_max_power_heating",
+    unit: "%",
+    writable: true,
+    minVal: 0,
+    maxVal: 100,
+  },
+  {
+    address: 1222,
+    datatype: DataType.UCHAR,
+    name: "cascade_min_power_cooling",
+    unit: "%",
+    writable: true,
+    minVal: 0,
+    maxVal: 100,
+  },
+  {
+    address: 1223,
+    datatype: DataType.UCHAR,
+    name: "cascade_max_power_cooling",
+    unit: "%",
+    writable: true,
+    minVal: 0,
+    maxVal: 100,
+  },
+  {
+    address: 1224,
+    datatype: DataType.UCHAR,
+    name: "cascade_min_power_dhw",
+    unit: "%",
+    writable: true,
+    minVal: 0,
+    maxVal: 100,
+  },
+  {
+    address: 1225,
+    datatype: DataType.UCHAR,
+    name: "cascade_max_power_dhw",
+    unit: "%",
+    writable: true,
+    minVal: 0,
+    maxVal: 100,
+  },
+  {
+    address: 1226,
+    datatype: DataType.INT16,
+    name: "cascade_bivalence_heating_parallel",
+    unit: "°C",
+    writable: true,
+    minVal: -40,
+    maxVal: 40,
+  },
+  {
+    address: 1227,
+    datatype: DataType.INT16,
+    name: "cascade_bivalence_heating_alternative",
+    unit: "°C",
+    writable: true,
+    minVal: -40,
+    maxVal: 40,
+  },
+  {
+    address: 1228,
+    datatype: DataType.INT16,
+    name: "cascade_bivalence_cooling_parallel",
+    unit: "°C",
+    writable: true,
+    minVal: -40,
+    maxVal: 40,
+  },
+  {
+    address: 1229,
+    datatype: DataType.INT16,
+    name: "cascade_bivalence_cooling_alternative",
+    unit: "°C",
+    writable: true,
+    minVal: -40,
+    maxVal: 40,
+  },
+  {
+    address: 1230,
+    datatype: DataType.INT16,
+    name: "cascade_bivalence_dhw_parallel",
+    unit: "°C",
+    writable: true,
+    minVal: -40,
+    maxVal: 40,
+  },
+  {
+    address: 1231,
+    datatype: DataType.INT16,
+    name: "cascade_bivalence_dhw_alternative",
+    unit: "°C",
+    writable: true,
+    minVal: -40,
+    maxVal: 40,
+  },
+] satisfies readonly RegisterDefInput[];
+
+const SOLAR_INPUTS = [
+  {
+    address: 1850,
+    datatype: DataType.FLOAT,
+    name: "solar_collector_temp",
+    unit: "°C",
+  },
+  {
+    address: 1852,
+    datatype: DataType.FLOAT,
+    name: "solar_return_temp",
+    unit: "°C",
+  },
+  {
+    address: 1854,
+    datatype: DataType.FLOAT,
+    name: "solar_charging_temp",
+    unit: "°C",
+  },
+  {
+    address: 1856,
+    datatype: DataType.UCHAR,
+    name: "solar_mode",
+    writable: true,
+    minVal: 0,
+    maxVal: 4,
+    enumOptions: {
+      0: "Automatic",
+      1: "DHW",
+      2: "Heating",
+      3: "DHW + Heating",
+      4: "Heat Source / Pool",
+    },
+    eepromSensitive: true,
+  },
+  {
+    address: 1857,
+    datatype: DataType.FLOAT,
+    name: "solar_wq_pool_temp",
+    unit: "°C",
+  },
+] satisfies readonly RegisterDefInput[];
+
+const ISC_INPUTS = [
+  {
+    address: 1870,
+    datatype: DataType.FLOAT,
+    name: "isc_charging_temp_cooling",
+    unit: "°C",
+  },
+  {
+    address: 1872,
+    datatype: DataType.FLOAT,
+    name: "isc_recooling_temp",
+    unit: "°C",
+  },
+  {
+    address: 1874,
+    datatype: DataType.UCHAR,
+    name: "isc_mode",
+    enumOptions: {
+      0: "No Waste Heat",
+      1: "Heating",
+      4: "DHW",
+      8: "Heat Source",
+      255: "Not configured / Unavailable",
+    },
+  },
+] satisfies readonly RegisterDefInput[];
+
+const PV_INPUTS = [
+  {
+    address: 74,
+    datatype: DataType.FLOAT,
+    name: "pv_surplus",
+    unit: "kW",
+    writable: true,
+  },
+  {
+    address: 76,
+    datatype: DataType.FLOAT,
+    name: "electric_heater_power",
+    unit: "kW",
+    writable: true,
+  },
+  {
+    address: 78,
+    datatype: DataType.FLOAT,
+    name: "pv_production",
+    unit: "kW",
+    writable: true,
+  },
+  {
+    address: 82,
+    datatype: DataType.FLOAT,
+    name: "house_consumption",
+    unit: "kW",
+    writable: true,
+  },
+  {
+    address: 84,
+    datatype: DataType.FLOAT,
+    name: "battery_discharge",
+    unit: "kW",
+    writable: true,
+  },
+  {
+    address: 86,
+    datatype: DataType.INT16,
+    name: "battery_soc",
+    unit: "%",
+    writable: true,
+    minVal: 0,
+    maxVal: 100,
+    sentinelValues: [-1],
+    lastVerified: "2026-07-10",
+  },
+  {
+    address: 88,
+    datatype: DataType.FLOAT,
+    name: "pv_target_value",
+    unit: "kW",
+    writable: true,
+  },
+] satisfies readonly RegisterDefInput[];
+
+const NAV10_INPUTS = [
+  {
+    address: 1068,
+    datatype: DataType.FLOAT,
+    name: "heat_sink_return_temp",
+    unit: "°C",
+  },
+  {
+    address: 1070,
+    datatype: DataType.FLOAT,
+    name: "heat_sink_flow_temp",
+    unit: "°C",
+  },
+  {
+    address: 1072,
+    datatype: DataType.UCHAR,
+    name: "heat_sink_flow_rate",
+    unit: "L/min",
+    stateClass: "measurement",
+  },
+  {
+    address: 1074,
+    datatype: DataType.INT16,
+    name: "heat_sink_charging_pump_signal",
+    unit: "%",
+    stateClass: "measurement",
+  },
+  {
+    address: 1086,
+    datatype: DataType.FLOAT,
+    name: "groundwater_inlet_temp_1",
+    unit: "°C",
+  },
+  {
+    address: 1088,
+    datatype: DataType.FLOAT,
+    name: "groundwater_inlet_temp_2",
+    unit: "°C",
+  },
+  {
+    address: 1680,
+    datatype: DataType.UCHAR,
+    name: "fault_heat_source_circuit",
+  },
+  {
+    address: 1681,
+    datatype: DataType.UCHAR,
+    name: "fault_heat_source_pressure_switch",
+  },
+  {
+    address: 1682,
+    datatype: DataType.UCHAR,
+    name: "fault_charging_pump_1_intermediate",
+  },
+  {
+    address: 1683,
+    datatype: DataType.UCHAR,
+    name: "fault_charging_pump_2_intermediate",
+  },
+  {
+    address: 1714,
+    datatype: DataType.UCHAR,
+    name: "ext_demand_groundwater_pump_m15",
+    unit: "%",
+    writable: true,
+    minVal: 0,
+    maxVal: 100,
+    sentinelValues: [254],
+    lastVerified: "2026-07-10",
+  },
+  {
+    address: 1715,
+    datatype: DataType.UCHAR,
+    name: "ext_demand_groundwater_pump_m15_sw_max",
+    unit: "%",
+    writable: true,
+    minVal: 0,
+    maxVal: 100,
+    sentinelValues: [254],
+    lastVerified: "2026-07-10",
+  },
+  {
+    address: 4108,
+    datatype: DataType.FLOAT,
+    name: "power_limit_hp",
+    unit: "kW",
+    writable: true,
+  },
+  {
+    address: 4112,
+    datatype: DataType.FLOAT,
+    name: "power_limit_cascade",
+    unit: "kW",
+    writable: true,
+  },
+  {
+    address: 4124,
+    datatype: DataType.FLOAT,
+    name: "power_consumption_hp_smartfox",
+    unit: "kW",
+  },
+  {
+    address: 4001,
+    datatype: DataType.UCHAR,
+    name: "booster_fault",
+    enumOptions: {
+      0: "No fault",
+      1: "Booster A fault",
+      2: "Booster B fault",
+      3: "Booster A + B fault",
+    },
+    sentinelValues: [255],
+    lastVerified: "2026-07-10",
+  },
+  {
+    address: 4002,
+    datatype: DataType.UCHAR,
+    name: "booster_interlock",
+  },
+  {
+    address: 4010,
+    datatype: DataType.FLOAT,
+    name: "booster_a_source_inlet_temp",
+    unit: "°C",
+  },
+  {
+    address: 4012,
+    datatype: DataType.FLOAT,
+    name: "booster_a_source_outlet_temp",
+    unit: "°C",
+  },
+  {
+    address: 4014,
+    datatype: DataType.FLOAT,
+    name: "booster_a_storage_temp",
+    unit: "°C",
+  },
+  {
+    address: 4016,
+    datatype: DataType.FLOAT,
+    name: "booster_a_flow_temp",
+    unit: "°C",
+  },
+  {
+    address: 4018,
+    datatype: DataType.FLOAT,
+    name: "booster_a_return_temp",
+    unit: "°C",
+  },
+  {
+    address: 4020,
+    datatype: DataType.INT16,
+    name: "booster_a_source_pump",
+    unit: "%",
+    stateClass: "measurement",
+  },
+  {
+    address: 4021,
+    datatype: DataType.INT16,
+    name: "booster_a_charging_pump",
+    unit: "%",
+    stateClass: "measurement",
+  },
+  {
+    address: 4022,
+    datatype: DataType.UCHAR,
+    name: "booster_a_compressor",
+  },
+  {
+    address: 4040,
+    datatype: DataType.FLOAT,
+    name: "booster_b_source_inlet_temp",
+    unit: "°C",
+  },
+  {
+    address: 4042,
+    datatype: DataType.FLOAT,
+    name: "booster_b_source_outlet_temp",
+    unit: "°C",
+  },
+  {
+    address: 4044,
+    datatype: DataType.FLOAT,
+    name: "booster_b_storage_temp",
+    unit: "°C",
+  },
+  {
+    address: 4046,
+    datatype: DataType.FLOAT,
+    name: "booster_b_flow_temp",
+    unit: "°C",
+  },
+  {
+    address: 4048,
+    datatype: DataType.FLOAT,
+    name: "booster_b_return_temp",
+    unit: "°C",
+  },
+  {
+    address: 4050,
+    datatype: DataType.INT16,
+    name: "booster_b_source_pump",
+    unit: "%",
+    stateClass: "measurement",
+  },
+  {
+    address: 4051,
+    datatype: DataType.INT16,
+    name: "booster_b_charging_pump",
+    unit: "%",
+    stateClass: "measurement",
+  },
+  {
+    address: 4052,
+    datatype: DataType.UCHAR,
+    name: "booster_b_compressor",
+  },
+] satisfies readonly RegisterDefInput[];
+
+const GLT_INPUTS = [
+  {
+    address: 1690,
+    datatype: DataType.FLOAT,
+    name: "ext_outdoor_temp",
+    unit: "°C",
+    writable: true,
+  },
+  {
+    address: 1692,
+    datatype: DataType.FLOAT,
+    name: "ext_humidity",
+    unit: "%",
+    writable: true,
+    minVal: 0,
+    maxVal: 100,
+    sentinelValues: [-1],
+    lastVerified: "2026-07-10",
+  },
+  {
+    address: 1694,
+    datatype: DataType.UCHAR,
+    name: "ext_demand_temp_heating",
+    unit: "°C",
+    writable: true,
+    minVal: 20,
+    maxVal: 65,
+    eepromSensitive: true,
+  },
+  {
+    address: 1695,
+    datatype: DataType.UCHAR,
+    name: "ext_demand_temp_cooling",
+    unit: "°C",
+    writable: true,
+    minVal: 10,
+    maxVal: 25,
+    eepromSensitive: true,
+  },
+  {
+    address: 1696,
+    datatype: DataType.FLOAT,
+    name: "glt_temp_demand_heating",
+    unit: "°C",
+    writable: true,
+    cyclicRequired: true,
+  },
+  {
+    address: 1698,
+    datatype: DataType.FLOAT,
+    name: "glt_temp_demand_cooling",
+    unit: "°C",
+    writable: true,
+    cyclicRequired: true,
+  },
+  {
+    address: 1710,
+    datatype: DataType.BOOL,
+    name: "demand_heating",
+    writable: true,
+  },
+  {
+    address: 1711,
+    datatype: DataType.BOOL,
+    name: "demand_cooling",
+    writable: true,
+  },
+  {
+    address: 1712,
+    datatype: DataType.BOOL,
+    name: "demand_dhw_charging",
+    writable: true,
+  },
+  {
+    address: 1713,
+    datatype: DataType.BOOL,
+    name: "demand_onetime_dhw",
+    writable: true,
+  },
+  {
+    address: 1716,
+    datatype: DataType.FLOAT,
+    name: "glt_heat_storage_temp",
+    unit: "°C",
+    writable: true,
+  },
+  {
+    address: 1718,
+    datatype: DataType.FLOAT,
+    name: "glt_cold_storage_temp",
+    unit: "°C",
+    writable: true,
+  },
+  {
+    address: 1720,
+    datatype: DataType.FLOAT,
+    name: "glt_dhw_temp_bottom",
+    unit: "°C",
+    writable: true,
+  },
+  {
+    address: 1722,
+    datatype: DataType.FLOAT,
+    name: "glt_dhw_temp_top",
+    unit: "°C",
+    writable: true,
+  },
+] satisfies readonly RegisterDefInput[];
+
+export function getCascadeRegisters() {
+  return buildRegisterDefinitions(CASCADE_INPUTS);
+}
+export function getSolarRegisters() {
+  return buildRegisterDefinitions(SOLAR_INPUTS);
+}
+export function getIscRegisters() {
+  return buildRegisterDefinitions(ISC_INPUTS);
+}
+export function getPvRegisters() {
+  return buildRegisterDefinitions(PV_INPUTS);
+}
+export function getNavigator10Registers() {
+  return buildRegisterDefinitions(NAV10_INPUTS);
+}
+export function getGltRegisters() {
+  return buildRegisterDefinitions(GLT_INPUTS);
+}

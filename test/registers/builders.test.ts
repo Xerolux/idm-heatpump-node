@@ -29,6 +29,10 @@ interface MappingEntry {
   readonly representation: Readonly<Record<string, unknown>>;
 }
 
+interface ApiMappingFixture {
+  readonly mappings: readonly MappingEntry[];
+}
+
 interface RegisterSchemaFixture {
   readonly maps: Readonly<{
     default: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
@@ -51,7 +55,9 @@ function serializeForStaticContract(register: RegisterDef): Readonly<Record<stri
     eeprom_sensitive: register.eepromSensitive,
     enabled_by_default: register.enabledByDefault,
     enum_options: Object.fromEntries(
-      Object.entries(register.enumOptions ?? {}).sort(([left], [right]) => Number(left) - Number(right)),
+      Object.entries(register.enumOptions ?? {}).sort(
+        ([left], [right]) => Number(left) - Number(right),
+      ),
     ),
     exclude_from_write: [...(register.excludeFromWrite ?? [])].sort((left, right) => left - right),
     icon: register.icon,
@@ -86,7 +92,7 @@ function mergeMaps(...maps: readonly ReadonlyMap<string, RegisterDef>[]): Map<st
 
 describe("static register catalog", () => {
   it("matches the sole CORE_REGISTERS mapping decision and exact five-register metadata", () => {
-    const mapping = (apiMapping.entries as readonly MappingEntry[]).filter(
+    const mapping = (apiMapping as ApiMappingFixture).mappings.filter(
       (entry) => entry.python_symbol === "CORE_REGISTERS",
     );
 
@@ -104,13 +110,9 @@ describe("static register catalog", () => {
       }),
     ]);
     expect([...CORE_REGISTERS]).toEqual(
-      [
-        "outdoor_temp",
-        "system_mode",
-        "storage_temp",
-        "hp_operating_mode",
-        "error_acknowledge",
-      ].map((name) => [name, expect.objectContaining({ name })]),
+      ["outdoor_temp", "system_mode", "storage_temp", "hp_operating_mode", "error_acknowledge"].map(
+        (name) => [name, expect.objectContaining({ name })],
+      ),
     );
 
     const expected = readFixture().maps.default;
@@ -120,16 +122,16 @@ describe("static register catalog", () => {
   });
 
   it("matches every static family name, count, and all 26 metadata fields", () => {
-    expect(getSystemRegisters()).toHaveLength(24);
-    expect(getHpStatusRegisters()).toHaveLength(35);
-    expect(getEnergyRegisters()).toHaveLength(14);
-    expect(getCommonRegisters()).toHaveLength(73);
-    expect(getCascadeRegisters()).toHaveLength(18);
-    expect(getSolarRegisters()).toHaveLength(5);
-    expect(getIscRegisters()).toHaveLength(3);
-    expect(getPvRegisters()).toHaveLength(7);
-    expect(getNavigator10Registers()).toHaveLength(33);
-    expect(getGltRegisters()).toHaveLength(14);
+    expect(getSystemRegisters().size).toBe(24);
+    expect(getHpStatusRegisters().size).toBe(35);
+    expect(getEnergyRegisters().size).toBe(14);
+    expect(getCommonRegisters().size).toBe(73);
+    expect(getCascadeRegisters().size).toBe(18);
+    expect(getSolarRegisters().size).toBe(5);
+    expect(getIscRegisters().size).toBe(3);
+    expect(getPvRegisters().size).toBe(7);
+    expect(getNavigator10Registers().size).toBe(33);
+    expect(getGltRegisters().size).toBe(14);
 
     const actual = mergeMaps(
       getCommonRegisters(),
@@ -142,8 +144,11 @@ describe("static register catalog", () => {
     );
     const expected = Object.fromEntries(
       Object.entries(readFixture().maps.default).filter(
-        ([name]) => !name.startsWith("hc_") && !name.startsWith("zm") &&
-          name !== "humidity_sensor" && name !== "error_acknowledge",
+        ([name]) =>
+          !name.startsWith("hc_") &&
+          !name.startsWith("zm") &&
+          name !== "humidity_sensor" &&
+          name !== "error_acknowledge",
       ),
     );
 
@@ -175,17 +180,13 @@ describe("static register catalog", () => {
       expect(register?.sentinelValues).toEqual(sentinels);
       expect(register?.lastVerified).toBe("2026-07-10");
       expect(register?.source).toBe("official_idm_modbus");
-      expect(register?.supportedModels).toEqual([
-        "Navigator 10",
-        "Navigator 2.0",
-        "Navigator Pro",
-      ]);
+      expect(register?.supportedModels).toEqual(["Navigator 10", "Navigator 2.0", "Navigator Pro"]);
     }
   });
 
   it("keeps internal static-family helpers outside the public mapping", () => {
     const mappedSymbols = new Set(
-      (apiMapping.entries as readonly MappingEntry[]).map((entry) => entry.typescript_symbol),
+      (apiMapping as ApiMappingFixture).mappings.map((entry) => entry.typescript_symbol),
     );
     for (const internalName of [
       "getCommonRegisters",
