@@ -396,9 +396,9 @@ describe("GitHub Actions workflow contract", () => {
     expect(workflow).not.toMatch(/contents:\s*write|id-token:\s*write|packages:\s*write/u);
     expect(workflow).toMatch(/matrix:[\s\S]*?node:\s*\n\s+- 22\s*\n\s+- 24/u);
 
-    const actionReferences = [...workflow.matchAll(/^\s*uses:\s*([^\s#]+).*$/gmu)].map(
-      (match) => match[1],
-    );
+    const actionReferences = [...workflow.matchAll(/^\s*uses:\s*([^\s#]+).*$/gmu)]
+      .map((match) => match[1])
+      .filter((reference): reference is string => reference !== undefined);
     expect(actionReferences.length).toBeGreaterThanOrEqual(5);
     expect(actionReferences.every((reference) => /@[0-9a-f]{40}$/u.test(reference))).toBe(true);
   });
