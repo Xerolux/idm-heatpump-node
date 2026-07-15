@@ -16,7 +16,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, posix, resolve } from "node:path";
+import { dirname, join, posix, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -417,6 +417,59 @@ function prepareShadowRoot(stageRoot) {
   copyFileSync(API_GENERATOR_PATH, resolve(stageRoot, "scripts/generate-api-parity.mjs"));
   copyFileSync(MAPPING_PATH, resolve(stageRoot, "contracts/api-mapping.json"));
   copyFileSync(MANIFEST_PATH, resolve(stageRoot, "UPSTREAM-PARITY.json"));
+
+  let mapping;
+  try {
+    mapping = JSON.parse(readFileSync(MAPPING_PATH, "utf8"));
+  } catch (error) {
+    fail("evidence_invalid", `API mapping cannot be parsed for evidence staging: ${String(error)}`);
+  }
+  if (!isRecord(mapping) || !Array.isArray(mapping.mappings)) {
+    fail("evidence_invalid", "API mapping has no evidence rows");
+  }
+
+  const evidenceRoot = resolve(ROOT, "test");
+  const stagedEvidence = new Set();
+  for (const row of mapping.mappings) {
+    if (!isRecord(row) || row.status !== "complete") {
+      continue;
+    }
+    const relativePath = row.contract_test;
+    if (
+      typeof relativePath !== "string" ||
+      !/^test\/[A-Za-z0-9._/-]+\.test\.ts$/u.test(relativePath) ||
+      relativePath.split("/").includes("..")
+    ) {
+      fail("evidence_invalid", `Invalid complete evidence path: ${String(relativePath)}`);
+    }
+    if (stagedEvidence.has(relativePath)) {
+      continue;
+    }
+
+    const source = resolve(ROOT, relativePath);
+    if (!source.startsWith(`${evidenceRoot}${sep}`)) {
+      fail("evidence_invalid", `Complete evidence escapes the test root: ${relativePath}`);
+    }
+    let stats;
+    try {
+      stats = lstatSync(source);
+    } catch (error) {
+      fail("evidence_invalid", `Complete evidence is missing: ${relativePath}: ${String(error)}`);
+    }
+    if (
+      !stats.isFile() ||
+      stats.isSymbolicLink() ||
+      stats.size === 0 ||
+      stats.size > MAX_ARTIFACT_BYTES
+    ) {
+      fail("evidence_invalid", `Complete evidence is not a bounded regular file: ${relativePath}`);
+    }
+
+    const destination = resolve(stageRoot, relativePath);
+    mkdirSync(dirname(destination), { recursive: true });
+    copyFileSync(source, destination);
+    stagedEvidence.add(relativePath);
+  }
 }
 
 function generateArtifacts(runtime, interpreter, checkout, stageRoot) {

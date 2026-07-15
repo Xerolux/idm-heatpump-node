@@ -20,55 +20,55 @@ It documents development intent; only `complete` rows with passing evidence may 
 
 | Python symbol | TypeScript counterpart | Export path | Owner | Status | Representation | Normalizations | Contract evidence |
 | --- | --- | --- | ---: | --- | --- | --- | --- |
-| `ACTIVE_HC_MODE_OPTIONS` | `ACTIVE_HC_MODE_OPTIONS` | `.` | 1 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `BIVALENCE_STATE_OPTIONS` | `BIVALENCE_STATE_OPTIONS` | `.` | 1 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `BOOSTER_FAULT_OPTIONS` | `BOOSTER_FAULT_OPTIONS` | `.` | 1 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `CIRCUIT_MODE_OPTIONS` | `CIRCUIT_MODE_OPTIONS` | `.` | 1 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `CORE_REGISTERS` | `CORE_REGISTERS` | `.` | 1 | `planned` | `readonly_map` | `mapping_to_readonly_map_or_record` | `registers`: `test/registers/builders.test.ts` |
-| `DEFAULT_PORT` | `DEFAULT_PORT` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `DEFAULT_SLAVE_ID` | `DEFAULT_SLAVE_ID` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `DEFAULT_TIMEOUT` | `DEFAULT_TIMEOUT` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `EEPROM_SENSITIVE_ADDRESSES` | `EEPROM_SENSITIVE_ADDRESSES` | `.` | 1 | `planned` | `frozen_constant` | `set_to_immutable_set_like` | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `EVU_LOCK_OPTIONS` | `EVU_LOCK_OPTIONS` | `.` | 1 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `FEATURE_CASCADE` | `FEATURE_CASCADE` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `FEATURE_HEATING_CIRCUITS` | `FEATURE_HEATING_CIRCUITS` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `FEATURE_ISC` | `FEATURE_ISC` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `FEATURE_PV` | `FEATURE_PV` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `FEATURE_SOLAR` | `FEATURE_SOLAR` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `FEATURE_ZONE_MODULES` | `FEATURE_ZONE_MODULES` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `HEATING_CIRCUIT_LETTERS` | `HEATING_CIRCUIT_LETTERS` | `.` | 1 | `planned` | `frozen_constant` | `tuple_to_readonly_array` | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `HP_OPERATING_MODE_OPTIONS` | `HP_OPERATING_MODE_OPTIONS` | `.` | 1 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `ISC_MODE_OPTIONS` | `ISC_MODE_OPTIONS` | `.` | 1 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `MAX_HEATING_CIRCUITS` | `MAX_HEATING_CIRCUITS` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `MAX_ROOMS_PER_ZONE` | `MAX_ROOMS_PER_ZONE` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `MAX_RETRIES` | `MAX_RETRIES` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `MAX_ZONE_MODULES` | `MAX_ZONE_MODULES` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `MODEL_DETECTION_MAX_RETRIES` | `MODEL_DETECTION_MAX_RETRIES` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `MODEL_DETECTION_TIMEOUT` | `MODEL_DETECTION_TIMEOUT` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `MODEL_NAVIGATOR_10` | `MODEL_NAVIGATOR_10` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `MODEL_NAVIGATOR_20` | `MODEL_NAVIGATOR_20` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `MODEL_NAVIGATOR_PRO` | `MODEL_NAVIGATOR_PRO` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `MODEL_UNKNOWN` | `MODEL_UNKNOWN` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `RETRY_BACKOFF_BASE` | `RETRY_BACKOFF_BASE` | `.` | 1 | `planned` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `ROOM_MODE_OPTIONS` | `ROOM_MODE_OPTIONS` | `.` | 1 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `SMART_GRID_OPTIONS` | `SMART_GRID_OPTIONS` | `.` | 1 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `SOLAR_MODE_OPTIONS` | `SOLAR_MODE_OPTIONS` | `.` | 1 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `SYSTEM_MODE_OPTIONS` | `SYSTEM_MODE_OPTIONS` | `.` | 1 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `VARIABLE_INPUT_OPTIONS` | `VARIABLE_INPUT_OPTIONS` | `.` | 1 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `ZONE_MODULE_MODE_OPTIONS` | `ZONE_MODULE_MODE_OPTIONS` | `.` | 1 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `ACTIVE_HC_MODE_OPTIONS` | `ACTIVE_HC_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `BIVALENCE_STATE_OPTIONS` | `BIVALENCE_STATE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `BOOSTER_FAULT_OPTIONS` | `BOOSTER_FAULT_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `CIRCUIT_MODE_OPTIONS` | `CIRCUIT_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `CORE_REGISTERS` | `CORE_REGISTERS` | `.` | 1 | `complete` | `readonly_map` | `mapping_to_readonly_map_or_record` | `registers`: `test/registers/builders.test.ts` |
+| `DEFAULT_PORT` | `DEFAULT_PORT` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `DEFAULT_SLAVE_ID` | `DEFAULT_SLAVE_ID` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `DEFAULT_TIMEOUT` | `DEFAULT_TIMEOUT` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `EEPROM_SENSITIVE_ADDRESSES` | `EEPROM_SENSITIVE_ADDRESSES` | `.` | 1 | `complete` | `frozen_constant` | `set_to_immutable_set_like` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `EVU_LOCK_OPTIONS` | `EVU_LOCK_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `FEATURE_CASCADE` | `FEATURE_CASCADE` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `FEATURE_HEATING_CIRCUITS` | `FEATURE_HEATING_CIRCUITS` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `FEATURE_ISC` | `FEATURE_ISC` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `FEATURE_PV` | `FEATURE_PV` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `FEATURE_SOLAR` | `FEATURE_SOLAR` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `FEATURE_ZONE_MODULES` | `FEATURE_ZONE_MODULES` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `HEATING_CIRCUIT_LETTERS` | `HEATING_CIRCUIT_LETTERS` | `.` | 1 | `complete` | `frozen_constant` | `tuple_to_readonly_array` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `HP_OPERATING_MODE_OPTIONS` | `HP_OPERATING_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `ISC_MODE_OPTIONS` | `ISC_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `MAX_HEATING_CIRCUITS` | `MAX_HEATING_CIRCUITS` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `MAX_ROOMS_PER_ZONE` | `MAX_ROOMS_PER_ZONE` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `MAX_RETRIES` | `MAX_RETRIES` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `MAX_ZONE_MODULES` | `MAX_ZONE_MODULES` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `MODEL_DETECTION_MAX_RETRIES` | `MODEL_DETECTION_MAX_RETRIES` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `MODEL_DETECTION_TIMEOUT` | `MODEL_DETECTION_TIMEOUT` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `MODEL_NAVIGATOR_10` | `MODEL_NAVIGATOR_10` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `MODEL_NAVIGATOR_20` | `MODEL_NAVIGATOR_20` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `MODEL_NAVIGATOR_PRO` | `MODEL_NAVIGATOR_PRO` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `MODEL_UNKNOWN` | `MODEL_UNKNOWN` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `RETRY_BACKOFF_BASE` | `RETRY_BACKOFF_BASE` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `ROOM_MODE_OPTIONS` | `ROOM_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `SMART_GRID_OPTIONS` | `SMART_GRID_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `SOLAR_MODE_OPTIONS` | `SOLAR_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `SYSTEM_MODE_OPTIONS` | `SYSTEM_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `VARIABLE_INPUT_OPTIONS` | `VARIABLE_INPUT_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `ZONE_MODULE_MODE_OPTIONS` | `ZONE_MODULE_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `AuthenticationError` | `AuthenticationError` | `./web` | 4 | `planned` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `ConnectionError` | `ConnectionError` | `./web` | 4 | `planned` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `CsrfError` | `CsrfError` | `./web` | 4 | `planned` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `AdaptiveBackoff` | `AdaptiveBackoff` | `.` | 1 | `planned` | `class` | `snake_case_to_camelCase` | `timing`: `test/semantic/constants-and-types.test.ts` |
-| `DataType` | `DataType` | `.` | 1 | `planned` | `frozen_const_and_union` | `enum_to_const_union` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
-| `FeatureFlags` | `FeatureFlags` | `.` | 1 | `planned` | `readonly_object_factory` | `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
+| `AdaptiveBackoff` | `AdaptiveBackoff` | `.` | 1 | `complete` | `class` | `snake_case_to_camelCase` | `timing`: `test/semantic/constants-and-types.test.ts` |
+| `DataType` | `DataType` | `.` | 1 | `complete` | `frozen_const_and_union` | `enum_to_const_union` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
+| `FeatureFlags` | `FeatureFlags` | `.` | 1 | `complete` | `readonly_object_factory` | `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
 | `IdmClientDiagnostics` | `IdmClientDiagnostics` | `.` | 2 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `transport_diagnostics`: `test/parity/transport-contract.test.ts` |
 | `IdmNavigator10WebClient` | `IdmNavigator10WebClient` | `./web` | 4 | `planned` | `class` | `none_to_null`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_client`: `test/parity/web-contract.test.ts` |
 | `IdmNavigator20WebClient` | `IdmNavigator20WebClient` | `./web` | 4 | `planned` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_client`: `test/parity/web-contract.test.ts` |
-| `IdmModelInfo` | `IdmModelInfo` | `.` | 1 | `planned` | `readonly_object_factory` | `list_to_readonly_array`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `set_to_immutable_set_like`, `snake_case_to_camelCase` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
+| `IdmModelInfo` | `IdmModelInfo` | `.` | 1 | `complete` | `readonly_object_factory` | `list_to_readonly_array`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `set_to_immutable_set_like`, `snake_case_to_camelCase` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
 | `IdmModbusClient` | `IdmModbusClient` | `.` | 2 | `planned` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `set_to_immutable_set_like`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `transport_client`: `test/parity/transport-contract.test.ts` |
 | `IllegalAddressError` | `IllegalAddressError` | `.` | 2 | `planned` | `error_class` | `python_exception_to_error_class` | `transport_errors`: `test/parity/transport-contract.test.ts` |
-| `ModbusCodec` | `ModbusCodec` | `.` | 1 | `planned` | `class` | `snake_case_to_camelCase` | `codec`: `test/codec.test.ts` |
+| `ModbusCodec` | `ModbusCodec` | `.` | 1 | `complete` | `class` | `snake_case_to_camelCase` | `codec`: `test/codec.test.ts` |
 | `IdmWebAuthenticationError` | `IdmWebAuthenticationError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `IdmWebConnectionError` | `IdmWebConnectionError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `IdmWebCsrfError` | `IdmWebCsrfError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
@@ -90,23 +90,23 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `IdmWebValue` | `IdmWebValue` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
 | `IdmWebValueDescription` | `IdmWebValueDescription` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
 | `ModbusErrorContext` | `ModbusErrorContext` | `.` | 2 | `planned` | `readonly_object_factory` | `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `transport_errors`: `test/parity/transport-contract.test.ts` |
-| `PollRateLimiter` | `PollRateLimiter` | `.` | 1 | `planned` | `class` | — | `timing`: `test/semantic/constants-and-types.test.ts` |
+| `PollRateLimiter` | `PollRateLimiter` | `.` | 1 | `complete` | `class` | — | `timing`: `test/semantic/constants-and-types.test.ts` |
 | `RECOMMENDED_WEB_SCAN_INTERVAL` | `RECOMMENDED_WEB_SCAN_INTERVAL` | `./web` | 4 | `planned` | `frozen_constant` | — | `web_constants`: `test/parity/web-contract.test.ts` |
-| `RegisterDef` | `RegisterDef` | `.` | 1 | `planned` | `readonly_object_factory` | `mapping_to_readonly_map_or_record`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `set_to_immutable_set_like`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `register_definition`: `test/registers/register-def.test.ts` |
-| `RegisterRegistry` | `RegisterRegistry` | `.` | 1 | `planned` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
-| `RegisterType` | `RegisterType` | `.` | 1 | `planned` | `frozen_const_and_union` | `enum_to_const_union` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
+| `RegisterDef` | `RegisterDef` | `.` | 1 | `complete` | `readonly_object_factory` | `mapping_to_readonly_map_or_record`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `set_to_immutable_set_like`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `register_definition`: `test/registers/register-def.test.ts` |
+| `RegisterRegistry` | `RegisterRegistry` | `.` | 1 | `complete` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
+| `RegisterType` | `RegisterType` | `.` | 1 | `complete` | `frozen_const_and_union` | `enum_to_const_union` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
 | `WEB_VALUE_DESCRIPTIONS` | `WEB_VALUE_DESCRIPTIONS` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
-| `WriteClass` | `WriteClass` | `.` | 1 | `planned` | `frozen_const_and_union` | `enum_to_const_union` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
+| `WriteClass` | `WriteClass` | `.` | 1 | `complete` | `frozen_const_and_union` | `enum_to_const_union` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
 | `WriteSafetyResult` | `WriteSafetyResult` | `.` | 3 | `planned` | `readonly_object_factory` | `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `writes`: `test/parity/write-contract.test.ts` |
-| `build_register_map` | `buildRegisterMap` | `.` | 1 | `planned` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
+| `build_register_map` | `buildRegisterMap` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `create_optional_navigator10_web_client` | `createOptionalNavigator10WebClient` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_factory`: `test/parity/web-contract.test.ts` |
 | `create_optional_navigator20_web_client` | `createOptionalNavigator20WebClient` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_factory`: `test/parity/web-contract.test.ts` |
-| `get_all_registers` | `getAllRegisters` | `.` | 1 | `planned` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
-| `get_detection_registers` | `getDetectionRegisters` | `.` | 1 | `planned` | `function` | `list_to_readonly_array`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
-| `get_heating_circuit_registers` | `getHeatingCircuitRegisters` | `.` | 1 | `planned` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
-| `get_register` | `getRegister` | `.` | 1 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
-| `get_register_registry` | `getRegisterRegistry` | `.` | 1 | `planned` | `function` | `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
-| `get_zone_module_registers` | `getZoneModuleRegisters` | `.` | 1 | `planned` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
+| `get_all_registers` | `getAllRegisters` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
+| `get_detection_registers` | `getDetectionRegisters` | `.` | 1 | `complete` | `function` | `list_to_readonly_array`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
+| `get_heating_circuit_registers` | `getHeatingCircuitRegisters` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
+| `get_register` | `getRegister` | `.` | 1 | `complete` | `function` | `none_to_null`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
+| `get_register_registry` | `getRegisterRegistry` | `.` | 1 | `complete` | `function` | `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
+| `get_zone_module_registers` | `getZoneModuleRegisters` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `quiet_pymodbus_logging` | `quietPymodbusLogging` | `.` | 2 | `planned` | `function` | `snake_case_to_camelCase` | `transport_logging`: `test/parity/transport-contract.test.ts` |
 | `web_pin_configured` | `webPinConfigured` | `./web` | 4 | `planned` | `function` | `snake_case_to_camelCase` | `web_configuration`: `test/parity/web-contract.test.ts` |
 

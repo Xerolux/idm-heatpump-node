@@ -21,6 +21,10 @@ const GENERATOR_INPUTS = [
   "contracts/api-mapping.json",
   "test/fixtures/public-api.json",
   "test/fixtures/public-classes.json",
+  "test/semantic/constants-and-types.test.ts",
+  "test/codec.test.ts",
+  "test/registers/builders.test.ts",
+  "test/registers/register-def.test.ts",
   "UPSTREAM-PARITY.json",
 ] as const;
 const temporaryDirectories: string[] = [];
@@ -259,7 +263,9 @@ describe("API mapping inventory", () => {
       expect([1, 2, 3, 4], row.python_symbol).toContain(row.owner_phase);
       expect(row.evidence_category, row.python_symbol).toMatch(/^[a-z][a-z0-9_]*$/);
       expect(row.contract_test, row.python_symbol).toMatch(/^test\/.+\.test\.ts$/);
-      expect(existsSync(resolve(ROOT, row.contract_test)), row.python_symbol).toBe(true);
+      if (row.status === "complete") {
+        expect(existsSync(resolve(ROOT, row.contract_test)), row.python_symbol).toBe(true);
+      }
       expect(row.normalizations, row.python_symbol).toEqual([...new Set(row.normalizations)]);
       expect(
         row.normalizations.every((normalization) => allowedNormalizations.has(normalization)),
