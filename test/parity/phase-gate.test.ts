@@ -431,3 +431,89 @@ describe("GitHub Actions workflow contract", () => {
     expect(workflow).not.toMatch(/workflow_call:|repository_dispatch:|schedule:/u);
   });
 });
+
+describe("Phase 1 truthful documentation and closure", () => {
+  it("README documents the private Phase 1 scope and planned runtime work", () => {
+    const readme = readFileSync(resolve(root, "README.md"), "utf8");
+
+    expect(readme).toContain("Phase 1");
+    expect(readme).toContain("private: true");
+    expect(readme).toContain("0.7.6");
+    expect(readme).toContain(pinnedTag);
+    expect(readme).toContain(pinnedCommit);
+    expect(readme).toContain("npm run parity:check");
+    expect(readme).toContain("npm run parity:generate");
+    expect(readme).toMatch(/53[\s\S]*52[\s\S]*RegisterDef/u);
+    for (const plannedArea of ["Transport", "Erkennung", "Writes", "Web", "Release"]) {
+      expect(readme, plannedArea).toContain(plannedArea);
+    }
+    expect(readme).toMatch(/nicht (?:auf npm )?veröffentlicht/u);
+  });
+
+  it("CHANGELOG records exact baseline, private status, and no Node hardware validation", () => {
+    const changelogPath = resolve(root, "CHANGELOG.md");
+    expect(existsSync(changelogPath)).toBe(true);
+    const changelog = readFileSync(changelogPath, "utf8");
+
+    expect(changelog).toContain("## [Unreleased]");
+    expect(changelog).toContain("0.7.6");
+    expect(changelog).toContain(pinnedTag);
+    expect(changelog).toContain(pinnedCommit);
+    expect(changelog).toContain("private: true");
+    expect(changelog).toContain("No Node hardware validation performed.");
+    expect(changelog).toMatch(/Konstanten|constants/u);
+    expect(changelog).toMatch(/Klassen|classes/u);
+    expect(changelog).toMatch(/Codec/u);
+    expect(changelog).toMatch(/Register/u);
+    expect(changelog).toMatch(/Contract/u);
+    expect(changelog).toMatch(/Phase[n]? 2[\s\S]*Phase 5/u);
+  });
+
+  it("full gate keeps the package private, web-empty, covered, packaged, and parity-checked", () => {
+    const packageJson = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as {
+      readonly files?: readonly string[];
+      readonly private?: boolean;
+      readonly scripts?: Readonly<Record<string, string>>;
+    };
+    const mapping = JSON.parse(
+      readFileSync(resolve(root, "contracts/api-mapping.json"), "utf8"),
+    ) as {
+      readonly mappings: readonly {
+        readonly export_path: string;
+        readonly owner_phase: number;
+        readonly status: string;
+      }[];
+    };
+    const coverageConfig = readFileSync(resolve(root, "vitest.config.ts"), "utf8");
+    const webSource = readFileSync(resolve(root, "src/web/index.ts"), "utf8");
+    const workflow = readFileSync(resolve(root, ".github/workflows/ci.yml"), "utf8");
+    const completeRows = mapping.mappings.filter(({ status }) => status === "complete");
+    const plannedRows = mapping.mappings.filter(({ status }) => status === "planned");
+
+    expect(packageJson.private).toBe(true);
+    expect(packageJson.files).toEqual(["dist"]);
+    expect(packageJson.scripts?.check).toBe(
+      "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm run pack:check",
+    );
+    expect(packageJson.scripts?.["pack:check"]).toContain("scripts/check-package.mjs");
+    expect(packageJson.scripts?.["parity:check"]).toBe("node scripts/check-parity.mjs check");
+    for (const threshold of ["branches", "functions", "lines", "statements"]) {
+      expect(coverageConfig).toMatch(new RegExp("\\b" + threshold + ":\\s*80\\b", "u"));
+    }
+    expect(completeRows).toHaveLength(53);
+    expect(
+      completeRows.every(
+        ({ export_path, owner_phase }) => export_path === "." && owner_phase === 1,
+      ),
+    ).toBe(true);
+    expect(plannedRows).toHaveLength(36);
+    expect(plannedRows.every(({ owner_phase }) => owner_phase >= 2)).toBe(true);
+    expect(webSource).toMatch(/export \{\};/u);
+    expect(webSource).not.toMatch(/export\s+(?:const|class|function|type)\b/u);
+    expect(workflow).toContain("run: npm run check");
+    expect(workflow).toContain("run: npm run parity:check");
+    for (const relativePath of generatedPaths) {
+      expect(existsSync(resolve(root, relativePath)), relativePath).toBe(true);
+    }
+  });
+});
