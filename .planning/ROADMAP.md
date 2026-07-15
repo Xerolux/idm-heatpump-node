@@ -43,7 +43,7 @@ Plans:
 - [x] 01-03-PLAN.md — Inventory all public symbols and generate the API parity and baseline documentation.
 - [x] 01-08-PLAN.md — Implement lossless tagged values and the strict CTR-01 scenario envelope.
 - [x] 01-04-PLAN.md — Consume the sole API mapping to implement immutable constants, complete helper/class contracts, and exact RegisterDef semantics.
-- [ ] 01-05-PLAN.md — Port mapping-named primitive and register-aware codecs with bit-exact golden parity.
+- [x] 01-05-PLAN.md — Port mapping-named primitive and register-aware codecs with bit-exact golden parity.
 - [ ] 01-06-PLAN.md — Port the mapping-named register catalog, builders, gates, registry, and serializer.
 - [ ] 01-07-PLAN.md — Establish guaranteed self-provisioning exact-baseline npm parity flows.
 - [ ] 01-09-PLAN.md — Promote evidenced mappings, regenerate API-only artifacts with `parity:api`, non-mutatingly check Python fixtures, then expose root exports.
@@ -116,7 +116,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase                                      | Plans Complete | Status      | Completed |
 | ------------------------------------------ | -------------- | ----------- | --------- |
-| 1. Reproducible Semantic Contract          | 5/10           | In Progress |           |
+| 1. Reproducible Semantic Contract          | 6/10           | In Progress |           |
 | 2. Modbus Reads, Detection, and Resilience | 0/TBD          | Not started | -         |
 | 3. Safe Write Parity                       | 0/TBD          | Not started | -         |
 | 4. Optional Read-Only Web Parity           | 0/TBD          | Not started | -         |

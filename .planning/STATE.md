@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-04-PLAN.md
-last_updated: "2026-07-15T00:57:04.531Z"
-last_activity: 2026-07-15 -- Completed Phase 01 Plan 04
+stopped_at: Completed 01-05-PLAN.md
+last_updated: "2026-07-15T01:20:52.942Z"
+last_activity: 2026-07-15 -- Completed Phase 01 Plan 05
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 10
-  completed_plans: 5
-  percent: 50
+  completed_plans: 6
+  percent: 60
 ---
 
 # Project State
@@ -26,30 +26,30 @@ See: .planning/PROJECT.md (updated 2026-07-14)
 ## Current Position
 
 Phase: 01 (reproducible-semantic-contract) — EXECUTING
-Plan: 6 of 10
+Plan: 7 of 10
 Status: Ready to execute
-Last activity: 2026-07-15 -- Completed Phase 01 Plan 04
+Last activity: 2026-07-15 -- Completed Phase 01 Plan 05
 
-Progress: [█████░░░░░] 50%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 5
-- Average duration: 21 min
-- Total execution time: 104 min
+- Total plans completed: 6
+- Average duration: 20 min
+- Total execution time: 119 min
 
 **By Phase:**
 
 | Phase | Plans | Total   | Avg/Plan |
 | ----- | ----- | ------- | -------- |
-| 01    | 5     | 104 min | 21 min   |
+| 01    | 6     | 119 min | 20 min   |
 
 **Recent Trend:**
 
-- Last 5 plans: 16 min, 33 min, 27 min, 16 min, 12 min
-- Trend: Immutable semantic and RegisterDef foundations closed with exact pinned validation and mutation resistance
+- Last 5 plans: 33 min, 27 min, 16 min, 12 min, 15 min
+- Trend: Bit-exact primitive and register-aware codec parity closed with exact Python rounding and datatype domains
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |
@@ -57,6 +57,7 @@ _Updated after each plan completion_
 | Phase 01 P03 | 27 min | 2 tasks | 7 files |
 | Phase 01 P08 | 16 min | 2 tasks | 3 files |
 | Phase 01 P04 | 12 min | 2 tasks | 7 files |
+| Phase 01 P05 | 15 min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,9 @@ Recent decisions affecting current work:
 - [Phase 01]: Use mapped same-name frozen factory namespaces for immutable FeatureFlags and IdmModelInfo values. — Preserves the sole mapping authority without adding unmapped root helper symbols.
 - [Phase 01]: Use closure-backed ReadonlySet views for public set-like collections. — Object.freeze on a native Set does not block add or delete mutations.
 - [Phase 01]: Keep RegisterDef validation exactly at pinned Python post-init semantics. — Deep immutability must not reject empty names, fractional non-negative addresses, or unvalidated collection members accepted upstream.
+- [Phase 01]: Separate primitive exceptional-number bits from register-aware unavailable handling. — Pinned Python preserves primitive NaN/infinity/-0 but maps only high-level raw non-finite FLOAT values to null.
+- [Phase 01]: Keep decodeValue and encodeValue internal until their owning client phase. — The sole API mapping owns only public ModbusCodec here; root/helper promotion would prematurely claim IdmModbusClient parity.
+- [Phase 01]: Implement CPython rounding from exact IEEE-754 values with BigInt arithmetic. — JavaScript Math.round and decimal shortcuts diverge on half-even and binary-float tie-sensitive values.
 
 ### Pending Todos
 
@@ -101,6 +105,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-15T00:56:22.587Z
-Stopped at: Completed 01-04-PLAN.md
+Last session: 2026-07-15T01:20:52.931Z
+Stopped at: Completed 01-05-PLAN.md
 Resume file: None

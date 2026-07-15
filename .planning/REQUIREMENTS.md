@@ -22,7 +22,7 @@ Requirements for the initial `0.1.0` release. The existing package/tooling found
 - [x] **API-01**: Every public Python export has a documented, semantically equivalent TypeScript counterpart with equivalent defaults and validation; only the parity contract's explicit language normalizations are accepted.
 - [x] **API-02**: `docs/API-PARITY.md` is generated from or validated against the public Python API and records each Python symbol, TypeScript counterpart, development status, and contract test; release permits only complete or explicitly reviewed legitimate `not_applicable` entries.
 - [x] **REG-01**: For every supported model and feature combination, normalized Python and TypeScript register schemas agree on all contract fields, preserve official logical overlaps, and introduce no substantive difference.
-- [ ] **COD-01**: Identical raw registers decode to identical domain values and identical writable values encode to identical 16-bit words, including low-word-first Float32, NaN, Infinity, integer boundaries, signs, and multipliers.
+- [x] **COD-01**: Identical raw registers decode to identical domain values and identical writable values encode to identical 16-bit words, including low-word-first Float32, NaN, Infinity, integer boundaries, signs, and multipliers.
 - [x] **CTR-01**: Cross-repository CI checks out the pinned Python reference and produces language-neutral JSON scenarios containing at least `name`, `configuration`, `transport_responses`, `clock`, `operation`, `expected_result`, `expected_requests`, and `expected_state`, with only contract-approved normalization.
 - [ ] **CTR-02**: Cross-repository verification complements static fixtures with executable behavioral scenarios for retry, batch fallback, EEPROM throttling, and cyclic TTL, comparing observable results, requests, state, and controlled time.
 
@@ -111,7 +111,7 @@ Each v1 requirement below derives from exactly one of the 27 ingested binding co
 | API-01      | Phase 1 | Complete |
 | API-02      | Phase 1 | Complete |
 | REG-01      | Phase 1 | Complete |
-| COD-01      | Phase 1 | Pending  |
+| COD-01      | Phase 1 | Complete |
 | CTR-01      | Phase 1 | Complete |
 | TRN-01      | Phase 2 | Pending  |
 | TRN-02      | Phase 2 | Pending  |
