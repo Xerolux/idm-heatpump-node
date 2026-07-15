@@ -312,6 +312,38 @@ describe("npm parity entry points and private package boundary", () => {
     expect(packageJson.private).toBe(true);
   });
 
+  it("keeps package exports behind complete checked mapping and generated documentation", () => {
+    const mapping = JSON.parse(
+      readFileSync(resolve(root, "contracts/api-mapping.json"), "utf8"),
+    ) as {
+      readonly mappings: readonly {
+        readonly export_path: "." | "./web";
+        readonly python_symbol: string;
+        readonly status: string;
+        readonly typescript_symbol: string;
+      }[];
+    };
+    const apiDocument = readFileSync(resolve(root, "docs/API-PARITY.md"), "utf8");
+    const rootSource = readFileSync(resolve(root, "src/index.ts"), "utf8");
+    const webSource = readFileSync(resolve(root, "src/web/index.ts"), "utf8");
+
+    for (const row of mapping.mappings) {
+      const documentedStatus = `| \`${row.python_symbol}\` | \`${row.typescript_symbol}\` | \`${row.export_path}\` |`;
+      expect(apiDocument, row.python_symbol).toContain(documentedStatus);
+      if (row.status === "complete") {
+        expect(row.export_path, row.python_symbol).toBe(".");
+        expect(rootSource, row.typescript_symbol).toContain(row.typescript_symbol);
+      } else {
+        expect(rootSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
+        expect(webSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
+      }
+    }
+    expect(webSource).toMatch(/export \{\};/u);
+    expect(rootSource).not.toMatch(
+      /createRegisterDef|decodeValue|encodeValue|serializeRegisterDef|getCommonRegisters/u,
+    );
+  });
+
   it("keeps Python, Git, contracts, fixtures, and tooling outside runtime dependencies and package", () => {
     const packageJson = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as {
       readonly dependencies?: Readonly<Record<string, string>>;

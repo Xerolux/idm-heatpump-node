@@ -14,6 +14,9 @@ import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 
 import { afterEach, describe, expect, it } from "vitest";
 
+import * as rootExports from "../../src/index.js";
+import * as webExports from "../../src/web/index.js";
+
 const ROOT = resolve(import.meta.dirname, "../..");
 const GENERATOR = "scripts/generate-api-parity.mjs";
 const GENERATOR_INPUTS = [
@@ -369,6 +372,52 @@ describe("Phase-1 class representation mapping", () => {
     expect(laterRows.length).toBeGreaterThan(0);
     for (const row of laterRows) {
       expect(row.status, row.python_symbol).toBe("planned");
+      expect(rootSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
+      expect(webSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
+    }
+  });
+});
+
+describe("checked mapping export closure", () => {
+  it("exports exactly the complete Phase-1 root runtime symbols from the checked mapping", () => {
+    const typeOnlySymbols = new Set(["RegisterDef"]);
+    const expectedRuntimeSymbols = apiMapping.mappings
+      .filter(
+        ({ export_path, status, typescript_symbol }) =>
+          export_path === "." &&
+          status === "complete" &&
+          !typeOnlySymbols.has(typescript_symbol),
+      )
+      .map(({ typescript_symbol }) => typescript_symbol)
+      .sort();
+
+    expect(Object.keys(rootExports).sort()).toEqual(expectedRuntimeSymbols);
+    expect(Object.keys(webExports)).toEqual([]);
+    expect(expectedRuntimeSymbols).toHaveLength(52);
+  });
+
+  it("keeps the type-only mapping explicit and internal or later symbols unexported", () => {
+    const rootSource = readFileSync(resolve(ROOT, "src/index.ts"), "utf8");
+    const webSource = readFileSync(resolve(ROOT, "src/web/index.ts"), "utf8");
+    const forbiddenSymbols = [
+      "createRegisterDef",
+      "decodeValue",
+      "encodeValue",
+      "serializeRegisterDef",
+      "getCommonRegisters",
+      "getSystemRegisters",
+    ];
+
+    expect(rootSource).toContain(
+      'export type { RegisterDef } from "./registers/definitions.js";',
+    );
+    for (const symbol of forbiddenSymbols) {
+      expect(rootExports, symbol).not.toHaveProperty(symbol);
+      expect(rootSource, symbol).not.toContain(symbol);
+    }
+    for (const row of apiMapping.mappings.filter(({ status }) => status === "planned")) {
+      expect(rootExports, row.typescript_symbol).not.toHaveProperty(row.typescript_symbol);
+      expect(webExports, row.typescript_symbol).not.toHaveProperty(row.typescript_symbol);
       expect(rootSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
       expect(webSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
     }
