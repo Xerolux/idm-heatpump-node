@@ -409,7 +409,7 @@ describe("GitHub Actions workflow contract", () => {
       readonly git_tag: string;
       readonly python_version: string;
     };
-    const parityJob = workflow.match(/^  parity:\s*$([\s\S]*)/mu)?.[1] ?? "";
+    const parityJob = workflow.match(/^\s{2}parity:\s*$([\s\S]*)/mu)?.[1] ?? "";
 
     expect(manifest).toMatchObject({
       python_version: "0.7.6",
