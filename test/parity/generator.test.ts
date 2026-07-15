@@ -177,7 +177,7 @@ afterEach(() => {
   for (const directory of temporaryDirectories.splice(0)) {
     rmSync(directory, { recursive: true, force: true });
   }
-});
+}, 60_000);
 
 describe("verified Python contract generator", () => {
   it("verifies before import when a dirty module contains an import sentinel", () => {
