@@ -178,6 +178,11 @@ describe("immutable RegisterDef factory", () => {
       baseInput({ registerType: "coil" as RegisterType }),
       "Invalid register type: coil",
     ],
+    [
+      "null register type",
+      baseInput({ registerType: null as unknown as RegisterType }),
+      "Invalid register type: null",
+    ],
     ["negative address", baseInput({ address: -1 }), "Register address must be non-negative"],
     ["empty source", baseInput({ source: "" }), "Register source must not be empty"],
     [
