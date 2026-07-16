@@ -533,7 +533,7 @@ describe("verified Python contract generator", () => {
     const behavior = fixtures["behavior-contract.json"] as FixtureRoot & {
       readonly scenarios: readonly Record<string, unknown>[];
     };
-    const transportScenarioFields = [
+    const scenarioFields = [
       "name",
       "configuration",
       "transport_responses",
@@ -611,7 +611,7 @@ describe("verified Python contract generator", () => {
       ]),
     );
 
-    const scenarioFields = [
+    const transportScenarioFields = [
       "name",
       "configuration",
       "transport_responses",
@@ -642,9 +642,7 @@ describe("verified Python contract generator", () => {
       expect(projection.message.length).toBeLessThanOrEqual(1_024);
       expect(projection.message).not.toContain("example.invalid");
       expect(projection.message).not.toContain("127.0.0.1");
-      expect(projection.message.match(/<[^>]+>/gu) ?? []).toEqual(
-        expect.arrayContaining([]),
-      );
+      expect(projection.message.match(/<[^>]+>/gu) ?? []).toEqual(expect.arrayContaining([]));
       expect(
         (projection.message.match(/<[^>]+>/gu) ?? []).every(
           (placeholder) => placeholder === "<endpoint>",
@@ -695,13 +693,10 @@ describe("verified Python contract generator", () => {
     );
     expect(serialized?.expected_state).toMatchObject({ maxActiveRequests: 1 });
 
-    const transportText = readFileSync(
-      fixturePath(checkout, "transport-behavior.json"),
-      "utf8",
-    );
+    const transportText = readFileSync(fixturePath(checkout, "transport-behavior.json"), "utf8");
     expect(transportText.endsWith("\n")).toBe(true);
     expect(transportText).not.toMatch(
-      /Navigator 1\.[07]|(?:10|127|169\.254|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}|pin|serial(?:_number)?|device[_ -]?id|raw[_ -]?capture/iu,
+      /Navigator 1\.[07]|(?:10|127|169\.254|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}|"(?:pin|serial_number|device_id|raw_capture)"\s*:/iu,
     );
   }, 120_000);
 

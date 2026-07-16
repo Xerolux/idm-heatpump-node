@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import asyncio
 import dataclasses
 import enum
 import hashlib
@@ -61,6 +62,7 @@ OUTPUT_PATHS = (
     Path("test/fixtures/register-schema.json"),
     Path("test/fixtures/behavior-contract.json"),
     Path("test/fixtures/web-contract.json"),
+    Path("test/fixtures/transport-behavior.json"),
 )
 
 
@@ -1047,6 +1049,456 @@ def _lossless_source_set_vectors() -> dict[str, Any]:
     )
 
 
+TRANSPORT_OPERATION_KINDS = (
+    "lifecycle",
+    "read_register",
+    "read_batch",
+    "probe",
+    "detect_model",
+    "diagnostics",
+    "reset_failed_registers",
+)
+RUNTIME_SCENARIO_FIELDS = (
+    "name",
+    "configuration",
+    "transport_responses",
+    "clock",
+    "operation",
+    "expected_result",
+    "expected_requests",
+    "expected_state",
+)
+RUNTIME_NORMALIZATION_START = "<!-- runtime-normalization-contract:start -->"
+RUNTIME_NORMALIZATION_END = "<!-- runtime-normalization-contract:end -->"
+MAX_RUNTIME_DIAGNOSTIC = 1024
+
+
+def _runtime_normalization_contract() -> dict[str, Any]:
+    path = Path(__file__).resolve().parents[1] / "contracts" / "normalization.md"
+    try:
+        text = path.read_text(encoding="utf-8")
+        start = text.index(RUNTIME_NORMALIZATION_START) + len(RUNTIME_NORMALIZATION_START)
+        end = text.index(RUNTIME_NORMALIZATION_END, start)
+    except (OSError, UnicodeError, ValueError) as error:
+        fail("fixture_invalid", f"runtime normalization contract is unavailable: {error}")
+    fenced = text[start:end].strip()
+    if not fenced.startswith("```json\n") or not fenced.endswith("\n```"):
+        fail("fixture_invalid", "runtime normalization contract must use one JSON code fence")
+    try:
+        contract = json.loads(fenced.removeprefix("```json\n").removesuffix("\n```"))
+    except json.JSONDecodeError as error:
+        fail("fixture_invalid", f"runtime normalization contract is invalid JSON: {error}")
+    if not isinstance(contract, dict) or contract.get("schema_version") != 1:
+        fail("fixture_invalid", "runtime normalization contract schema is unsupported")
+    return contract
+
+
+def transport_error_type_to_closed_kind(source: str) -> str:
+    contract = _runtime_normalization_contract().get("transport_error_type_to_closed_kind")
+    if not isinstance(contract, dict) or contract.get("code") != "transport_error_type_to_closed_kind":
+        fail("fixture_invalid", "runtime error normalization authority is missing")
+    rules = contract.get("rules")
+    kinds = contract.get("kinds")
+    if not isinstance(rules, list) or not isinstance(kinds, list):
+        fail("fixture_invalid", "runtime error normalization authority has invalid rules")
+    source_to_kind = {
+        rule.get("source"): rule.get("kind")
+        for rule in rules
+        if isinstance(rule, dict)
+        and isinstance(rule.get("source"), str)
+        and isinstance(rule.get("kind"), str)
+    }
+    kind = source_to_kind.get(source)
+    if not isinstance(kind, str) or kind not in kinds:
+        fail("fixture_invalid", f"runtime error source is not closed: {source}")
+    return kind
+
+
+def diagnostic_message_redaction(message: str, host: str, port: int) -> str:
+    contract = _runtime_normalization_contract().get("diagnostic_message_redaction")
+    if not isinstance(contract, dict) or contract.get("code") != "diagnostic_message_redaction":
+        fail("fixture_invalid", "runtime diagnostic redaction authority is missing")
+    templates = contract.get("python_candidates")
+    if not isinstance(templates, list) or not all(isinstance(item, str) for item in templates):
+        fail("fixture_invalid", "runtime diagnostic candidates are invalid")
+    candidates = {
+        template.replace("configured_host", host).replace("configured_port", str(port))
+        for template in templates
+    }
+    if contract.get("order") != "longest_first":
+        fail("fixture_invalid", "runtime diagnostic candidate order is unsupported")
+    placeholder = contract.get("placeholder")
+    if placeholder != "<endpoint>":
+        fail("fixture_invalid", "runtime diagnostic placeholder is unsupported")
+    redacted = message
+    for candidate in sorted(candidates, key=lambda item: (-len(item), item)):
+        redacted = redacted.replace(candidate, placeholder)
+    maximum = contract.get("maximum_output_length")
+    if not isinstance(maximum, int) or maximum != MAX_RUNTIME_DIAGNOSTIC:
+        fail("fixture_invalid", "runtime diagnostic output limit is unsupported")
+    if len(redacted) > maximum:
+        fail("fixture_invalid", "runtime diagnostic message exceeds the contract limit")
+    return redacted
+
+
+def _runtime_error_projection(
+    source: str,
+    message: str,
+    *,
+    host: str = "example.invalid",
+    port: int = 502,
+) -> dict[str, str]:
+    return {
+        "errorType": transport_error_type_to_closed_kind(source),
+        "message": diagnostic_message_redaction(message, host, port),
+    }
+
+
+def _runtime_words(words: Sequence[int], *, source: str | None = None) -> dict[str, Any]:
+    script: dict[str, Any] = {"kind": "words", "words": [int(word) for word in words]}
+    if source is not None:
+        script["source"] = source
+    return script
+
+
+def _runtime_error(source: str, message: str | None = None) -> dict[str, Any]:
+    return {"kind": "error", "source": source, "message": message}
+
+
+class _RuntimeResponse:
+    def __init__(
+        self,
+        *,
+        registers: Sequence[int] | None = None,
+        error: bool = False,
+        exception_code: int | None = None,
+    ) -> None:
+        self.registers = list(registers or [])
+        self.error = error
+        self.exception_code = exception_code
+
+    def isError(self) -> bool:  # noqa: N802 - pinned pymodbus compatibility
+        return self.error or self.exception_code is not None
+
+    def __str__(self) -> str:
+        if self.exception_code is not None:
+            return f"ExceptionResponse(exception_code={self.exception_code})"
+        return "ErrorResponse()" if self.error else "ReadResponse()"
+
+
+class _RuntimeHarness:
+    def __init__(self, scripts: Sequence[Mapping[str, Any]], client_module: Any) -> None:
+        self.scripts = [dict(script) for script in scripts]
+        self.client_module = client_module
+        self.events: list[dict[str, Any]] = []
+        self.clock: list[float] = []
+        self.elapsed = 0.0
+        self.timeout_ms: int | None = None
+        self.index = 0
+        self.active_requests = 0
+        self.max_active_requests = 0
+        self.last_error_source: str | None = None
+        self._original_sleep = asyncio.sleep
+
+    async def wait_for(self, awaitable: Awaitable[Any], timeout: float) -> Any:
+        previous = self.timeout_ms
+        timeout_ms = round(float(timeout) * 1000)
+        if timeout_ms <= 0:
+            fail("fixture_invalid", "runtime request timeout must be positive")
+        self.timeout_ms = timeout_ms
+        try:
+            return await awaitable
+        finally:
+            self.timeout_ms = previous
+
+    async def sleep(self, delay: float) -> None:
+        numeric = float(delay)
+        if not math.isfinite(numeric) or numeric < 0:
+            fail("fixture_invalid", "runtime controlled delay must be finite and non-negative")
+        self.elapsed += numeric
+        self.clock.append(self.elapsed)
+        await self._original_sleep(0)
+
+    def next_script(self, address: int) -> dict[str, Any]:
+        if self.index >= len(self.scripts):
+            fail("fixture_invalid", "runtime fake response script is exhausted")
+        script = self.scripts[self.index]
+        self.index += 1
+        source = script.get("source")
+        if isinstance(source, str):
+            self.last_error_source = source
+        if source == "numeric_modbus_exception_code_2":
+            script["message"] = (
+                f"Illegal Data Address reading address {address}: "
+                "ExceptionResponse(exception_code=2)"
+            )
+        return script
+
+    def assert_consumed(self) -> None:
+        if self.index != len(self.scripts):
+            fail(
+                "fixture_invalid",
+                f"runtime fake has {len(self.scripts) - self.index} unconsumed response(s)",
+            )
+
+
+class _RuntimeFakeTransport:
+    def __init__(self, harness: _RuntimeHarness) -> None:
+        self.harness = harness
+        self.connected = True
+
+    async def connect(self) -> bool:
+        self.harness.events.append({"kind": "connect"})
+        self.connected = True
+        return True
+
+    def close(self) -> None:
+        self.harness.events.append({"kind": "close"})
+        self.connected = False
+
+    async def read_input_registers(self, *, address: int, count: int, **_: Any) -> Any:
+        return await self._read("input", 4, address, count)
+
+    async def read_holding_registers(self, *, address: int, count: int, **_: Any) -> Any:
+        return await self._read("holding", 3, address, count)
+
+    async def _read(
+        self,
+        register_type: str,
+        function_code: int,
+        address: int,
+        count: int,
+    ) -> _RuntimeResponse:
+        self.harness.active_requests += 1
+        self.harness.max_active_requests = max(
+            self.harness.max_active_requests,
+            self.harness.active_requests,
+        )
+        request: dict[str, Any] = {
+            "unitId": 1,
+            "registerType": register_type,
+            "functionCode": function_code,
+            "address": address,
+            "count": count,
+        }
+        if self.harness.timeout_ms is not None:
+            request["timeoutMs"] = self.harness.timeout_ms
+        self.harness.events.append({"kind": "read", "request": request})
+        try:
+            await self.harness._original_sleep(0)
+            script = self.harness.next_script(address)
+            kind = script.get("kind")
+            if kind == "words":
+                words = script.get("words")
+                if not isinstance(words, list):
+                    fail("fixture_invalid", "runtime words script is invalid")
+                return _RuntimeResponse(registers=words)
+            if kind != "error":
+                fail("fixture_invalid", "runtime response script kind is invalid")
+            source = script.get("source")
+            message = script.get("message")
+            if not isinstance(source, str):
+                fail("fixture_invalid", "runtime error script source is invalid")
+            if source == "numeric_modbus_exception_code_2":
+                return _RuntimeResponse(exception_code=2)
+            if not isinstance(message, str):
+                fail("fixture_invalid", "runtime error script message is invalid")
+            if source == "timeout_exception":
+                raise TimeoutError(message)
+            if source == "connection_exception":
+                raise self.harness.client_module.ConnectionException(message)
+            if source == "socket_or_os_error":
+                raise OSError(message)
+            if source == "modbus_io_exception_or_structured_no_response":
+                raise self.harness.client_module.ModbusIOException(message)
+            if source == "other_modbus_exception":
+                raise self.harness.client_module.ModbusException(message)
+            fail("fixture_invalid", f"runtime fake cannot execute source: {source}")
+        finally:
+            self.harness.active_requests -= 1
+
+
+def _runtime_script_contract(
+    script: Mapping[str, Any],
+    *,
+    host: str,
+    port: int,
+) -> dict[str, Any]:
+    if script.get("kind") == "words":
+        words = script.get("words")
+        if not isinstance(words, list):
+            fail("fixture_invalid", "runtime words script is invalid")
+        return {"kind": "words", "words": words}
+    source = script.get("source")
+    message = script.get("message")
+    if not isinstance(source, str) or not isinstance(message, str):
+        fail("fixture_invalid", "runtime error script is incomplete after execution")
+    return {
+        "kind": "error",
+        **_runtime_error_projection(source, message, host=host, port=port),
+    }
+
+
+def _runtime_context_projection(
+    context: Any,
+    source: str | None,
+    *,
+    host: str,
+    port: int,
+) -> dict[str, Any] | None:
+    if context is None:
+        return None
+    if source is None:
+        fail("fixture_invalid", "runtime error context lacks structured source evidence")
+    return {
+        "operation": context.operation,
+        "address": context.address,
+        "count": context.count,
+        "registerType": context.register_type,
+        **_runtime_error_projection(source, context.message, host=host, port=port),
+        "attempt": context.attempt,
+    }
+
+
+def _runtime_client_state(
+    client: Any,
+    harness: _RuntimeHarness,
+    *,
+    host: str,
+    port: int,
+) -> dict[str, Any]:
+    return {
+        "unsupportedRegisters": list(client.get_unsupported_registers()),
+        "permanentlyFailedRegisters": sorted(client._permanently_failed_registers),
+        "batchUnsafeRegisters": list(client.get_batch_unsafe_registers()),
+        "transientFailures": {
+            name: client._register_failures[name] for name in sorted(client._register_failures)
+        },
+        "connectionSuspect": client._connection_suspect,
+        "connected": client.is_connected,
+        "modelName": client.model_name,
+        "lastError": _runtime_context_projection(
+            client.get_last_error_context(),
+            harness.last_error_source,
+            host=host,
+            port=port,
+        ),
+        "maxActiveRequests": harness.max_active_requests,
+    }
+
+
+def _runtime_exception_result(
+    error: Exception,
+    source: str | None,
+    *,
+    host: str,
+    port: int,
+) -> dict[str, Any]:
+    if source is None:
+        fail("fixture_invalid", f"runtime exception lacks structured source: {type(error).__name__}")
+    return {"error": _runtime_error_projection(source, str(error), host=host, port=port)}
+
+
+def _run_runtime_scenario(
+    client_module: Any,
+    *,
+    name: str,
+    operation: Mapping[str, Any],
+    scripts: Sequence[Mapping[str, Any]],
+    execute: Callable[[Any, _RuntimeFakeTransport, _RuntimeHarness], Awaitable[Any]],
+    configuration: Mapping[str, Any] | None = None,
+    setup: Callable[[Any], None] | None = None,
+) -> dict[str, Any]:
+    config = {
+        "host": "example.invalid",
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10,
+        "maxRetries": 3,
+        "maxGroupSize": 40,
+        **dict(configuration or {}),
+    }
+    host = config["host"]
+    port = config["port"]
+    if host != "example.invalid" or not isinstance(port, int):
+        fail("fixture_invalid", "runtime scenarios must use the synthetic endpoint")
+    harness = _RuntimeHarness(scripts, client_module)
+    transport = _RuntimeFakeTransport(harness)
+    client = client_module.IdmModbusClient(
+        host,
+        port=port,
+        slave_id=config["slaveId"],
+        timeout=config["timeout"],
+        max_retries=config["maxRetries"],
+        pymodbus_retries=0,
+        max_group_size=config["maxGroupSize"],
+    )
+    if setup is not None:
+        setup(client)
+
+    original_factory = client_module.AsyncModbusTcpClient
+    original_sleep = client_module.asyncio.sleep
+    original_wait_for = client_module.asyncio.wait_for
+    client_module.AsyncModbusTcpClient = lambda **_: transport
+    client_module.asyncio.sleep = harness.sleep
+    client_module.asyncio.wait_for = harness.wait_for
+    try:
+        try:
+            result = asyncio.run(execute(client, transport, harness))
+        except Exception as error:  # noqa: BLE001 - source error becomes fixture data
+            result = _runtime_exception_result(
+                error,
+                harness.last_error_source,
+                host=host,
+                port=port,
+            )
+    finally:
+        client_module.AsyncModbusTcpClient = original_factory
+        client_module.asyncio.sleep = original_sleep
+        client_module.asyncio.wait_for = original_wait_for
+
+    harness.assert_consumed()
+    scenario = {
+        "name": name,
+        "configuration": config,
+        "transport_responses": [
+            _runtime_script_contract(script, host=host, port=port) for script in harness.scripts
+        ],
+        "clock": harness.clock,
+        "operation": dict(operation),
+        "expected_result": result,
+        "expected_requests": harness.events,
+        "expected_state": _runtime_client_state(
+            client,
+            harness,
+            host=host,
+            port=port,
+        ),
+    }
+    if tuple(scenario) != RUNTIME_SCENARIO_FIELDS:
+        fail("fixture_invalid", f"runtime scenario fields changed: {name}")
+    return scenario
+
+
+def _model_result(info: Any, registers: Any) -> dict[str, Any]:
+    register_map = registers.build_register_map(model_info=info)
+    return {
+        "modelName": info.model_name,
+        "activeHeatingCircuits": list(info.active_heating_circuits),
+        "zoneModules": info.zone_modules,
+        "hasSolar": info.has_solar,
+        "hasIsc": info.has_isc,
+        "hasPv": info.has_pv,
+        "hasCascade": info.has_cascade,
+        "features": sorted(info.features),
+        "firmwareVersion": info.firmware_version,
+        "registerMap": {
+            "count": len(register_map),
+            "keys": sorted(register_map),
+        },
+    }
+
+
 def _behavior_fixture(manifest: Mapping[str, Any], client_module: Any, registers: Any) -> dict[str, Any]:
     codec = client_module.ModbusCodec
     scenarios = [
@@ -1122,6 +1574,717 @@ def _behavior_fixture(manifest: Mapping[str, Any], client_module: Any, registers
     return _fixture_root(manifest, operation_kinds=["normalize_value", "codec_encode_float32", "build_register_map", "register_overlap"], scenarios=scenarios)
 
 
+def _transport_fixture(
+    manifest: Mapping[str, Any],
+    client_module: Any,
+    constants: Any,
+    registers: Any,
+) -> dict[str, Any]:
+    codec = client_module.ModbusCodec
+    register_map = registers.build_register_map()
+    full_info = client_module.IdmModelInfo(
+        model_name=constants.MODEL_NAVIGATOR_10,
+        active_heating_circuits=list("ABCDEFG"),
+        zone_modules=1,
+        has_solar=True,
+        has_isc=True,
+        has_pv=True,
+        has_cascade=True,
+    )
+    full_map = registers.build_register_map(model_info=full_info)
+
+    async def lifecycle(client: Any, _: Any, __: Any) -> Any:
+        await client.connect()
+        await client.disconnect()
+        await client.force_reconnect()
+        return {
+            "host": client.host,
+            "port": client.port,
+            "connected": client.is_connected,
+        }
+
+    async def constructor_defaults(client: Any, _: Any, __: Any) -> Any:
+        return {
+            "host": client.host,
+            "port": client.port,
+            "slaveId": client._slave_id,
+            "timeout": client._timeout,
+            "maxRetries": client._max_retries,
+            "adapterRetries": client._pymodbus_retries,
+            "maxGroupSize": client._max_group_size,
+            "modelName": client.model_name,
+        }
+
+    def read_one(reg: Any) -> Callable[[Any, Any, Any], Awaitable[Any]]:
+        async def execute(client: Any, transport: Any, _: Any) -> Any:
+            client._client = transport
+            return await client.read_register(reg)
+
+        return execute
+
+    def read_batch(
+        selected: Sequence[Any],
+        *,
+        repetitions: int = 1,
+    ) -> Callable[[Any, Any, Any], Awaitable[Any]]:
+        async def execute(client: Any, transport: Any, _: Any) -> Any:
+            client._client = transport
+            results = []
+            for _index in range(repetitions):
+                results.append(await client.read_batch(list(selected)))
+            return results[0] if repetitions == 1 else results
+
+        return execute
+
+    def raw_read(
+        address: int,
+        count: int,
+        register_type: Any,
+        *,
+        max_retries: int | None = None,
+        request_timeout: float | None = None,
+    ) -> Callable[[Any, Any, Any], Awaitable[Any]]:
+        async def execute(client: Any, transport: Any, _: Any) -> Any:
+            client._client = transport
+            return await client._read_registers(
+                address,
+                count,
+                register_type,
+                max_retries=max_retries,
+                request_timeout=request_timeout,
+            )
+
+        return execute
+
+    def detect(
+        *,
+        read_firmware: bool,
+    ) -> Callable[[Any, Any, Any], Awaitable[Any]]:
+        async def execute(client: Any, transport: Any, _: Any) -> Any:
+            client._client = transport
+            info = await client.detect_model(read_firmware=read_firmware)
+            return _model_result(info, registers)
+
+        return execute
+
+    scenarios: list[dict[str, Any]] = [
+        _run_runtime_scenario(
+            client_module,
+            name="constructor_defaults",
+            operation={"kind": "diagnostics"},
+            scripts=[],
+            execute=constructor_defaults,
+        ),
+        _run_runtime_scenario(
+            client_module,
+            name="lifecycle_connect_disconnect_force_reconnect",
+            operation={
+                "kind": "lifecycle",
+                "actions": ["connect", "disconnect", "force_reconnect"],
+            },
+            scripts=[],
+            execute=lifecycle,
+        ),
+        _run_runtime_scenario(
+            client_module,
+            name="read_input_fc04",
+            operation={
+                "kind": "read_register",
+                "register": "outdoor_temp",
+                "concurrency": 1,
+            },
+            scripts=[_runtime_words(codec.encode_float32(21.5))],
+            execute=read_one(register_map["outdoor_temp"]),
+        ),
+        _run_runtime_scenario(
+            client_module,
+            name="read_holding_fc03",
+            operation={
+                "kind": "probe",
+                "address": 1200,
+                "count": 1,
+                "registerType": "holding",
+                "maxRetries": 1,
+                "timeout": 2,
+            },
+            scripts=[_runtime_words([7])],
+            execute=raw_read(
+                1200,
+                1,
+                client_module.RegisterType.HOLDING,
+                max_retries=1,
+                request_timeout=2,
+            ),
+        ),
+    ]
+
+    async def serialization(client: Any, transport: Any, _: Any) -> Any:
+        client._client = transport
+        return await asyncio.gather(
+            client.read_register(register_map["outdoor_temp"]),
+            client.read_register(register_map["outdoor_temp_avg"]),
+        )
+
+    scenarios.append(
+        _run_runtime_scenario(
+            client_module,
+            name="serialization_parallel_reads",
+            operation={
+                "kind": "read_batch",
+                "registers": ["outdoor_temp", "outdoor_temp_avg"],
+                "concurrency": 2,
+            },
+            scripts=[
+                _runtime_words(codec.encode_float32(10.0)),
+                _runtime_words(codec.encode_float32(12.5)),
+            ],
+            execute=serialization,
+        )
+    )
+
+    batch_cases = [
+        (
+            "batch_adjacent",
+            ["outdoor_temp", "outdoor_temp_avg"],
+            [_runtime_words([*codec.encode_float32(10.0), *codec.encode_float32(12.5)])],
+            {},
+        ),
+        (
+            "batch_gap_split",
+            ["outdoor_temp", "system_mode"],
+            [_runtime_words(codec.encode_float32(10.0)), _runtime_words([2])],
+            {},
+        ),
+        (
+            "batch_max_span_split",
+            ["outdoor_temp", "outdoor_temp_avg"],
+            [_runtime_words(codec.encode_float32(10.0)), _runtime_words(codec.encode_float32(12.5))],
+            {"maxGroupSize": 2},
+        ),
+        (
+            "overlap_humidity_and_mode_1393",
+            ["humidity_sensor", "hc_a_mode"],
+            [_runtime_words(codec.encode_float32(54.75)), _runtime_words([2])],
+            {},
+        ),
+        (
+            "overlap_heating_curve_and_limit_1442",
+            ["hc_g_heating_curve", "hc_a_heating_limit"],
+            [_runtime_words(codec.encode_float32(0.45)), _runtime_words([42])],
+            {},
+        ),
+        (
+            "overlap_cooling_setpoint_and_limit_1484",
+            ["hc_g_room_setpoint_cool_eco", "hc_a_cooling_limit"],
+            [_runtime_words(codec.encode_float32(19.5)), _runtime_words([24])],
+            {},
+        ),
+    ]
+    for name, names, scripts, configuration in batch_cases:
+        selected = [register_map[item] for item in names]
+        scenarios.append(
+            _run_runtime_scenario(
+                client_module,
+                name=name,
+                operation={"kind": "read_batch", "registers": names, "concurrency": 1},
+                scripts=scripts,
+                execute=read_batch(selected),
+                configuration=configuration,
+            )
+        )
+
+    synthetic_input = client_module.RegisterDef(
+        3000,
+        client_module.DataType.UCHAR,
+        "synthetic_input_3000",
+        register_type=client_module.RegisterType.INPUT,
+    )
+    synthetic_holding = client_module.RegisterDef(
+        3001,
+        client_module.DataType.UCHAR,
+        "synthetic_holding_3001",
+        register_type=client_module.RegisterType.HOLDING,
+    )
+    scenarios.append(
+        _run_runtime_scenario(
+            client_module,
+            name="batch_register_type_split",
+            operation={
+                "kind": "read_batch",
+                "registers": [synthetic_input.name, synthetic_holding.name],
+                "concurrency": 1,
+            },
+            scripts=[_runtime_words([1]), _runtime_words([2])],
+            execute=read_batch([synthetic_input, synthetic_holding]),
+            configuration={
+                "registerDefinitions": [
+                    {
+                        "name": synthetic_input.name,
+                        "address": synthetic_input.address,
+                        "datatype": synthetic_input.datatype.value,
+                        "registerType": synthetic_input.register_type.value,
+                    },
+                    {
+                        "name": synthetic_holding.name,
+                        "address": synthetic_holding.address,
+                        "datatype": synthetic_holding.datatype.value,
+                        "registerType": synthetic_holding.register_type.value,
+                    },
+                ]
+            },
+        )
+    )
+
+    retry_sources = (
+        ("retry_timeout_reconnect", "timeout_exception", "timeout at example.invalid:502"),
+        (
+            "retry_disconnected_reconnect",
+            "connection_exception",
+            "disconnected from [example.invalid]:502",
+        ),
+        ("retry_socket_reconnect", "socket_or_os_error", "link reset by example.invalid"),
+        (
+            "retry_no_response_reconnect",
+            "modbus_io_exception_or_structured_no_response",
+            "no response from example.invalid:502",
+        ),
+    )
+    for name, source, message in retry_sources:
+        scenarios.append(
+            _run_runtime_scenario(
+                client_module,
+                name=name,
+                operation={
+                    "kind": "probe",
+                    "address": 1000,
+                    "count": 2,
+                    "registerType": "input",
+                    "maxRetries": 2,
+                    "timeout": 10,
+                },
+                scripts=[
+                    _runtime_error(source, message),
+                    _runtime_words(codec.encode_float32(18.25)),
+                ],
+                execute=raw_read(
+                    1000,
+                    2,
+                    client_module.RegisterType.INPUT,
+                    max_retries=2,
+                ),
+                configuration={"maxRetries": 2},
+            )
+        )
+
+    scenarios.append(
+        _run_runtime_scenario(
+            client_module,
+            name="retry_modbus_same_connection",
+            operation={
+                "kind": "probe",
+                "address": 1000,
+                "count": 2,
+                "registerType": "input",
+                "maxRetries": 2,
+                "timeout": 10,
+            },
+            scripts=[
+                _runtime_error(
+                    "other_modbus_exception",
+                    "device rejected read at example.invalid:502",
+                ),
+                _runtime_words(codec.encode_float32(18.25)),
+            ],
+            execute=raw_read(
+                1000,
+                2,
+                client_module.RegisterType.INPUT,
+                max_retries=2,
+            ),
+            configuration={"maxRetries": 2},
+        )
+    )
+    scenarios.append(
+        _run_runtime_scenario(
+            client_module,
+            name="invalid_short_response",
+            operation={
+                "kind": "probe",
+                "address": 1000,
+                "count": 2,
+                "registerType": "input",
+                "maxRetries": 1,
+                "timeout": 10,
+            },
+            scripts=[_runtime_words([1], source="malformed_response")],
+            execute=raw_read(
+                1000,
+                2,
+                client_module.RegisterType.INPUT,
+                max_retries=1,
+            ),
+            configuration={"maxRetries": 1},
+        )
+    )
+
+    scenarios.append(
+        _run_runtime_scenario(
+            client_module,
+            name="batch_device_error_fallback",
+            operation={
+                "kind": "read_batch",
+                "registers": ["outdoor_temp", "outdoor_temp_avg"],
+                "concurrency": 1,
+            },
+            scripts=[
+                _runtime_error(
+                    "other_modbus_exception",
+                    "batch rejected by example.invalid:502",
+                ),
+                _runtime_words(codec.encode_float32(10.0)),
+                _runtime_words(codec.encode_float32(12.5)),
+            ],
+            execute=read_batch(
+                [register_map["outdoor_temp"], register_map["outdoor_temp_avg"]]
+            ),
+            configuration={"maxRetries": 1},
+        )
+    )
+    scenarios.append(
+        _run_runtime_scenario(
+            client_module,
+            name="batch_transport_error_propagates",
+            operation={
+                "kind": "read_batch",
+                "registers": ["outdoor_temp", "outdoor_temp_avg"],
+                "concurrency": 1,
+            },
+            scripts=[
+                _runtime_error(
+                    "timeout_exception",
+                    "batch timed out at example.invalid:502",
+                )
+            ],
+            execute=read_batch(
+                [register_map["outdoor_temp"], register_map["outdoor_temp_avg"]]
+            ),
+            configuration={"maxRetries": 1},
+        )
+    )
+    scenarios.append(
+        _run_runtime_scenario(
+            client_module,
+            name="unsupported_illegal_address",
+            operation={
+                "kind": "read_batch",
+                "registers": ["internal_message", "system_mode"],
+                "concurrency": 1,
+            },
+            scripts=[
+                _runtime_error(
+                    "other_modbus_exception",
+                    "batch rejected by example.invalid:502",
+                ),
+                _runtime_words([7]),
+                _runtime_error("numeric_modbus_exception_code_2"),
+            ],
+            execute=read_batch(
+                [register_map["internal_message"], register_map["system_mode"]]
+            ),
+            configuration={"maxRetries": 1},
+        )
+    )
+
+    repeated_modbus_errors = [
+        _runtime_error(
+            "other_modbus_exception",
+            f"device failure {index + 1} at example.invalid:502",
+        )
+        for index in range(6)
+    ]
+    scenarios.append(
+        _run_runtime_scenario(
+            client_module,
+            name="permanent_after_third_modbus_failure",
+            operation={
+                "kind": "read_batch",
+                "registers": ["system_mode"],
+                "concurrency": 1,
+            },
+            scripts=repeated_modbus_errors,
+            execute=read_batch([register_map["system_mode"]], repetitions=3),
+            configuration={"maxRetries": 1},
+        )
+    )
+
+    def setup_transient_success(client: Any) -> None:
+        client._register_failures["system_mode"] = 2
+        client._batch_unsafe_registers.add("system_mode")
+
+    scenarios.append(
+        _run_runtime_scenario(
+            client_module,
+            name="successful_individual_read_clears_failure",
+            operation={
+                "kind": "read_batch",
+                "registers": ["system_mode"],
+                "concurrency": 1,
+            },
+            scripts=[_runtime_words([2])],
+            execute=read_batch([register_map["system_mode"]]),
+            setup=setup_transient_success,
+        )
+    )
+
+    zone_mode = full_map["zm1_room1_mode"]
+    zone_relay = full_map["zm1_room1_relay"]
+    scenarios.append(
+        _run_runtime_scenario(
+            client_module,
+            name="batch_suspect_quarantine_and_reread",
+            operation={
+                "kind": "read_batch",
+                "registers": [zone_mode.name, zone_relay.name],
+                "concurrency": 1,
+            },
+            scripts=[_runtime_words([255, 1]), _runtime_words([3])],
+            execute=read_batch([zone_mode, zone_relay]),
+        )
+    )
+
+    def setup_invalid_individual(client: Any) -> None:
+        client._batch_unsafe_registers.add("humidity_sensor")
+
+    scenarios.append(
+        _run_runtime_scenario(
+            client_module,
+            name="invalid_individual_value_omitted",
+            operation={
+                "kind": "read_batch",
+                "registers": ["humidity_sensor"],
+                "concurrency": 1,
+            },
+            scripts=[_runtime_words(codec.encode_float32(188.0))],
+            execute=read_batch([register_map["humidity_sensor"]]),
+            setup=setup_invalid_individual,
+        )
+    )
+
+    def setup_consumer_quarantine(client: Any) -> None:
+        client.mark_batch_unsafe(zone_mode)
+
+    scenarios.append(
+        _run_runtime_scenario(
+            client_module,
+            name="consumer_quarantine_order",
+            operation={
+                "kind": "read_batch",
+                "registers": [zone_mode.name, zone_relay.name],
+                "concurrency": 1,
+            },
+            scripts=[_runtime_words([1]), _runtime_words([3])],
+            execute=read_batch([zone_mode, zone_relay]),
+            setup=setup_consumer_quarantine,
+        )
+    )
+
+    scenarios.append(
+        _run_runtime_scenario(
+            client_module,
+            name="sentinel_null_bool_are_not_quarantined",
+            operation={
+                "kind": "read_batch",
+                "registers": ["outdoor_temp", "variable_input", "demand_heating"],
+                "concurrency": 1,
+            },
+            scripts=[
+                _runtime_words(codec.encode_float32(float("nan"))),
+                _runtime_words([0xFFFF]),
+                _runtime_words([1]),
+            ],
+            execute=read_batch(
+                [
+                    register_map["outdoor_temp"],
+                    register_map["variable_input"],
+                    register_map["demand_heating"],
+                ]
+            ),
+        )
+    )
+
+    def detection_scenario(
+        name: str,
+        scripts: Sequence[Mapping[str, Any]],
+        *,
+        include_firmware: bool,
+    ) -> dict[str, Any]:
+        return _run_runtime_scenario(
+            client_module,
+            name=name,
+            operation={"kind": "detect_model", "includeFirmware": include_firmware},
+            scripts=scripts,
+            execute=detect(read_firmware=include_firmware),
+            configuration={"maxRetries": 3},
+        )
+
+    missing = lambda: _runtime_error("numeric_modbus_exception_code_2")
+    scenarios.extend(
+        [
+            detection_scenario(
+                "detect_unknown",
+                [missing() for _ in range(10)],
+                include_firmware=True,
+            ),
+            detection_scenario(
+                "detect_navigator_20",
+                [
+                    _runtime_words(codec.encode_float32(25.0)),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                ],
+                include_firmware=False,
+            ),
+            detection_scenario(
+                "detect_navigator_pro",
+                [
+                    missing(),
+                    missing(),
+                    _runtime_words([1]),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                ],
+                include_firmware=False,
+            ),
+            detection_scenario(
+                "detect_navigator_10_full",
+                [
+                    _runtime_words(codec.encode_float32(25.0)),
+                    missing(),
+                    missing(),
+                    _runtime_words([1]),
+                    missing(),
+                    missing(),
+                    _runtime_words(codec.encode_float32(10.0)),
+                    _runtime_words(codec.encode_float32(11.0)),
+                    _runtime_words(codec.encode_float32(12.0)),
+                    _runtime_words([0]),
+                    _runtime_words(codec.encode_float32(40.0)),
+                    _runtime_words(codec.encode_float32(7.45)),
+                ],
+                include_firmware=True,
+            ),
+            detection_scenario(
+                "detect_unavailable_slots_and_cascade_sentinel",
+                [
+                    _runtime_words(codec.encode_float32(25.0)),
+                    _runtime_words(codec.encode_float32(-1.0)),
+                    _runtime_words(codec.encode_float32(-1.0)),
+                    missing(),
+                    missing(),
+                    _runtime_words(codec.encode_float32(float("nan"))),
+                    _runtime_words(codec.encode_float32(float("nan"))),
+                    _runtime_words(codec.encode_float32(0.0)),
+                    _runtime_words([0xFFFF]),
+                    missing(),
+                ],
+                include_firmware=False,
+            ),
+        ]
+    )
+
+    async def diagnostics(client: Any, transport: Any, harness: _RuntimeHarness) -> Any:
+        client._client = transport
+        try:
+            await client._read_registers(1000, 1, max_retries=1)
+        except Exception:
+            pass
+        client._permanently_failed_registers.update({"system_mode", "outdoor_temp"})
+        client._batch_unsafe_registers.update({"variable_input", "humidity_sensor"})
+        snapshot = client.get_diagnostics()
+        return {
+            "navigatorType": snapshot.navigator_type,
+            "modbusConnected": snapshot.modbus_connected,
+            "firmware": snapshot.firmware,
+            "lastError": (
+                None
+                if snapshot.last_error is None
+                else diagnostic_message_redaction(snapshot.last_error, "example.invalid", 502)
+            ),
+            "permanentlyFailedRegisters": list(snapshot.permanently_failed_registers),
+            "connectionSuspect": snapshot.connection_suspect,
+            "batchUnsafeRegisters": list(snapshot.batch_unsafe_registers),
+            "context": _runtime_context_projection(
+                client.get_last_error_context(),
+                harness.last_error_source,
+                host="example.invalid",
+                port=502,
+            ),
+        }
+
+    scenarios.append(
+        _run_runtime_scenario(
+            client_module,
+            name="diagnostics_redacted_error",
+            operation={"kind": "diagnostics"},
+            scripts=[
+                _runtime_error(
+                    "timeout_exception",
+                    "example.invalid:502 [example.invalid]:502 example.invalid timed out",
+                )
+            ],
+            execute=diagnostics,
+            configuration={"maxRetries": 1},
+        )
+    )
+
+    def setup_reset(client: Any) -> None:
+        client._permanently_failed_registers.update({"system_mode", "outdoor_temp"})
+        client._unsupported_registers.add("system_mode")
+        client._register_failures.update({"system_mode": 3, "outdoor_temp": 1})
+        client._batch_unsafe_registers.add("humidity_sensor")
+
+    async def reset_state(client: Any, _: Any, __: Any) -> Any:
+        client.reset_failed_registers()
+        return {
+            "unsupportedRegisters": list(client.get_unsupported_registers()),
+            "batchUnsafeRegisters": list(client.get_batch_unsafe_registers()),
+        }
+
+    scenarios.append(
+        _run_runtime_scenario(
+            client_module,
+            name="reset_failed_register_state",
+            operation={"kind": "reset_failed_registers"},
+            scripts=[],
+            execute=reset_state,
+            setup=setup_reset,
+        )
+    )
+
+    names = [scenario["name"] for scenario in scenarios]
+    if len(scenarios) < 30 or len(names) != len(set(names)):
+        fail("fixture_invalid", "runtime scenario inventory must be complete and unique")
+    if any(tuple(scenario) != RUNTIME_SCENARIO_FIELDS for scenario in scenarios):
+        fail("fixture_invalid", "runtime scenarios must contain all eight CTR-01 fields")
+    return _fixture_root(
+        manifest,
+        operation_kinds=list(TRANSPORT_OPERATION_KINDS),
+        scenarios=scenarios,
+    )
+
+
 def generate_fixtures(manifest: Mapping[str, Any], checkout: Path) -> dict[Path, bytes]:
     # This is the first upstream execution point. Every caller reaches it only
     # after ``verify_checkout`` and output-root validation have succeeded.
@@ -1146,6 +2309,12 @@ def generate_fixtures(manifest: Mapping[str, Any], checkout: Path) -> dict[Path,
                 release_blocking=True,
                 reason="Navigator 10 WebSocket and Navigator 2.0 HTTP parity require Phase 4 executable evidence",
                 scenarios=[],
+            ),
+            OUTPUT_PATHS[6]: _transport_fixture(
+                manifest,
+                client_module,
+                constants,
+                registers,
             ),
         }
         return {path: canonical_json_bytes(value) for path, value in fixtures.items()}

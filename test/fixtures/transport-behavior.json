@@ -1,0 +1,3944 @@
+{
+  "baseline": {
+    "git_commit": "ad121ebf34a5f5e37204371c026927d77efcd15c",
+    "git_tag": "v0.7.6",
+    "parity_schema_version": 1,
+    "python_package": "idm-heatpump-api",
+    "python_version": "0.7.6",
+    "repository": "https://github.com/Xerolux/idm-heatpump-api"
+  },
+  "generator_version": "1",
+  "operation_kinds": [
+    "lifecycle",
+    "read_register",
+    "read_batch",
+    "probe",
+    "detect_model",
+    "diagnostics",
+    "reset_failed_registers"
+  ],
+  "scenarios": [
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "adapterRetries": 0,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "modelName": "Navigator 2.0",
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10.0
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": false,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "constructor_defaults",
+      "operation": {
+        "kind": "diagnostics"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "connect"
+        },
+        {
+          "kind": "close"
+        },
+        {
+          "kind": "connect"
+        }
+      ],
+      "expected_result": {
+        "connected": true,
+        "host": "example.invalid",
+        "port": 502
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "lifecycle_connect_disconnect_force_reconnect",
+      "operation": {
+        "actions": [
+          "connect",
+          "disconnect",
+          "force_reconnect"
+        ],
+        "kind": "lifecycle"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": 21.5,
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "read_input_fc04",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_register",
+        "register": "outdoor_temp"
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16812
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1200,
+            "count": 1,
+            "functionCode": 3,
+            "registerType": "holding",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": [
+        7
+      ],
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "read_holding_fc03",
+      "operation": {
+        "address": 1200,
+        "count": 1,
+        "kind": "probe",
+        "maxRetries": 1,
+        "registerType": "holding",
+        "timeout": 2
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            7
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1002,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": [
+        10.0,
+        12.5
+      ],
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "serialization_parallel_reads",
+      "operation": {
+        "concurrency": 2,
+        "kind": "read_batch",
+        "registers": [
+          "outdoor_temp",
+          "outdoor_temp_avg"
+        ]
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16672
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16712
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 4,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "outdoor_temp": 10.0,
+        "outdoor_temp_avg": 12.5
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "batch_adjacent",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_batch",
+        "registers": [
+          "outdoor_temp",
+          "outdoor_temp_avg"
+        ]
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16672,
+            0,
+            16712
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1005,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "outdoor_temp": 10.0,
+        "system_mode": 2
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "batch_gap_split",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_batch",
+        "registers": [
+          "outdoor_temp",
+          "system_mode"
+        ]
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16672
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 2,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1002,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "outdoor_temp": 10.0,
+        "outdoor_temp_avg": 12.5
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "batch_max_span_split",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_batch",
+        "registers": [
+          "outdoor_temp",
+          "outdoor_temp_avg"
+        ]
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16672
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16712
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1392,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1393,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "hc_a_mode": 2,
+        "humidity_sensor": 54.75
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "overlap_humidity_and_mode_1393",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_batch",
+        "registers": [
+          "humidity_sensor",
+          "hc_a_mode"
+        ]
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16987
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1441,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1442,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "hc_a_heating_limit": 42,
+        "hc_g_heating_curve": 0.45
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "overlap_heating_curve_and_limit_1442",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_batch",
+        "registers": [
+          "hc_g_heating_curve",
+          "hc_a_heating_limit"
+        ]
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            26214,
+            16102
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            42
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1483,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1484,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "hc_a_cooling_limit": 24,
+        "hc_g_room_setpoint_cool_eco": 19.5
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "overlap_cooling_setpoint_and_limit_1484",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_batch",
+        "registers": [
+          "hc_g_room_setpoint_cool_eco",
+          "hc_a_cooling_limit"
+        ]
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16796
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            24
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 3000,
+            "datatype": "UCHAR",
+            "name": "synthetic_input_3000",
+            "registerType": "input"
+          },
+          {
+            "address": 3001,
+            "datatype": "UCHAR",
+            "name": "synthetic_holding_3001",
+            "registerType": "holding"
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 3001,
+            "count": 1,
+            "functionCode": 3,
+            "registerType": "holding",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 3000,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "synthetic_holding_3001": 1,
+        "synthetic_input_3000": 2
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "batch_register_type_split",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_batch",
+        "registers": [
+          "synthetic_input_3000",
+          "synthetic_holding_3001"
+        ]
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            1
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [
+        0.5
+      ],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 2,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "close"
+        },
+        {
+          "kind": "connect"
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": [
+        0,
+        16786
+      ],
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 1000,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "timeout",
+          "message": "timeout at <endpoint>",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "retry_timeout_reconnect",
+      "operation": {
+        "address": 1000,
+        "count": 2,
+        "kind": "probe",
+        "maxRetries": 2,
+        "registerType": "input",
+        "timeout": 10
+      },
+      "transport_responses": [
+        {
+          "errorType": "timeout",
+          "kind": "error",
+          "message": "timeout at <endpoint>"
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16786
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [
+        0.5
+      ],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 2,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "close"
+        },
+        {
+          "kind": "connect"
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": [
+        0,
+        16786
+      ],
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 1000,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "disconnected",
+          "message": "Modbus Error: [Connection] disconnected from <endpoint>",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "retry_disconnected_reconnect",
+      "operation": {
+        "address": 1000,
+        "count": 2,
+        "kind": "probe",
+        "maxRetries": 2,
+        "registerType": "input",
+        "timeout": 10
+      },
+      "transport_responses": [
+        {
+          "errorType": "disconnected",
+          "kind": "error",
+          "message": "disconnected from <endpoint>"
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16786
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [
+        0.5
+      ],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 2,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "close"
+        },
+        {
+          "kind": "connect"
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": [
+        0,
+        16786
+      ],
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 1000,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "socket",
+          "message": "link reset by <endpoint>",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "retry_socket_reconnect",
+      "operation": {
+        "address": 1000,
+        "count": 2,
+        "kind": "probe",
+        "maxRetries": 2,
+        "registerType": "input",
+        "timeout": 10
+      },
+      "transport_responses": [
+        {
+          "errorType": "socket",
+          "kind": "error",
+          "message": "link reset by <endpoint>"
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16786
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [
+        0.5
+      ],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 2,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "close"
+        },
+        {
+          "kind": "connect"
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": [
+        0,
+        16786
+      ],
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 1000,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "no_response",
+          "message": "Modbus Error: [Input/Output] no response from <endpoint>",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "retry_no_response_reconnect",
+      "operation": {
+        "address": 1000,
+        "count": 2,
+        "kind": "probe",
+        "maxRetries": 2,
+        "registerType": "input",
+        "timeout": 10
+      },
+      "transport_responses": [
+        {
+          "errorType": "no_response",
+          "kind": "error",
+          "message": "no response from <endpoint>"
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16786
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [
+        0.5
+      ],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 2,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": [
+        0,
+        16786
+      ],
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 1000,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "modbus",
+          "message": "Modbus Error: device rejected read at <endpoint>",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "retry_modbus_same_connection",
+      "operation": {
+        "address": 1000,
+        "count": 2,
+        "kind": "probe",
+        "maxRetries": 2,
+        "registerType": "input",
+        "timeout": 10
+      },
+      "transport_responses": [
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "device rejected read at <endpoint>"
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16786
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 1,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "error": {
+          "errorType": "invalid_response",
+          "message": "Modbus Error: Incomplete Modbus response at address 1000: got 1 registers, expected 2"
+        }
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 1000,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "invalid_response",
+          "message": "Modbus Error: Incomplete Modbus response at address 1000: got 1 registers, expected 2",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "invalid_short_response",
+      "operation": {
+        "address": 1000,
+        "count": 2,
+        "kind": "probe",
+        "maxRetries": 1,
+        "registerType": "input",
+        "timeout": 10
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 1,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 4,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1002,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "outdoor_temp": 10.0,
+        "outdoor_temp_avg": 12.5
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 1000,
+          "attempt": 1,
+          "count": 4,
+          "errorType": "modbus",
+          "message": "Modbus Error: batch rejected by <endpoint>",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "batch_device_error_fallback",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_batch",
+        "registers": [
+          "outdoor_temp",
+          "outdoor_temp_avg"
+        ]
+      },
+      "transport_responses": [
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "batch rejected by <endpoint>"
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16672
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16712
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 1,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 4,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "error": {
+          "errorType": "timeout",
+          "message": "batch timed out at <endpoint>"
+        }
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": true,
+        "lastError": {
+          "address": 1000,
+          "attempt": 1,
+          "count": 4,
+          "errorType": "timeout",
+          "message": "batch timed out at <endpoint>",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "batch_transport_error_propagates",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_batch",
+        "registers": [
+          "outdoor_temp",
+          "outdoor_temp_avg"
+        ]
+      },
+      "transport_responses": [
+        {
+          "errorType": "timeout",
+          "kind": "error",
+          "message": "batch timed out at <endpoint>"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 1,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1004,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1004,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1005,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "internal_message": 7
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 1005,
+          "attempt": 1,
+          "count": 1,
+          "errorType": "illegal_address",
+          "message": "Modbus Error: Illegal Data Address reading address 1005: ExceptionResponse(exception_code=2)",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [
+          "system_mode"
+        ],
+        "transientFailures": {},
+        "unsupportedRegisters": [
+          "system_mode"
+        ]
+      },
+      "name": "unsupported_illegal_address",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_batch",
+        "registers": [
+          "internal_message",
+          "system_mode"
+        ]
+      },
+      "transport_responses": [
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "batch rejected by <endpoint>"
+        },
+        {
+          "kind": "words",
+          "words": [
+            7
+          ]
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1005: ExceptionResponse(exception_code=2)"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 1,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1005,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1005,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1005,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1005,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1005,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1005,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": [
+        {},
+        {},
+        {}
+      ],
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 1005,
+          "attempt": 1,
+          "count": 1,
+          "errorType": "modbus",
+          "message": "Modbus Error: device failure 6 at <endpoint>",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [
+          "system_mode"
+        ],
+        "transientFailures": {
+          "system_mode": 3
+        },
+        "unsupportedRegisters": []
+      },
+      "name": "permanent_after_third_modbus_failure",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_batch",
+        "registers": [
+          "system_mode"
+        ]
+      },
+      "transport_responses": [
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "device failure 1 at <endpoint>"
+        },
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "device failure 2 at <endpoint>"
+        },
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "device failure 3 at <endpoint>"
+        },
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "device failure 4 at <endpoint>"
+        },
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "device failure 5 at <endpoint>"
+        },
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "device failure 6 at <endpoint>"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1005,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "system_mode": 2
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [
+          "system_mode"
+        ],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "successful_individual_read_clears_failure",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_batch",
+        "registers": [
+          "system_mode"
+        ]
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 2007,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2007,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "zm1_room1_mode": 3,
+        "zm1_room1_relay": 1
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [
+          "zm1_room1_mode"
+        ],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "batch_suspect_quarantine_and_reread",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_batch",
+        "registers": [
+          "zm1_room1_mode",
+          "zm1_room1_relay"
+        ]
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            255,
+            1
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1392,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {},
+      "expected_state": {
+        "batchUnsafeRegisters": [
+          "humidity_sensor"
+        ],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "invalid_individual_value_omitted",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_batch",
+        "registers": [
+          "humidity_sensor"
+        ]
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            0,
+            17212
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 2008,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2007,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "zm1_room1_mode": 3,
+        "zm1_room1_relay": 1
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [
+          "zm1_room1_mode"
+        ],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "consumer_quarantine_order",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_batch",
+        "registers": [
+          "zm1_room1_mode",
+          "zm1_room1_relay"
+        ]
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            1
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1006,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1710,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "demand_heating": true,
+        "outdoor_temp": null,
+        "variable_input": 255
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "sentinel_null_bool_are_not_quarantined",
+      "operation": {
+        "concurrency": 1,
+        "kind": "read_batch",
+        "registers": [
+          "outdoor_temp",
+          "variable_input",
+          "demand_heating"
+        ]
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            0,
+            32704
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            65535
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1350,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1352,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2000,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2065,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1850,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1870,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 74,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1147,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4108,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4120,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "activeHeatingCircuits": [],
+        "features": [],
+        "firmwareVersion": null,
+        "hasCascade": false,
+        "hasIsc": false,
+        "hasPv": false,
+        "hasSolar": false,
+        "modelName": "Unknown",
+        "registerMap": {
+          "count": 89,
+          "keys": [
+            "air_heat_exchanger_temp",
+            "air_intake_temp",
+            "air_intake_temp_2",
+            "bivalence_point_1_2nd_gen",
+            "bivalence_point_1_3rd_gen",
+            "bivalence_point_2_2nd_gen",
+            "bivalence_point_2_3rd_gen",
+            "bivalence_state",
+            "brine_pump_status",
+            "cascade_available_cooling",
+            "cascade_available_dhw",
+            "cascade_available_heating",
+            "cascade_running_cooling",
+            "cascade_running_dhw",
+            "cascade_running_heating",
+            "charging_pump_status",
+            "charging_sensor_temp",
+            "circulation_pump",
+            "cold_storage_temp",
+            "compressor_status_1",
+            "compressor_status_2",
+            "compressor_status_3",
+            "compressor_status_4",
+            "cooling_demand",
+            "current_electricity_price",
+            "current_power",
+            "current_power_solar",
+            "demand_cooling",
+            "demand_dhw_charging",
+            "demand_heating",
+            "demand_onetime_dhw",
+            "dhw_charge_off_temp",
+            "dhw_charge_on_temp",
+            "dhw_demand",
+            "dhw_setpoint",
+            "dhw_tapping_temp",
+            "dhw_temp_bottom",
+            "dhw_temp_top",
+            "energy_cooling",
+            "energy_defrost",
+            "energy_dhw",
+            "energy_electric_heater",
+            "energy_heating",
+            "energy_passive_cooling",
+            "energy_solar",
+            "energy_total",
+            "error_acknowledge",
+            "evu_lock",
+            "ext_demand_temp_cooling",
+            "ext_demand_temp_heating",
+            "ext_humidity",
+            "ext_outdoor_temp",
+            "firmware_version",
+            "glt_cold_storage_temp",
+            "glt_dhw_temp_bottom",
+            "glt_dhw_temp_top",
+            "glt_heat_storage_temp",
+            "glt_temp_demand_cooling",
+            "glt_temp_demand_heating",
+            "heat_source_inlet_temp",
+            "heat_source_outlet_temp",
+            "heat_source_pump_status",
+            "heating_demand",
+            "hgl_flow_temp",
+            "hp_flow_temp",
+            "hp_operating_mode",
+            "hp_return_temp",
+            "hp_sum_alarm",
+            "humidity_sensor",
+            "internal_message",
+            "isc_cold_storage_pump_status",
+            "isc_recooling_pump_status",
+            "outdoor_temp",
+            "outdoor_temp_avg",
+            "power_consumption_hp",
+            "smart_grid_status",
+            "storage_temp",
+            "system_mode",
+            "thermal_power_flow_sensor",
+            "total_heat_energy",
+            "valve_hc_heat_cool",
+            "valve_heat_dhw",
+            "valve_heat_source_heat_cool",
+            "valve_isc_heat_source_cold_storage",
+            "valve_isc_storage_bypass",
+            "valve_solar_heat_dhw",
+            "valve_solar_storage_heat_source",
+            "valve_storage_heat_cool",
+            "variable_input"
+          ]
+        },
+        "zoneModules": 0
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 4120,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "illegal_address",
+          "message": "Modbus Error: Illegal Data Address reading address 4120: ExceptionResponse(exception_code=2)",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "detect_unknown",
+      "operation": {
+        "includeFirmware": true,
+        "kind": "detect_model"
+      },
+      "transport_responses": [
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1350: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1352: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 2000: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 2065: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1850: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1870: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 74: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1147: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 4120: ExceptionResponse(exception_code=2)"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1350,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1352,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1354,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2000,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2065,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1850,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1870,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 74,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1147,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4108,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "activeHeatingCircuits": [
+          "A"
+        ],
+        "features": [
+          "heating_circuits"
+        ],
+        "firmwareVersion": null,
+        "hasCascade": false,
+        "hasIsc": false,
+        "hasPv": false,
+        "hasSolar": false,
+        "modelName": "Navigator 2.0",
+        "registerMap": {
+          "count": 105,
+          "keys": [
+            "air_heat_exchanger_temp",
+            "air_intake_temp",
+            "air_intake_temp_2",
+            "bivalence_point_1_2nd_gen",
+            "bivalence_point_1_3rd_gen",
+            "bivalence_point_2_2nd_gen",
+            "bivalence_point_2_3rd_gen",
+            "bivalence_state",
+            "brine_pump_status",
+            "cascade_available_cooling",
+            "cascade_available_dhw",
+            "cascade_available_heating",
+            "cascade_running_cooling",
+            "cascade_running_dhw",
+            "cascade_running_heating",
+            "charging_pump_status",
+            "charging_sensor_temp",
+            "circulation_pump",
+            "cold_storage_temp",
+            "compressor_status_1",
+            "compressor_status_2",
+            "compressor_status_3",
+            "compressor_status_4",
+            "cooling_demand",
+            "current_electricity_price",
+            "current_power",
+            "current_power_solar",
+            "demand_cooling",
+            "demand_dhw_charging",
+            "demand_heating",
+            "demand_onetime_dhw",
+            "dhw_charge_off_temp",
+            "dhw_charge_on_temp",
+            "dhw_demand",
+            "dhw_setpoint",
+            "dhw_tapping_temp",
+            "dhw_temp_bottom",
+            "dhw_temp_top",
+            "energy_cooling",
+            "energy_defrost",
+            "energy_dhw",
+            "energy_electric_heater",
+            "energy_heating",
+            "energy_passive_cooling",
+            "energy_solar",
+            "energy_total",
+            "error_acknowledge",
+            "evu_lock",
+            "ext_demand_temp_cooling",
+            "ext_demand_temp_heating",
+            "ext_humidity",
+            "ext_outdoor_temp",
+            "firmware_version",
+            "glt_cold_storage_temp",
+            "glt_dhw_temp_bottom",
+            "glt_dhw_temp_top",
+            "glt_heat_storage_temp",
+            "glt_temp_demand_cooling",
+            "glt_temp_demand_heating",
+            "hc_a_active_mode",
+            "hc_a_cooling_limit",
+            "hc_a_ext_room_temp",
+            "hc_a_flow_temp",
+            "hc_a_heating_curve",
+            "hc_a_heating_limit",
+            "hc_a_mode",
+            "hc_a_parallel_shift",
+            "hc_a_room_setpoint_cool_eco",
+            "hc_a_room_setpoint_cool_normal",
+            "hc_a_room_setpoint_heat_eco",
+            "hc_a_room_setpoint_heat_normal",
+            "hc_a_room_temp",
+            "hc_a_setpoint_flow_constant",
+            "hc_a_setpoint_flow_cooling",
+            "hc_a_setpoint_flow_temp",
+            "heat_source_inlet_temp",
+            "heat_source_outlet_temp",
+            "heat_source_pump_status",
+            "heating_demand",
+            "hgl_flow_temp",
+            "hp_flow_temp",
+            "hp_operating_mode",
+            "hp_return_temp",
+            "hp_sum_alarm",
+            "humidity_sensor",
+            "internal_message",
+            "isc_cold_storage_pump_status",
+            "isc_recooling_pump_status",
+            "outdoor_temp",
+            "outdoor_temp_avg",
+            "power_consumption_hp",
+            "smart_grid_status",
+            "storage_temp",
+            "system_mode",
+            "thermal_power_flow_sensor",
+            "total_heat_energy",
+            "valve_hc_heat_cool",
+            "valve_heat_dhw",
+            "valve_heat_source_heat_cool",
+            "valve_isc_heat_source_cold_storage",
+            "valve_isc_storage_bypass",
+            "valve_solar_heat_dhw",
+            "valve_solar_storage_heat_source",
+            "valve_storage_heat_cool",
+            "variable_input"
+          ]
+        },
+        "zoneModules": 0
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 4108,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "illegal_address",
+          "message": "Modbus Error: Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "detect_navigator_20",
+      "operation": {
+        "includeFirmware": false,
+        "kind": "detect_model"
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16840
+          ]
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1352: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1354: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 2000: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 2065: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1850: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1870: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 74: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1147: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1350,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1352,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2000,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2065,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2130,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1850,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1870,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 74,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1147,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4108,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "activeHeatingCircuits": [],
+        "features": [
+          "zone_modules"
+        ],
+        "firmwareVersion": null,
+        "hasCascade": false,
+        "hasIsc": false,
+        "hasPv": false,
+        "hasSolar": false,
+        "modelName": "Navigator Pro",
+        "registerMap": {
+          "count": 121,
+          "keys": [
+            "air_heat_exchanger_temp",
+            "air_intake_temp",
+            "air_intake_temp_2",
+            "bivalence_point_1_2nd_gen",
+            "bivalence_point_1_3rd_gen",
+            "bivalence_point_2_2nd_gen",
+            "bivalence_point_2_3rd_gen",
+            "bivalence_state",
+            "brine_pump_status",
+            "cascade_available_cooling",
+            "cascade_available_dhw",
+            "cascade_available_heating",
+            "cascade_running_cooling",
+            "cascade_running_dhw",
+            "cascade_running_heating",
+            "charging_pump_status",
+            "charging_sensor_temp",
+            "circulation_pump",
+            "cold_storage_temp",
+            "compressor_status_1",
+            "compressor_status_2",
+            "compressor_status_3",
+            "compressor_status_4",
+            "cooling_demand",
+            "current_electricity_price",
+            "current_power",
+            "current_power_solar",
+            "demand_cooling",
+            "demand_dhw_charging",
+            "demand_heating",
+            "demand_onetime_dhw",
+            "dhw_charge_off_temp",
+            "dhw_charge_on_temp",
+            "dhw_demand",
+            "dhw_setpoint",
+            "dhw_tapping_temp",
+            "dhw_temp_bottom",
+            "dhw_temp_top",
+            "energy_cooling",
+            "energy_defrost",
+            "energy_dhw",
+            "energy_electric_heater",
+            "energy_heating",
+            "energy_passive_cooling",
+            "energy_solar",
+            "energy_total",
+            "error_acknowledge",
+            "evu_lock",
+            "ext_demand_temp_cooling",
+            "ext_demand_temp_heating",
+            "ext_humidity",
+            "ext_outdoor_temp",
+            "firmware_version",
+            "glt_cold_storage_temp",
+            "glt_dhw_temp_bottom",
+            "glt_dhw_temp_top",
+            "glt_heat_storage_temp",
+            "glt_temp_demand_cooling",
+            "glt_temp_demand_heating",
+            "heat_source_inlet_temp",
+            "heat_source_outlet_temp",
+            "heat_source_pump_status",
+            "heating_demand",
+            "hgl_flow_temp",
+            "hp_flow_temp",
+            "hp_operating_mode",
+            "hp_return_temp",
+            "hp_sum_alarm",
+            "humidity_sensor",
+            "internal_message",
+            "isc_cold_storage_pump_status",
+            "isc_recooling_pump_status",
+            "outdoor_temp",
+            "outdoor_temp_avg",
+            "power_consumption_hp",
+            "smart_grid_status",
+            "storage_temp",
+            "system_mode",
+            "thermal_power_flow_sensor",
+            "total_heat_energy",
+            "valve_hc_heat_cool",
+            "valve_heat_dhw",
+            "valve_heat_source_heat_cool",
+            "valve_isc_heat_source_cold_storage",
+            "valve_isc_storage_bypass",
+            "valve_solar_heat_dhw",
+            "valve_solar_storage_heat_source",
+            "valve_storage_heat_cool",
+            "variable_input",
+            "zm1_dehumidification",
+            "zm1_mode_heat_cool",
+            "zm1_room1_humidity",
+            "zm1_room1_mode",
+            "zm1_room1_relay",
+            "zm1_room1_setpoint",
+            "zm1_room1_temp",
+            "zm1_room2_humidity",
+            "zm1_room2_mode",
+            "zm1_room2_relay",
+            "zm1_room2_setpoint",
+            "zm1_room2_temp",
+            "zm1_room3_humidity",
+            "zm1_room3_mode",
+            "zm1_room3_relay",
+            "zm1_room3_setpoint",
+            "zm1_room3_temp",
+            "zm1_room4_humidity",
+            "zm1_room4_mode",
+            "zm1_room4_relay",
+            "zm1_room4_setpoint",
+            "zm1_room4_temp",
+            "zm1_room5_humidity",
+            "zm1_room5_mode",
+            "zm1_room5_relay",
+            "zm1_room5_setpoint",
+            "zm1_room5_temp",
+            "zm1_room6_humidity",
+            "zm1_room6_mode",
+            "zm1_room6_relay",
+            "zm1_room6_setpoint",
+            "zm1_room6_temp"
+          ]
+        },
+        "zoneModules": 1
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 4108,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "illegal_address",
+          "message": "Modbus Error: Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator Pro",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "detect_navigator_pro",
+      "operation": {
+        "includeFirmware": false,
+        "kind": "detect_model"
+      },
+      "transport_responses": [
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1350: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1352: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "kind": "words",
+          "words": [
+            1
+          ]
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 2065: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 2130: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1850: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1870: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 74: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1147: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1350,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1352,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1354,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2000,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2065,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2130,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1850,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1870,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 74,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1147,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4108,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4120,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "activeHeatingCircuits": [
+          "A"
+        ],
+        "features": [
+          "cascade",
+          "heating_circuits",
+          "isc",
+          "pv",
+          "solar",
+          "zone_modules"
+        ],
+        "firmwareVersion": 7.45,
+        "hasCascade": true,
+        "hasIsc": true,
+        "hasPv": true,
+        "hasSolar": true,
+        "modelName": "Navigator 10",
+        "registerMap": {
+          "count": 203,
+          "keys": [
+            "air_heat_exchanger_temp",
+            "air_intake_temp",
+            "air_intake_temp_2",
+            "battery_discharge",
+            "battery_soc",
+            "bivalence_point_1_2nd_gen",
+            "bivalence_point_1_3rd_gen",
+            "bivalence_point_2_2nd_gen",
+            "bivalence_point_2_3rd_gen",
+            "bivalence_state",
+            "booster_a_charging_pump",
+            "booster_a_compressor",
+            "booster_a_flow_temp",
+            "booster_a_return_temp",
+            "booster_a_source_inlet_temp",
+            "booster_a_source_outlet_temp",
+            "booster_a_source_pump",
+            "booster_a_storage_temp",
+            "booster_b_charging_pump",
+            "booster_b_compressor",
+            "booster_b_flow_temp",
+            "booster_b_return_temp",
+            "booster_b_source_inlet_temp",
+            "booster_b_source_outlet_temp",
+            "booster_b_source_pump",
+            "booster_b_storage_temp",
+            "booster_fault",
+            "booster_interlock",
+            "brine_pump_status",
+            "cascade_available_cooling",
+            "cascade_available_dhw",
+            "cascade_available_heating",
+            "cascade_avg_flow_cooling",
+            "cascade_avg_flow_dhw",
+            "cascade_avg_flow_heating",
+            "cascade_bivalence_cooling_alternative",
+            "cascade_bivalence_cooling_parallel",
+            "cascade_bivalence_dhw_alternative",
+            "cascade_bivalence_dhw_parallel",
+            "cascade_bivalence_heating_alternative",
+            "cascade_bivalence_heating_parallel",
+            "cascade_max_power_cooling",
+            "cascade_max_power_dhw",
+            "cascade_max_power_heating",
+            "cascade_min_power_cooling",
+            "cascade_min_power_dhw",
+            "cascade_min_power_heating",
+            "cascade_req_cooling_temp",
+            "cascade_req_dhw_temp",
+            "cascade_req_heating_temp",
+            "cascade_running_cooling",
+            "cascade_running_dhw",
+            "cascade_running_heating",
+            "charging_pump_status",
+            "charging_sensor_temp",
+            "circulation_pump",
+            "cold_storage_temp",
+            "compressor_status_1",
+            "compressor_status_2",
+            "compressor_status_3",
+            "compressor_status_4",
+            "cooling_demand",
+            "current_electricity_price",
+            "current_power",
+            "current_power_solar",
+            "demand_cooling",
+            "demand_dhw_charging",
+            "demand_heating",
+            "demand_onetime_dhw",
+            "dhw_charge_off_temp",
+            "dhw_charge_on_temp",
+            "dhw_demand",
+            "dhw_setpoint",
+            "dhw_tapping_temp",
+            "dhw_temp_bottom",
+            "dhw_temp_top",
+            "electric_heater_power",
+            "energy_cooling",
+            "energy_defrost",
+            "energy_dhw",
+            "energy_electric_heater",
+            "energy_heating",
+            "energy_passive_cooling",
+            "energy_solar",
+            "energy_total",
+            "error_acknowledge",
+            "evu_lock",
+            "ext_demand_groundwater_pump_m15",
+            "ext_demand_groundwater_pump_m15_sw_max",
+            "ext_demand_temp_cooling",
+            "ext_demand_temp_heating",
+            "ext_humidity",
+            "ext_outdoor_temp",
+            "fault_charging_pump_1_intermediate",
+            "fault_charging_pump_2_intermediate",
+            "fault_heat_source_circuit",
+            "fault_heat_source_pressure_switch",
+            "firmware_version",
+            "glt_cold_storage_temp",
+            "glt_dhw_temp_bottom",
+            "glt_dhw_temp_top",
+            "glt_heat_storage_temp",
+            "glt_temp_demand_cooling",
+            "glt_temp_demand_heating",
+            "groundwater_inlet_temp_1",
+            "groundwater_inlet_temp_2",
+            "hc_a_active_mode",
+            "hc_a_cooling_limit",
+            "hc_a_ext_room_temp",
+            "hc_a_flow_temp",
+            "hc_a_heating_curve",
+            "hc_a_heating_limit",
+            "hc_a_mode",
+            "hc_a_parallel_shift",
+            "hc_a_room_setpoint_cool_eco",
+            "hc_a_room_setpoint_cool_normal",
+            "hc_a_room_setpoint_heat_eco",
+            "hc_a_room_setpoint_heat_normal",
+            "hc_a_room_temp",
+            "hc_a_setpoint_flow_constant",
+            "hc_a_setpoint_flow_cooling",
+            "hc_a_setpoint_flow_temp",
+            "heat_sink_charging_pump_signal",
+            "heat_sink_flow_rate",
+            "heat_sink_flow_temp",
+            "heat_sink_return_temp",
+            "heat_source_inlet_temp",
+            "heat_source_outlet_temp",
+            "heat_source_pump_status",
+            "heating_demand",
+            "hgl_flow_temp",
+            "house_consumption",
+            "hp_flow_temp",
+            "hp_operating_mode",
+            "hp_return_temp",
+            "hp_sum_alarm",
+            "humidity_sensor",
+            "internal_message",
+            "isc_charging_temp_cooling",
+            "isc_cold_storage_pump_status",
+            "isc_mode",
+            "isc_recooling_pump_status",
+            "isc_recooling_temp",
+            "outdoor_temp",
+            "outdoor_temp_avg",
+            "power_consumption_hp",
+            "power_consumption_hp_smartfox",
+            "power_limit_cascade",
+            "power_limit_hp",
+            "pv_production",
+            "pv_surplus",
+            "pv_target_value",
+            "smart_grid_status",
+            "solar_charging_temp",
+            "solar_collector_temp",
+            "solar_mode",
+            "solar_return_temp",
+            "solar_wq_pool_temp",
+            "storage_temp",
+            "system_mode",
+            "thermal_power_flow_sensor",
+            "total_heat_energy",
+            "valve_hc_heat_cool",
+            "valve_heat_dhw",
+            "valve_heat_source_heat_cool",
+            "valve_isc_heat_source_cold_storage",
+            "valve_isc_storage_bypass",
+            "valve_solar_heat_dhw",
+            "valve_solar_storage_heat_source",
+            "valve_storage_heat_cool",
+            "variable_input",
+            "zm1_dehumidification",
+            "zm1_mode_heat_cool",
+            "zm1_room1_humidity",
+            "zm1_room1_mode",
+            "zm1_room1_relay",
+            "zm1_room1_setpoint",
+            "zm1_room1_temp",
+            "zm1_room2_humidity",
+            "zm1_room2_mode",
+            "zm1_room2_relay",
+            "zm1_room2_setpoint",
+            "zm1_room2_temp",
+            "zm1_room3_humidity",
+            "zm1_room3_mode",
+            "zm1_room3_relay",
+            "zm1_room3_setpoint",
+            "zm1_room3_temp",
+            "zm1_room4_humidity",
+            "zm1_room4_mode",
+            "zm1_room4_relay",
+            "zm1_room4_setpoint",
+            "zm1_room4_temp",
+            "zm1_room5_humidity",
+            "zm1_room5_mode",
+            "zm1_room5_relay",
+            "zm1_room5_setpoint",
+            "zm1_room5_temp",
+            "zm1_room6_humidity",
+            "zm1_room6_mode",
+            "zm1_room6_relay",
+            "zm1_room6_setpoint",
+            "zm1_room6_temp"
+          ]
+        },
+        "zoneModules": 1
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 2130,
+          "attempt": 1,
+          "count": 1,
+          "errorType": "illegal_address",
+          "message": "Modbus Error: Illegal Data Address reading address 2130: ExceptionResponse(exception_code=2)",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 10",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "detect_navigator_10_full",
+      "operation": {
+        "includeFirmware": true,
+        "kind": "detect_model"
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16840
+          ]
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1352: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1354: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "kind": "words",
+          "words": [
+            1
+          ]
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 2065: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 2130: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16672
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16688
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16704
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            0
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16928
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            26214,
+            16622
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1350,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1352,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1354,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2000,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2065,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1850,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1870,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 74,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1147,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4108,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "activeHeatingCircuits": [
+          "A"
+        ],
+        "features": [
+          "heating_circuits",
+          "isc",
+          "pv",
+          "solar"
+        ],
+        "firmwareVersion": null,
+        "hasCascade": false,
+        "hasIsc": true,
+        "hasPv": true,
+        "hasSolar": true,
+        "modelName": "Navigator 2.0",
+        "registerMap": {
+          "count": 120,
+          "keys": [
+            "air_heat_exchanger_temp",
+            "air_intake_temp",
+            "air_intake_temp_2",
+            "battery_discharge",
+            "battery_soc",
+            "bivalence_point_1_2nd_gen",
+            "bivalence_point_1_3rd_gen",
+            "bivalence_point_2_2nd_gen",
+            "bivalence_point_2_3rd_gen",
+            "bivalence_state",
+            "brine_pump_status",
+            "cascade_available_cooling",
+            "cascade_available_dhw",
+            "cascade_available_heating",
+            "cascade_running_cooling",
+            "cascade_running_dhw",
+            "cascade_running_heating",
+            "charging_pump_status",
+            "charging_sensor_temp",
+            "circulation_pump",
+            "cold_storage_temp",
+            "compressor_status_1",
+            "compressor_status_2",
+            "compressor_status_3",
+            "compressor_status_4",
+            "cooling_demand",
+            "current_electricity_price",
+            "current_power",
+            "current_power_solar",
+            "demand_cooling",
+            "demand_dhw_charging",
+            "demand_heating",
+            "demand_onetime_dhw",
+            "dhw_charge_off_temp",
+            "dhw_charge_on_temp",
+            "dhw_demand",
+            "dhw_setpoint",
+            "dhw_tapping_temp",
+            "dhw_temp_bottom",
+            "dhw_temp_top",
+            "electric_heater_power",
+            "energy_cooling",
+            "energy_defrost",
+            "energy_dhw",
+            "energy_electric_heater",
+            "energy_heating",
+            "energy_passive_cooling",
+            "energy_solar",
+            "energy_total",
+            "error_acknowledge",
+            "evu_lock",
+            "ext_demand_temp_cooling",
+            "ext_demand_temp_heating",
+            "ext_humidity",
+            "ext_outdoor_temp",
+            "firmware_version",
+            "glt_cold_storage_temp",
+            "glt_dhw_temp_bottom",
+            "glt_dhw_temp_top",
+            "glt_heat_storage_temp",
+            "glt_temp_demand_cooling",
+            "glt_temp_demand_heating",
+            "hc_a_active_mode",
+            "hc_a_cooling_limit",
+            "hc_a_ext_room_temp",
+            "hc_a_flow_temp",
+            "hc_a_heating_curve",
+            "hc_a_heating_limit",
+            "hc_a_mode",
+            "hc_a_parallel_shift",
+            "hc_a_room_setpoint_cool_eco",
+            "hc_a_room_setpoint_cool_normal",
+            "hc_a_room_setpoint_heat_eco",
+            "hc_a_room_setpoint_heat_normal",
+            "hc_a_room_temp",
+            "hc_a_setpoint_flow_constant",
+            "hc_a_setpoint_flow_cooling",
+            "hc_a_setpoint_flow_temp",
+            "heat_source_inlet_temp",
+            "heat_source_outlet_temp",
+            "heat_source_pump_status",
+            "heating_demand",
+            "hgl_flow_temp",
+            "house_consumption",
+            "hp_flow_temp",
+            "hp_operating_mode",
+            "hp_return_temp",
+            "hp_sum_alarm",
+            "humidity_sensor",
+            "internal_message",
+            "isc_charging_temp_cooling",
+            "isc_cold_storage_pump_status",
+            "isc_mode",
+            "isc_recooling_pump_status",
+            "isc_recooling_temp",
+            "outdoor_temp",
+            "outdoor_temp_avg",
+            "power_consumption_hp",
+            "pv_production",
+            "pv_surplus",
+            "pv_target_value",
+            "smart_grid_status",
+            "solar_charging_temp",
+            "solar_collector_temp",
+            "solar_mode",
+            "solar_return_temp",
+            "solar_wq_pool_temp",
+            "storage_temp",
+            "system_mode",
+            "thermal_power_flow_sensor",
+            "total_heat_energy",
+            "valve_hc_heat_cool",
+            "valve_heat_dhw",
+            "valve_heat_source_heat_cool",
+            "valve_isc_heat_source_cold_storage",
+            "valve_isc_storage_bypass",
+            "valve_solar_heat_dhw",
+            "valve_solar_storage_heat_source",
+            "valve_storage_heat_cool",
+            "variable_input"
+          ]
+        },
+        "zoneModules": 0
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 4108,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "illegal_address",
+          "message": "Modbus Error: Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "detect_unavailable_slots_and_cascade_sentinel",
+      "operation": {
+        "includeFirmware": false,
+        "kind": "detect_model"
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16840
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            49024
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            49024
+          ]
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 2000: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 2065: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            32704
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            32704
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            0
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            65535
+          ]
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 1,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "batchUnsafeRegisters": [
+          "humidity_sensor",
+          "variable_input"
+        ],
+        "connectionSuspect": true,
+        "context": {
+          "address": 1000,
+          "attempt": 1,
+          "count": 1,
+          "errorType": "timeout",
+          "message": "<endpoint> <endpoint> <endpoint> timed out",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "firmware": null,
+        "lastError": "<endpoint> <endpoint> <endpoint> timed out",
+        "modbusConnected": true,
+        "navigatorType": "Navigator 2.0",
+        "permanentlyFailedRegisters": [
+          "outdoor_temp",
+          "system_mode"
+        ]
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [
+          "humidity_sensor",
+          "variable_input"
+        ],
+        "connected": true,
+        "connectionSuspect": true,
+        "lastError": {
+          "address": 1000,
+          "attempt": 1,
+          "count": 1,
+          "errorType": "timeout",
+          "message": "<endpoint> <endpoint> <endpoint> timed out",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [
+          "outdoor_temp",
+          "system_mode"
+        ],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "diagnostics_redacted_error",
+      "operation": {
+        "kind": "diagnostics"
+      },
+      "transport_responses": [
+        {
+          "errorType": "timeout",
+          "kind": "error",
+          "message": "<endpoint> <endpoint> <endpoint> timed out"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "batchUnsafeRegisters": [
+          "humidity_sensor"
+        ],
+        "unsupportedRegisters": []
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [
+          "humidity_sensor"
+        ],
+        "connected": false,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "reset_failed_register_state",
+      "operation": {
+        "kind": "reset_failed_registers"
+      },
+      "transport_responses": []
+    }
+  ],
+  "schema_version": 1
+}
