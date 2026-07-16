@@ -63,7 +63,7 @@ import { ModbusCodec, buildRegisterMap, getRegister } from "@xerolux/idm-heatpum
 const words = ModbusCodec.encodeFloat32(21.5);
 const value = ModbusCodec.decodeFloat32(words);
 const registers = buildRegisterMap();
-const outdoorTemperature = getRegister("outdoor_temperature");
+const outdoorTemperature = getRegister("outdoor_temp");
 ```
 
 Dieses Beispiel führt keinen Netzwerkzugriff und keinen Geräte-Write aus.

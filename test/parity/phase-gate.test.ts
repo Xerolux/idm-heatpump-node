@@ -16,6 +16,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { getRegister } from "../../src/index.js";
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const orchestrator = resolve(root, "scripts/check-parity.mjs");
 const upstreamSource = resolve(root, "../idm-heatpump-api");
@@ -480,6 +482,20 @@ describe("Phase 1 truthful documentation and closure", () => {
       expect(readme, plannedArea).toContain(plannedArea);
     }
     expect(readme).toMatch(/nicht (?:auf npm )?veröffentlicht/u);
+  });
+
+  it("README register examples use canonical keys exposed by the public API", () => {
+    const readme = readFileSync(resolve(root, "README.md"), "utf8");
+    const documentedKeys = [...readme.matchAll(/\bgetRegister\(\s*["']([^"']+)["']\s*\)/gu)].map(
+      (match) => match[1],
+    );
+
+    expect(documentedKeys).toContain("outdoor_temp");
+    expect(readme).not.toContain('getRegister("outdoor_temperature")');
+    for (const key of documentedKeys) {
+      expect(key).toBeDefined();
+      expect(getRegister(key ?? "").name).toBe(key);
+    }
   });
 
   it("CHANGELOG records exact baseline, private status, and no Node hardware validation", () => {
