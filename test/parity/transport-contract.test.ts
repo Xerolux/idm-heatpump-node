@@ -1,8 +1,15 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import {
+  attachInternalModbusTransport,
+  createInternalIdmModbusClient,
+  getInternalClientSnapshot,
+  readInternalModbusRegisters,
+  seedInternalReadState,
+} from "../../src/client/internal-create.js";
 import {
   TRANSPORT_SCENARIO_LIMITS,
   TransportOperationKind,
@@ -10,14 +17,30 @@ import {
   parseTransportScenarioContract,
 } from "../../src/contracts/transport-scenario.js";
 import { parseScenarioContract } from "../../src/contracts/scenario.js";
+import { createRegisterDef, type RegisterDef } from "../../src/registers/definitions.js";
+import { buildRegisterMap } from "../../src/registers/registry.js";
+import {
+  IllegalAddressError,
+  NormalizedTransportFailure,
+  NormalizedTransportFailureKind,
+} from "../../src/transport/errors.js";
 import {
   createModbusReadRequest,
   type ModbusReadRequest,
   type ModbusTransport,
 } from "../../src/transport/types.js";
-import { RegisterType } from "../../src/types.js";
+import {
+  DataType,
+  RegisterType,
+  type DataType as DataTypeValue,
+  type RegisterType as RegisterTypeValue,
+} from "../../src/types.js";
 import { FakeClock } from "../support/fake-clock.js";
-import { FakeModbusTransport } from "../support/fake-modbus-transport.js";
+import {
+  FakeModbusTransport,
+  type FakeModbusResponse,
+  type FakeModbusTransportEvent,
+} from "../support/fake-modbus-transport.js";
 
 function inputRequest(
   address = 1_000,
@@ -625,5 +648,362 @@ describe("separate transport scenario schema parser", () => {
     expect(first.scenarios[0]?.name).toBe("batch_overlap_humidity_and_mode");
     expect(second.scenarios[0]?.name).toBe("batch_overlap_humidity_and_mode");
     expect(() => Object.assign(first.scenarios[0] ?? {}, { name: "changed" })).toThrow(TypeError);
+  });
+});
+
+function requiredNumber(configuration: Readonly<Record<string, unknown>>, field: string): number {
+  const value = configuration[field];
+  if (typeof value !== "number") {
+    throw new Error(`Scenario configuration ${field} must be numeric`);
+  }
+  return value;
+}
+
+function requiredString(configuration: Readonly<Record<string, unknown>>, field: string): string {
+  const value = configuration[field];
+  if (typeof value !== "string") {
+    throw new Error(`Scenario configuration ${field} must be text`);
+  }
+  return value;
+}
+
+function responseError(response: { readonly errorType: string; readonly message: string }): Error {
+  switch (response.errorType) {
+    case NormalizedTransportFailureKind.ILLEGAL_ADDRESS:
+      return new IllegalAddressError(`Modbus Error: ${response.message}`);
+    case NormalizedTransportFailureKind.DISCONNECTED:
+      return new NormalizedTransportFailure(
+        NormalizedTransportFailureKind.DISCONNECTED,
+        `Modbus Error: [Connection] ${response.message}`,
+      );
+    case NormalizedTransportFailureKind.NO_RESPONSE:
+      return new NormalizedTransportFailure(
+        NormalizedTransportFailureKind.NO_RESPONSE,
+        `Modbus Error: [Input/Output] ${response.message}`,
+      );
+    case NormalizedTransportFailureKind.MODBUS:
+      return new NormalizedTransportFailure(
+        NormalizedTransportFailureKind.MODBUS,
+        `Modbus Error: ${response.message}`,
+      );
+    case NormalizedTransportFailureKind.INVALID_RESPONSE:
+      return new NormalizedTransportFailure(
+        NormalizedTransportFailureKind.INVALID_RESPONSE,
+        `Modbus Error: ${response.message}`,
+      );
+    case NormalizedTransportFailureKind.TIMEOUT:
+      return new NormalizedTransportFailure(
+        NormalizedTransportFailureKind.TIMEOUT,
+        response.message,
+      );
+    case NormalizedTransportFailureKind.SOCKET:
+      return new NormalizedTransportFailure(
+        NormalizedTransportFailureKind.SOCKET,
+        response.message,
+      );
+    default:
+      throw new Error(`Unknown scripted transport error: ${response.errorType}`);
+  }
+}
+
+function fakeResponses(
+  scenario: ReturnType<typeof parseTransportScenarioContract>["scenarios"][number],
+): readonly FakeModbusResponse[] {
+  return scenario.transport_responses.map((response) =>
+    response.kind === "words"
+      ? Object.freeze({ kind: "words" as const, words: response.words })
+      : Object.freeze({ kind: "error" as const, error: responseError(response) }),
+  );
+}
+
+function configuredRegisters(
+  configuration: Readonly<Record<string, unknown>>,
+): ReadonlyMap<string, RegisterDef> {
+  const definitions = configuration.registerDefinitions;
+  if (!Array.isArray(definitions)) {
+    return new Map();
+  }
+
+  const entries = definitions.map((value) => {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) {
+      throw new Error("Synthetic register definition must be an object");
+    }
+    const definition = value as Readonly<Record<string, unknown>>;
+    const name = requiredString(definition, "name");
+    const datatype = requiredString(definition, "datatype") as DataTypeValue;
+    const registerType = requiredString(definition, "registerType") as RegisterTypeValue;
+    if (!(Object.values(DataType) as readonly string[]).includes(datatype)) {
+      throw new Error(`Synthetic register ${name} has an invalid datatype`);
+    }
+    if (!(Object.values(RegisterType) as readonly string[]).includes(registerType)) {
+      throw new Error(`Synthetic register ${name} has an invalid register type`);
+    }
+    return [
+      name,
+      createRegisterDef({
+        address: requiredNumber(definition, "address"),
+        datatype,
+        name,
+        registerType,
+      }),
+    ] as const;
+  });
+  return new Map(entries);
+}
+
+const CANONICAL_SCENARIO_REGISTERS = buildRegisterMap({ zoneModules: 1 });
+
+function resolveScenarioRegisters(
+  names: readonly string[],
+  synthetic: ReadonlyMap<string, RegisterDef>,
+): readonly RegisterDef[] {
+  return names.map((name) => {
+    const register = synthetic.get(name) ?? CANONICAL_SCENARIO_REGISTERS.get(name);
+    if (register === undefined) {
+      throw new Error(`Missing canonical scenario register: ${name}`);
+    }
+    return register;
+  });
+}
+
+function normalizeOperationError(error: unknown): Readonly<Record<string, unknown>> {
+  if (error instanceof IllegalAddressError) {
+    return Object.freeze({
+      error: Object.freeze({
+        errorType: NormalizedTransportFailureKind.ILLEGAL_ADDRESS,
+        message: error.message,
+      }),
+    });
+  }
+  if (error instanceof NormalizedTransportFailure) {
+    return Object.freeze({
+      error: Object.freeze({ errorType: error.kind, message: error.message }),
+    });
+  }
+  throw error;
+}
+
+function projectDiagnostics(
+  client: ReturnType<typeof createInternalIdmModbusClient>,
+): Readonly<Record<string, unknown>> {
+  const diagnostics = client.getDiagnostics();
+  return Object.freeze({
+    navigatorType: diagnostics.navigatorType,
+    modbusConnected: diagnostics.modbusConnected,
+    firmware: diagnostics.firmware,
+    lastError: diagnostics.lastError,
+    permanentlyFailedRegisters: diagnostics.permanentlyFailedRegisters,
+    connectionSuspect: diagnostics.connectionSuspect,
+    batchUnsafeRegisters: diagnostics.batchUnsafeRegisters,
+    context: client.getLastErrorContext(),
+  });
+}
+
+async function executeGeneratedScenario(
+  scenario: ReturnType<typeof parseTransportScenarioContract>["scenarios"][number],
+): Promise<
+  Readonly<{
+    readonly result: unknown;
+    readonly requests: readonly FakeModbusTransportEvent[];
+    readonly clock: readonly number[];
+    readonly state: Readonly<Record<string, unknown>>;
+  }>
+> {
+  const configuration = scenario.configuration as Readonly<Record<string, unknown>>;
+  const clock = new FakeClock();
+  const transport = new FakeModbusTransport(fakeResponses(scenario), {
+    allowMismatchedResponseCount: true,
+    initiallyConnected: scenario.operation.kind !== TransportOperationKind.LIFECYCLE,
+  });
+  const client = createInternalIdmModbusClient(
+    requiredString(configuration, "host"),
+    {
+      port: requiredNumber(configuration, "port"),
+      slaveId: requiredNumber(configuration, "slaveId"),
+      timeout: requiredNumber(configuration, "timeout"),
+      maxRetries: requiredNumber(configuration, "maxRetries"),
+      maxGroupSize: requiredNumber(configuration, "maxGroupSize"),
+    },
+    {
+      transportFactory: () => transport,
+      now: () => clock.now(),
+      sleep: (seconds) => clock.sleep(seconds),
+    },
+  );
+  const synthetic = configuredRegisters(configuration);
+
+  if (
+    scenario.operation.kind !== TransportOperationKind.LIFECYCLE &&
+    scenario.name !== "constructor_defaults" &&
+    scenario.name !== "reset_failed_register_state"
+  ) {
+    attachInternalModbusTransport(client, transport);
+  }
+  switch (scenario.name) {
+    case "successful_individual_read_clears_failure":
+      seedInternalReadState(client, {
+        batchUnsafeRegisters: ["system_mode"],
+        transientFailures: { system_mode: 2 },
+      });
+      break;
+    case "invalid_individual_value_omitted":
+      client.markBatchUnsafe("humidity_sensor");
+      break;
+    case "consumer_quarantine_order":
+      client.markBatchUnsafe("zm1_room1_mode");
+      break;
+    case "diagnostics_redacted_error":
+      seedInternalReadState(client, {
+        batchUnsafeRegisters: ["variable_input", "humidity_sensor"],
+        permanentlyFailedRegisters: ["system_mode", "outdoor_temp"],
+      });
+      break;
+    case "reset_failed_register_state":
+      seedInternalReadState(client, {
+        batchUnsafeRegisters: ["humidity_sensor"],
+        permanentlyFailedRegisters: ["system_mode", "outdoor_temp"],
+        transientFailures: { system_mode: 3, outdoor_temp: 1 },
+        unsupportedRegisters: ["system_mode"],
+      });
+      break;
+  }
+
+  let result: unknown;
+  try {
+    switch (scenario.operation.kind) {
+      case TransportOperationKind.LIFECYCLE:
+        for (const action of scenario.operation.actions) {
+          if (action === "connect") await client.connect();
+          else if (action === "disconnect") await client.disconnect();
+          else await client.forceReconnect();
+        }
+        result = Object.freeze({
+          connected: client.isConnected,
+          host: client.host,
+          port: client.port,
+        });
+        break;
+      case TransportOperationKind.READ_REGISTER: {
+        const [register] = resolveScenarioRegisters([scenario.operation.register], synthetic);
+        if (register === undefined) throw new Error("Missing read-register definition");
+        const reads = Array.from({ length: scenario.operation.concurrency }, () =>
+          client.readRegister(register),
+        );
+        const values = await Promise.all(reads);
+        result = scenario.operation.concurrency === 1 ? values[0] : values;
+        break;
+      }
+      case TransportOperationKind.READ_BATCH: {
+        const registers = resolveScenarioRegisters(scenario.operation.registers, synthetic);
+        if (scenario.name === "serialization_parallel_reads") {
+          result = await Promise.all(registers.map((register) => client.readRegister(register)));
+        } else if (scenario.name === "permanent_after_third_modbus_failure") {
+          result = await Promise.all([
+            client.readBatch(registers),
+            client.readBatch(registers),
+            client.readBatch(registers),
+          ]);
+        } else {
+          result = await client.readBatch(registers);
+        }
+        break;
+      }
+      case TransportOperationKind.PROBE:
+        result = await readInternalModbusRegisters(client, {
+          address: scenario.operation.address,
+          count: scenario.operation.count,
+          maxRetries: scenario.operation.maxRetries,
+          registerType: scenario.operation.registerType,
+          timeout: scenario.operation.timeout,
+        });
+        break;
+      case TransportOperationKind.DIAGNOSTICS:
+        if (scenario.name === "constructor_defaults") {
+          result = getInternalClientSnapshot(client).configuration;
+        } else {
+          try {
+            await readInternalModbusRegisters(client, {
+              address: 1_000,
+              count: 1,
+              maxRetries: 1,
+              registerType: RegisterType.INPUT,
+            });
+          } catch {
+            // The resulting context is the diagnostics scenario result.
+          }
+          result = projectDiagnostics(client);
+        }
+        break;
+      case TransportOperationKind.RESET_FAILED_REGISTERS:
+        client.resetFailedRegisters();
+        result = Object.freeze({
+          unsupportedRegisters: client.getUnsupportedRegisters(),
+          batchUnsafeRegisters: client.getBatchUnsafeRegisters(),
+        });
+        break;
+      case TransportOperationKind.DETECT_MODEL:
+        throw new Error("Detection scenarios belong to Plan 02-07");
+      default: {
+        const exhaustive: never = scenario.operation;
+        throw new Error(`Unknown transport operation: ${String(exhaustive)}`);
+      }
+    }
+  } catch (error) {
+    result = normalizeOperationError(error);
+  }
+
+  transport.assertResponsesConsumed();
+  const snapshot = getInternalClientSnapshot(client);
+  return Object.freeze({
+    result,
+    requests: transport.events,
+    clock: clock.delays,
+    state: Object.freeze({
+      batchUnsafeRegisters: client.getBatchUnsafeRegisters(),
+      connected: client.isConnected,
+      connectionSuspect: client.getDiagnostics().connectionSuspect,
+      lastError: client.getLastErrorContext(),
+      maxActiveRequests: transport.maxActiveRequests,
+      modelName: client.modelName,
+      permanentlyFailedRegisters: client.getDiagnostics().permanentlyFailedRegisters,
+      transientFailures: snapshot.transientFailures,
+      unsupportedRegisters: client.getUnsupportedRegisters(),
+    }),
+  });
+}
+
+describe("generated non-detection transport scenarios", () => {
+  const fixture = parseTransportScenarioContract(
+    JSON.parse(readFileSync(GENERATED_TRANSPORT_FIXTURE, "utf8")),
+  );
+  const scenarios = fixture.scenarios.filter(
+    ({ operation }) => operation.kind !== TransportOperationKind.DETECT_MODEL,
+  );
+
+  it("executes every owned scenario through the real client and consumes each script", async () => {
+    expect(scenarios).toHaveLength(29);
+    for (const scenario of scenarios) {
+      const actual = await executeGeneratedScenario(scenario);
+      expect(actual.result, `${scenario.name} result`).toEqual(scenario.expected_result);
+      expect(actual.requests, `${scenario.name} request trace`).toEqual(scenario.expected_requests);
+      expect(actual.clock, `${scenario.name} clock`).toEqual(scenario.clock);
+      expect(actual.state, `${scenario.name} final state`).toEqual(scenario.expected_state);
+    }
+  });
+
+  it("fails closed for missing canonical registers and keeps fixtures out of production", () => {
+    expect(() => resolveScenarioRegisters(["not_a_register"], new Map())).toThrow(
+      "Missing canonical scenario register",
+    );
+
+    const productionFiles = readdirSync(resolve(import.meta.dirname, "../../src"), {
+      recursive: true,
+      withFileTypes: true,
+    })
+      .filter((entry) => entry.isFile() && entry.name.endsWith(".ts"))
+      .map((entry) => readFileSync(resolve(entry.parentPath, entry.name), "utf8"));
+    expect(productionFiles.some((source) => source.includes("transport-behavior.json"))).toBe(
+      false,
+    );
   });
 });
