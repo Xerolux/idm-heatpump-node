@@ -372,9 +372,7 @@ describe("separate transport scenario schema parser", () => {
       kind: "read_batch",
       registers: ["humidity_sensor", "hc_a_mode"],
     });
-    expect(parsed.scenarios[0]?.expected_requests).toEqual(
-      firstScenario(raw).expected_requests,
-    );
+    expect(parsed.scenarios[0]?.expected_requests).toEqual(firstScenario(raw).expected_requests);
 
     const phaseOneFixture = {
       ...validTransportScenario(),
@@ -458,10 +456,7 @@ describe("separate transport scenario schema parser", () => {
     }
 
     const duplicate = validTransportScenario();
-    duplicate.scenarios = [
-      firstScenario(duplicate),
-      structuredClone(firstScenario(duplicate)),
-    ];
+    duplicate.scenarios = [firstScenario(duplicate), structuredClone(firstScenario(duplicate))];
     expectTransportScenarioError(() => parseTransportScenarioContract(duplicate));
   });
 
@@ -602,8 +597,6 @@ describe("separate transport scenario schema parser", () => {
     rawScenario.name = "mutated_after_parse";
     expect(first.scenarios[0]?.name).toBe("batch_overlap_humidity_and_mode");
     expect(second.scenarios[0]?.name).toBe("batch_overlap_humidity_and_mode");
-    expect(() => Object.assign(first.scenarios[0] ?? {}, { name: "changed" })).toThrow(
-      TypeError,
-    );
+    expect(() => Object.assign(first.scenarios[0] ?? {}, { name: "changed" })).toThrow(TypeError);
   });
 });
