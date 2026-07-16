@@ -11,6 +11,7 @@ import {
 import {
   ContractValueError,
   TAGGED_VALUE_LIMITS,
+  createContractSetSnapshot,
   normalizeTaggedValue,
   parseTaggedValue,
 } from "../../src/contracts/tagged-values.js";
@@ -90,6 +91,48 @@ describe("tagged contract numbers", () => {
     expect(normalizeTaggedValue(value)).toEqual({
       "2": { value: true },
       z: [1, 2, 3],
+    });
+  });
+
+  it("preserves source-set negative zero and distinct NaN members through snapshots", () => {
+    expect(normalizeTaggedValue(createContractSetSnapshot([-0]))).toEqual([{ $number: "-0" }]);
+    expect(normalizeTaggedValue(createContractSetSnapshot([0]))).toEqual([0]);
+    expect(normalizeTaggedValue(createContractSetSnapshot([Number.NaN]))).toEqual([
+      { $number: "NaN" },
+    ]);
+    expect(normalizeTaggedValue(createContractSetSnapshot([Number.NaN, Number.NaN]))).toEqual([
+      { $number: "NaN" },
+      { $number: "NaN" },
+    ]);
+
+    expect(normalizeTaggedValue(new Set([-0]))).toEqual([0]);
+    expect(normalizeTaggedValue(new Set([Number.NaN, Number.NaN]))).toEqual([{ $number: "NaN" }]);
+  });
+
+  it("normalizes ordinary and nested contract-set snapshots with structural ordering", () => {
+    expect(
+      normalizeTaggedValue(
+        createContractSetSnapshot([["nested", -0], createContractSetSnapshot([3, 1]), "ordinary"]),
+      ),
+    ).toEqual(["ordinary", [1, 3], ["nested", { $number: "-0" }]]);
+  });
+
+  it("rejects bigint and unsafe numeric map keys while retaining finite float values", () => {
+    expect(normalizeTaggedValue(1e20)).toBe(1e20);
+    expectContractCode(() => normalizeTaggedValue(1n), "invalid_contract_value");
+    expectContractCode(
+      () => normalizeTaggedValue(new Map([[Number.MAX_SAFE_INTEGER + 1, "value"]])),
+      "invalid_contract_value",
+    );
+    expectContractCode(
+      () => normalizeTaggedValue(new Map([[BigInt(Number.MAX_SAFE_INTEGER) + 1n, "value"]])),
+      "invalid_contract_value",
+    );
+    expect(normalizeTaggedValue(new Map([[Number.MAX_SAFE_INTEGER, "value"]]))).toEqual({
+      [String(Number.MAX_SAFE_INTEGER)]: "value",
+    });
+    expect(normalizeTaggedValue(new Map([[Number.MIN_SAFE_INTEGER, "value"]]))).toEqual({
+      [String(Number.MIN_SAFE_INTEGER)]: "value",
     });
   });
 
@@ -273,6 +316,56 @@ describe("tagged contract value bounds", () => {
     expectContractCode(() => normalizeTaggedValue(circular), "invalid_contract_value");
     expectContractCode(() => parseTaggedValue(circular), "invalid_contract_value");
   });
+
+  it("applies dense-array, cycle, depth, node, and collection bounds to set snapshots", () => {
+    const sparse = Array(1) as unknown[];
+    const extra = [1] as unknown[] & { extra?: number };
+    extra.extra = 2;
+    const getter = [] as unknown[];
+    let getterCalls = 0;
+    Object.defineProperty(getter, "0", {
+      configurable: true,
+      enumerable: true,
+      get: () => {
+        getterCalls += 1;
+        return 1;
+      },
+    });
+    Object.defineProperty(getter, "length", { value: 1 });
+    class ArraySubclass extends Array<unknown> {}
+    const subclass = new ArraySubclass();
+    subclass.push(1);
+    const symbolProperty = [1] as unknown[];
+    Object.defineProperty(symbolProperty, Symbol("extra"), { value: 2 });
+
+    for (const invalidMembers of [
+      sparse,
+      extra,
+      getter,
+      subclass,
+      symbolProperty,
+      Array.from({ length: TAGGED_VALUE_LIMITS.maxArrayLength + 1 }, () => 0),
+    ]) {
+      expectContractCode(() => createContractSetSnapshot(invalidMembers), "invalid_contract_value");
+    }
+    expect(getterCalls).toBe(0);
+
+    const circularMember: Record<string, unknown> = {};
+    const circularSnapshot = createContractSetSnapshot([circularMember]);
+    circularMember.snapshot = circularSnapshot;
+    expectContractCode(() => normalizeTaggedValue(circularSnapshot), "invalid_contract_value");
+
+    let deepSnapshot = createContractSetSnapshot([0]);
+    for (let depth = 0; depth <= TAGGED_VALUE_LIMITS.maxDepth; depth += 1) {
+      deepSnapshot = createContractSetSnapshot([deepSnapshot]);
+    }
+    expectContractCode(() => normalizeTaggedValue(deepSnapshot), "invalid_contract_value");
+
+    const nodeHeavySnapshot = createContractSetSnapshot(
+      Array.from({ length: TAGGED_VALUE_LIMITS.maxArrayLength }, () => [0, 0]),
+    );
+    expectContractCode(() => normalizeTaggedValue(nodeHeavySnapshot), "invalid_contract_value");
+  });
 });
 
 describe("tagged contract value ownership", () => {
@@ -297,6 +390,20 @@ describe("tagged contract value ownership", () => {
     inputFirst.value = 9;
     expect(parsedFirst.value).toBe(1);
     expect(() => Object.assign(parsedFirst, { value: 2 })).toThrow(TypeError);
+  });
+
+  it("owns immutable snapshot membership and cannot be spoofed", () => {
+    const source: unknown[] = [-0, Number.NaN];
+    const snapshot = createContractSetSnapshot(source);
+    source[0] = 0;
+    source.push("later");
+
+    expect(Object.isFrozen(snapshot)).toBe(true);
+    expect(normalizeTaggedValue(snapshot)).toEqual([{ $number: "-0" }, { $number: "NaN" }]);
+
+    const spoof = Object.freeze(Object.create(null)) as object;
+    expect(normalizeTaggedValue(spoof)).toEqual({});
+    expectContractCode(() => parseTaggedValue(snapshot), "invalid_contract_value");
   });
 });
 
@@ -325,7 +432,7 @@ describe("versioned CTR-01 scenario fixture", () => {
       python_version: "0.7.6",
       repository: "https://github.com/Xerolux/idm-heatpump-api",
     });
-    expect(parsed.scenarios).toHaveLength(6);
+    expect(parsed.scenarios).toHaveLength(7);
     for (const scenario of parsed.scenarios) {
       expect(Object.keys(scenario).sort()).toEqual(requiredFields);
     }
@@ -392,6 +499,22 @@ describe("versioned CTR-01 scenario fixture", () => {
         }),
       ),
     ).toEqual(structuralResult);
+
+    const losslessSetResult = parsed.scenarios.find(
+      ({ name }) => name === "lossless_source_set_members",
+    )?.expected_result;
+    expect(
+      parseTaggedValue(
+        normalizeTaggedValue({
+          negative_zero: createContractSetSnapshot([-0]),
+          positive_zero: createContractSetSnapshot([0]),
+          one_nan: createContractSetSnapshot([Number.NaN]),
+          two_distinct_nans: createContractSetSnapshot([Number.NaN, Number.NaN]),
+          ordinary: createContractSetSnapshot([3, 1, 2]),
+          nested: createContractSetSnapshot([createContractSetSnapshot([3, 1]), ["nested", -0]]),
+        }),
+      ),
+    ).toEqual(losslessSetResult);
   });
 
   it("rejects every root and baseline provenance mutation", () => {

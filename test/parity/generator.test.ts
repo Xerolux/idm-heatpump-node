@@ -275,6 +275,52 @@ describe("verified Python contract generator", () => {
     }
   });
 
+  it("preserves raw Python set identity facts before contract normalization", () => {
+    const negativeZero = importGenerator("module.normalize_contract_value({-0.0})");
+    requireSuccess(negativeZero, "negative-zero set probe");
+    expect(JSON.parse(negativeZero.stdout)).toEqual([{ $number: "-0" }]);
+
+    const twoNaNs = importGenerator(
+      "(lambda left, right: {'size': len({left, right}), " +
+        "'normalized': module.normalize_contract_value({left, right})})" +
+        "(float('nan'), float('nan'))",
+    );
+    requireSuccess(twoNaNs, "distinct-NaN set probe");
+    expect(JSON.parse(twoNaNs.stdout)).toEqual({
+      normalized: [{ $number: "NaN" }, { $number: "NaN" }],
+      size: 2,
+    });
+  });
+
+  it("accepts safe Python integers and rejects out-of-domain integer values and keys", () => {
+    const boundaries = importGenerator(
+      "module.normalize_contract_value({" +
+        "'values': [-9007199254740991, 9007199254740991], " +
+        "-9007199254740991: 'minimum', 9007199254740991: 'maximum', " +
+        "'float': 1e20})",
+    );
+    requireSuccess(boundaries, "safe integer boundary probe");
+    expect(JSON.parse(boundaries.stdout)).toEqual({
+      "-9007199254740991": "minimum",
+      "9007199254740991": "maximum",
+      float: 1e20,
+      values: [-9007199254740991, 9007199254740991],
+    });
+
+    for (const expression of [
+      "module.normalize_contract_value(9007199254740992)",
+      "module.normalize_contract_value(-9007199254740992)",
+      "module.normalize_contract_value({9007199254740992: 'value'})",
+      "module.normalize_contract_value({-9007199254740992: 'value'})",
+      "module.validate_contract_value(9007199254740992)",
+      "module.validate_contract_value(-9007199254740992)",
+    ]) {
+      const result = importGenerator(expression);
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain("invalid_contract_value");
+    }
+  }, 30_000);
+
   it("generates complete fixtures with exact API, class, codec, schema, and scenario facts", () => {
     const checkout = createExactCheckout();
     const result = runGenerator(checkout);

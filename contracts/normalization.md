@@ -6,19 +6,48 @@ not listed here is a semantic difference and must fail parity verification.
 
 ## Approved value normalizations
 
-| Python value             | Contract JSON                                    | TypeScript value              |
-| ------------------------ | ------------------------------------------------ | ----------------------------- |
-| `None`                   | `null`                                           | `null`                        |
-| tuple                    | array in original order                          | `readonly` array              |
-| list                     | array in original order                          | `readonly` array              |
-| set/frozenset            | array sorted by the structural order below       | immutable set-like collection |
-| enum member              | the recursively normalized enum value            | frozen `as const` value       |
-| mapping                  | object with string keys sorted lexicographically | readonly record/map boundary  |
-| `snake_case` public name | documented mapping entry only                    | `camelCase` public name       |
+| Python value             | Contract JSON                                    | TypeScript value                             |
+| ------------------------ | ------------------------------------------------ | -------------------------------------------- |
+| `None`                   | `null`                                           | `null`                                       |
+| tuple                    | array in original order                          | `readonly` array                             |
+| list                     | array in original order                          | `readonly` array                             |
+| set/frozenset            | array sorted by the structural order below       | contract-set snapshot or native `Set` subset |
+| enum member              | the recursively normalized enum value            | frozen `as const` value                      |
+| mapping                  | object with string keys sorted lexicographically | readonly record/map boundary                 |
+| `snake_case` public name | documented mapping entry only                    | `camelCase` public name                      |
 
 Mapping keys that are Python integers are converted to their decimal strings.
-Other non-string mapping keys are rejected. A conversion that creates duplicate
-string keys is rejected. Array order is semantic and is never sorted.
+Python integer values and integer mapping keys are accepted only in the common
+safe-integer domain `[-9007199254740991, 9007199254740991]`. TypeScript numeric
+mapping keys must satisfy `Number.isSafeInteger`; `bigint` is not a contract
+value or mapping key. Other non-string mapping keys are rejected. A conversion
+that creates duplicate string keys is rejected. Array order is semantic and is
+never sorted.
+
+Python `float` and TypeScript `number` values represent IEEE-754 binary64
+values. A finite float is not rejected merely because it is mathematically
+integral or outside the safe-integer domain; for example, `1e20` remains valid.
+The safe-integer restriction applies to source-language Python `int` values and
+to integer mapping keys, where exact decimal identity would otherwise be lost.
+
+## Lossless source-set boundary
+
+ECMAScript native `Set` uses SameValueZero. It canonicalizes a stored `-0`
+member to `+0` and collapses multiple `NaN` inputs to one member before the
+normalizer can observe them. Native `Set` remains supported for its actual
+runtime contents and is suitable when those distinctions are irrelevant.
+
+Parity inputs that enumerate a Python `set`/`frozenset` containing raw `-0` or
+multiple distinct NaN objects must use `createContractSetSnapshot(members)`.
+The snapshot copies and freezes a bounded dense standard array before native
+`Set` construction, preserves every enumerated member until tagged
+normalization, and participates in the same recursive cycle, depth, and node
+limits as other contract collections. Its runtime brand is private and cannot
+be reproduced by an ordinary object.
+
+A snapshot is a trusted enumeration of the actual distinct members already
+produced by the source-language set. It deliberately does not validate or
+recreate the source language's hashing or equality rules.
 
 ## Structural set order
 

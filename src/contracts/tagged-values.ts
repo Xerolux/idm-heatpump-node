@@ -31,6 +31,18 @@ export type TaggedNumber = Readonly<{
   readonly $number: NumberTag;
 }>;
 
+declare const CONTRACT_SET_SNAPSHOT_TYPE: unique symbol;
+
+/**
+ * Opaque trusted enumeration of distinct source-language set members.
+ *
+ * Instances can only be created by {@link createContractSetSnapshot}; runtime
+ * recognition uses a private WeakMap brand rather than this TypeScript marker.
+ */
+export interface ContractSetSnapshot {
+  readonly [CONTRACT_SET_SNAPSHOT_TYPE]: true;
+}
+
 export type NormalizedContractValue =
   | null
   | boolean
@@ -54,6 +66,8 @@ interface TraversalState {
 }
 
 type TransformMode = "normalize" | "parse";
+
+const contractSetSnapshotMembers = new WeakMap<object, readonly unknown[]>();
 
 const hasOwn = (value: object, key: PropertyKey): boolean =>
   Object.prototype.hasOwnProperty.call(value, key);
@@ -95,6 +109,58 @@ function ownDataEntries(value: object): readonly (readonly [string, unknown])[] 
     }
     return [key, descriptor.value] as const;
   });
+}
+
+function inspectDenseStandardArray(value: unknown, subject: string): readonly unknown[] {
+  if (!Array.isArray(value) || Object.getPrototypeOf(value) !== Array.prototype) {
+    failInvalidValue(`${subject} must use the standard array prototype`);
+  }
+
+  const entries = ownDataEntries(value);
+  const lengthEntry = entries.find(([key]) => key === "length");
+  const length = lengthEntry?.[1];
+  if (typeof length !== "number" || !Number.isSafeInteger(length) || length < 0) {
+    failInvalidValue(`${subject} has an invalid length`);
+  }
+  if (length > TAGGED_VALUE_LIMITS.maxArrayLength) {
+    failInvalidValue(`${subject} exceeds the maximum length`);
+  }
+
+  const itemEntries = entries.filter(([key]) => key !== "length");
+  if (itemEntries.length !== length) {
+    failInvalidValue(`${subject} must be dense and cannot contain extra properties`);
+  }
+
+  const items: unknown[] = [];
+  for (let index = 0; index < length; index += 1) {
+    const entry = itemEntries[index];
+    if (entry?.[0] !== String(index)) {
+      failInvalidValue(`${subject} must contain only ordered index properties`);
+    }
+    items.push(entry[1]);
+  }
+  return Object.freeze(items);
+}
+
+/**
+ * Capture an already-enumerated source-language set without applying
+ * ECMAScript Set SameValueZero semantics to its members.
+ *
+ * The factory trusts the caller's enumeration as the actual distinct source
+ * members; it does not reproduce or validate source hash/equality rules.
+ */
+export function createContractSetSnapshot(sourceMembers: readonly unknown[]): ContractSetSnapshot {
+  try {
+    const members = inspectDenseStandardArray(sourceMembers, "Contract set snapshot members");
+    const snapshot = Object.freeze(Object.create(null) as object);
+    contractSetSnapshotMembers.set(snapshot, members);
+    return snapshot as ContractSetSnapshot;
+  } catch (error) {
+    if (error instanceof ContractValueError) {
+      throw error;
+    }
+    failInvalidValue("Contract set snapshot members could not be inspected safely");
+  }
 }
 
 function withActiveObject<T>(state: TraversalState, value: object, callback: () => T): T {
@@ -216,28 +282,10 @@ function transformArray(
   state: TraversalState,
   depth: number,
 ): readonly (NormalizedContractValue | ParsedContractValue)[] {
-  if (Object.getPrototypeOf(value) !== Array.prototype) {
-    failInvalidValue("Contract arrays must use the standard array prototype");
-  }
-  if (value.length > TAGGED_VALUE_LIMITS.maxArrayLength) {
-    failInvalidValue("Contract array exceeds the maximum length");
-  }
+  const items = inspectDenseStandardArray(value, "Contract array");
 
   return withActiveObject(state, value, () => {
-    const entries = ownDataEntries(value).filter(([key]) => key !== "length");
-    if (entries.length !== value.length) {
-      failInvalidValue("Contract arrays must be dense and cannot contain extra properties");
-    }
-
-    const result: (NormalizedContractValue | ParsedContractValue)[] = [];
-    for (let index = 0; index < value.length; index += 1) {
-      const entry = entries[index];
-      if (entry?.[0] !== String(index)) {
-        failInvalidValue("Contract arrays must contain only ordered index properties");
-      }
-      result.push(transformValue(entry[1], mode, state, depth + 1));
-    }
-    return Object.freeze(result);
+    return Object.freeze(items.map((item) => transformValue(item, mode, state, depth + 1)));
   });
 }
 
@@ -283,6 +331,25 @@ function transformSet(
 
   return withActiveObject(state, value, () => {
     const items = [...value].map((item) =>
+      transformValue(item, "normalize", state, depth + 1),
+    ) as NormalizedContractValue[];
+    items.sort(compareContractValues);
+    return Object.freeze(items);
+  });
+}
+
+function transformContractSetSnapshot(
+  value: ContractSetSnapshot,
+  state: TraversalState,
+  depth: number,
+): NormalizedContractValue {
+  const members = contractSetSnapshotMembers.get(value as object);
+  if (members === undefined) {
+    failInvalidValue("Contract set snapshot brand is invalid");
+  }
+
+  return withActiveObject(state, value as object, () => {
+    const items = members.map((item) =>
       transformValue(item, "normalize", state, depth + 1),
     ) as NormalizedContractValue[];
     items.sort(compareContractValues);
@@ -343,6 +410,12 @@ function transformValue(
   }
 
   try {
+    if (contractSetSnapshotMembers.has(value)) {
+      if (mode !== "normalize") {
+        failInvalidValue("Contract set snapshots are normalization inputs only");
+      }
+      return transformContractSetSnapshot(value as ContractSetSnapshot, state, depth);
+    }
     if (hasOwn(value, "$number")) {
       const tag = readTaggedNumber(value);
       return mode === "normalize" ? taggedNumber(tag) : parsedNumber(tag);

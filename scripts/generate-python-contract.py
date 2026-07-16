@@ -49,6 +49,8 @@ EXPECTED_MANIFEST_FIELDS = {
 }
 PARITY_STATUSES = {"planned", "partial", "complete"}
 NUMBER_TAGS = {"NaN", "+Infinity", "-Infinity", "-0"}
+MAX_SAFE_INTEGER = 2**53 - 1
+MIN_SAFE_INTEGER = -MAX_SAFE_INTEGER
 MAX_MANIFEST_BYTES = 64 * 1024
 MAX_PROCESS_OUTPUT = 64 * 1024
 PROCESS_TIMEOUT_SECONDS = 10
@@ -74,6 +76,11 @@ def fail(code: str, diagnostic: str) -> NoReturn:
     raise ContractError(code, diagnostic[:MAX_PROCESS_OUTPUT])
 
 
+def _validate_python_integer(value: int) -> None:
+    if value < MIN_SAFE_INTEGER or value > MAX_SAFE_INTEGER:
+        fail("invalid_contract_value", "Python integers must be within the JavaScript safe-integer range")
+
+
 def _structural_sort_key(value: Any) -> tuple[Any, ...]:
     """Return the closed language-neutral ordering key for normalized values."""
     if value is None:
@@ -81,6 +88,8 @@ def _structural_sort_key(value: Any) -> tuple[Any, ...]:
     if isinstance(value, bool):
         return (1, value)
     if isinstance(value, (int, float)) and not isinstance(value, bool):
+        if isinstance(value, int):
+            _validate_python_integer(value)
         if isinstance(value, float) and (not math.isfinite(value) or (value == 0.0 and math.copysign(1.0, value) < 0)):
             fail("invalid_number_tag", "exceptional numbers must use the reserved envelope")
         return (2, value)
@@ -95,7 +104,10 @@ def _structural_sort_key(value: Any) -> tuple[Any, ...]:
 
 def normalize_contract_value(value: Any) -> Any:
     """Normalize only the language differences approved by the contract."""
-    if value is None or isinstance(value, (str, bool, int)):
+    if value is None or isinstance(value, (str, bool)):
+        return value
+    if isinstance(value, int):
+        _validate_python_integer(value)
         return value
     if isinstance(value, float):
         if math.isnan(value):
@@ -117,6 +129,7 @@ def normalize_contract_value(value: Any) -> Any:
             if isinstance(key, str):
                 normalized_key = key
             elif isinstance(key, int) and not isinstance(key, bool):
+                _validate_python_integer(key)
                 normalized_key = str(key)
             else:
                 fail("invalid_contract_value", "mapping keys must be strings or integers")
@@ -134,7 +147,10 @@ def normalize_contract_value(value: Any) -> Any:
 
 def validate_contract_value(value: Any) -> None:
     """Reject ambiguous or lossy values in an already-normalized contract."""
-    if value is None or isinstance(value, (str, bool, int)):
+    if value is None or isinstance(value, (str, bool)):
+        return
+    if isinstance(value, int):
+        _validate_python_integer(value)
         return
     if isinstance(value, float):
         if not math.isfinite(value) or (value == 0.0 and math.copysign(1.0, value) < 0):
@@ -1016,6 +1032,21 @@ def _structural_ordering_vectors() -> dict[str, Any]:
     return normalize_contract_value({"finite": finite, "mixed": mixed})
 
 
+def _lossless_source_set_vectors() -> dict[str, Any]:
+    first_nan = float("nan")
+    second_nan = float("nan")
+    return normalize_contract_value(
+        {
+            "negative_zero": {-0.0},
+            "positive_zero": {0.0},
+            "one_nan": {float("nan")},
+            "two_distinct_nans": {first_nan, second_nan},
+            "ordinary": {3, 1, 2},
+            "nested": {frozenset({3, 1}), ("nested", -0.0)},
+        }
+    )
+
+
 def _behavior_fixture(manifest: Mapping[str, Any], client_module: Any, registers: Any) -> dict[str, Any]:
     codec = client_module.ModbusCodec
     scenarios = [
@@ -1049,6 +1080,22 @@ def _behavior_fixture(manifest: Mapping[str, Any], client_module: Any, registers
                 ],
             },
             _structural_ordering_vectors(),
+        ),
+        _scenario(
+            "lossless_source_set_members",
+            {},
+            {
+                "kind": "normalize_value",
+                "values": [
+                    "negative_zero",
+                    "positive_zero",
+                    "one_nan",
+                    "two_distinct_nans",
+                    "ordinary",
+                    "nested",
+                ],
+            },
+            _lossless_source_set_vectors(),
         ),
         _scenario(
             "primitive_float_low_word_first",
