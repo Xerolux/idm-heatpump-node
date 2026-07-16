@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-08-PLAN.md
-last_updated: "2026-07-16T22:14:11.024Z"
-last_activity: 2026-07-16 -- Completed Phase 02 Plan 08 hidden Modbus TCP adapter and internal default wiring
+stopped_at: Completed 02-09-PLAN.md
+last_updated: "2026-07-16T22:37:15.161Z"
+last_activity: 2026-07-17 -- Completed Phase 02 Plan 09 exact public API promotion and declaration closure
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 20
-  completed_plans: 18
-  percent: 90
+  completed_plans: 19
+  percent: 95
 ---
 
 # Project State
@@ -26,31 +26,31 @@ See: .planning/PROJECT.md (updated 2026-07-14)
 ## Current Position
 
 Phase: 02 (modbus-reads-detection-and-resilience) — EXECUTING
-Plan: 9 of 10
+Plan: 10 of 10
 Status: Ready to execute
-Last activity: 2026-07-16 -- Completed Phase 02 Plan 08 hidden Modbus TCP adapter and internal default wiring
+Last activity: 2026-07-17 -- Completed Phase 02 Plan 09 exact public API promotion and declaration closure
 
-Milestone progress: [█████████░] 90% (18/20 milestone plans)
+Milestone progress: [██████████] 95% (19/20 milestone plans)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 18
-- Average duration: 60 min
-- Total execution time: 17h 56m
+- Total plans completed: 19
+- Average duration: 58 min
+- Total execution time: 18h 13m
 
 **By Phase:**
 
 | Phase | Plans | Total   | Avg/Plan |
 | ----- | ----- | ------- | -------- |
 | 01    | 10    | 15h 22m | 92 min   |
-| 02    | 8     | 2h 34m  | 19 min   |
+| 02    | 9     | 2h 51m  | 19 min   |
 
 **Recent Trend:**
 
-- Last 5 plans: 21 min, 14 min, 19 min, 20 min, 14 min
-- Trend: Phase 2 now binds the audited real Modbus TCP provider behind the completed adapter-neutral read core
+- Last 5 plans: 14 min, 19 min, 20 min, 14 min, 17 min
+- Trend: Phase 2 now exposes the exact evidenced read-side package surface while keeping release fail-closed on deferred writes
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |
@@ -71,6 +71,7 @@ _Updated after each plan completion_
 | Phase 02 P06 | 19 min | 3 tasks | 9 files |
 | Phase 02 P07 | 20 min | 2 tasks | 5 files |
 | Phase 02 P08 | 14 min | 2 tasks | 5 files |
+| Phase 02 P09 | 17 min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -109,6 +110,9 @@ Recent decisions affecting current work:
 - [Phase 02]: Replace detected model and model-aware register map only after the full probe sequence completes. — Partial or failed detection must not leak half-applied public model state.
 - [Phase 02]: Sort client-owned diagnostic set snapshots only at the client boundary. — Public diagnostics factories remain order-preserving while internal set projections are deterministic and immutable.
 - [Phase 02]: Keep modbus-serial behind one internal retry-neutral adapter. — Public construction selects the provider without leaking dependency or injection types; only structured numeric Code 2 creates IllegalAddressError.
+- [Phase 02]: Promote only the four evidenced Phase-2 helper/data/error rows; keep IdmModbusClient partial with the exact 22 implemented and seven omitted member partition.
+- [Phase 02]: Expose ModbusTransport only as an additive type and derive ESM, CommonJS, and declaration closure from the same mapping authorities.
+- [Phase 02]: Keep internal client test controls in a module-scoped WeakMap so private seams do not enter the public class declaration.
 
 ### Pending Todos
 
@@ -127,6 +131,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-16T22:14:11.009Z
-Stopped at: Completed 02-08-PLAN.md
+Last session: 2026-07-16T22:36:01.815Z
+Stopped at: Completed 02-09-PLAN.md
 Resume file: None
