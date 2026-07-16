@@ -3,10 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { IdmModbusClient } from "../../src/client/index.js";
 import { createInternalIdmModbusClient } from "../../src/client/internal-create.js";
 import { createRegisterDef, type RegisterDef } from "../../src/registers/definitions.js";
-import {
-  IllegalAddressError,
-  NormalizedTransportFailureKind,
-} from "../../src/transport/errors.js";
+import { IllegalAddressError, NormalizedTransportFailureKind } from "../../src/transport/errors.js";
 import type { ModbusReadRequest, ModbusTransport } from "../../src/transport/types.js";
 import { DataType, RegisterType } from "../../src/types.js";
 import { FakeClock } from "../support/fake-clock.js";
