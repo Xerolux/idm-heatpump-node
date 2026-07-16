@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Completed 01-10-PLAN.md
+status: ready
+stopped_at: Phase 01 verified and security-approved
 last_updated: "2026-07-16T16:58:42.151Z"
-last_activity: 2026-07-16
+last_activity: 2026-07-16 -- Phase 01 completed; ready to plan Phase 02
 progress:
   total_phases: 5
   completed_phases: 1
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-14)
 
 **Core value:** Complete semantic and behavioral parity with the latest stable pinned `Xerolux/idm-heatpump-api` release, proven by cross-repository contracts and all release gates.
-**Current focus:** Phase 01 verification — reproducible-semantic-contract
+**Current focus:** Phase 02 planning — modbus-reads-detection-and-resilience
 
 ## Current Position
 
 Phase: 2
 Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-07-16
+Status: Phase 01 verified and security-approved — ready to plan Phase 02
+Last activity: 2026-07-16 -- Phase 01 completed
 
 Milestone progress: [██░░░░░░░░] 20% (Phase 01 plans: 10/10)
 
@@ -36,7 +36,7 @@ Milestone progress: [██░░░░░░░░] 20% (Phase 01 plans: 10/10)
 
 **Velocity:**
 
-- Total plans completed: 20
+- Total plans completed: 10
 - Average duration: 92 min
 - Total execution time: 15h 22m
 
@@ -45,12 +45,11 @@ Milestone progress: [██░░░░░░░░] 20% (Phase 01 plans: 10/10)
 | Phase | Plans | Total   | Avg/Plan |
 | ----- | ----- | ------- | -------- |
 | 01    | 10    | 15h 22m | 92 min   |
-| 1 | 10 | - | - |
 
 **Recent Trend:**
 
 - Last 5 plans: 15 min, 22 min, 44 min, 11h 55m (interrupted), 22 min
-- Trend: Phase-1 semantic contracts, private documentation, and CI are ready for independent verification
+- Trend: Phase-1 semantic contracts are verified and security-approved; Phase 2 is next
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |
@@ -99,7 +98,7 @@ Recent decisions affecting current work:
 - [Phase 01]: Stage six Python fixtures and two API documents together before byte-checking or transactional promotion. — Makes check mode structurally non-mutating and generate mode rollback-safe.
 - [Phase 01]: Keep parity:api API-only; exact Python lifecycle belongs to parity:generate and parity:check. — Preserves Plan 01-09 promotion ownership without regenerating Python facts.
 - [Phase 01]: Complete exactly the 53 implemented owner-Phase-1 rows; keep all 36 later-owned rows planned. — Prevents status claims from preceding full implementation and focused evidence.
-- [Phase 01]: Expose 52 runtime values and RegisterDef as an explicit type-only export. — Makes the root namespace equal the checked mapping without leaking internal or later-phase symbols.
+- [Phase 01]: Expose exactly 53 evidenced Phase-1 runtime counterparts, including the frozen RegisterDef.create factory. — Makes the root namespace equal the checked mapping without leaking internal or later-phase symbols.
 - [Phase 01]: Stage only bounded regular contract-test files for complete rows inside the parity shadow root. — Keeps complete-row evidence validation isolated, deterministic, and non-mutating.
 - [Phase 01]: Delegate CI parity to npm run parity:check after full-history checkout. — Keeps exact identity verification and generation lifecycle in one audited orchestrator.
 - [Phase 01]: Pin all CI actions by full SHA under contents-read permissions. — Prevents mutable action references and avoids secrets, environments, or device inputs.
@@ -123,6 +122,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-15T15:16:47.203Z
-Stopped at: Completed 01-10-PLAN.md
+Last session: 2026-07-16T16:58:42.151Z
+Stopped at: Phase 01 verified and security-approved
 Resume file: None
