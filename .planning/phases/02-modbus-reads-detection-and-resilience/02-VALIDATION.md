@@ -16,23 +16,25 @@ created: 2026-07-16
 
 ## Test Infrastructure
 
-| Property | Value |
-|----------|-------|
-| **Framework** | Vitest 4.1.10 plus the isolated Python 3.12 parity orchestrator |
-| **Config file** | `vitest.config.ts`, `tsconfig.json`, `scripts/run-parity.mjs` |
-| **Quick run command** | `npm run test:unit -- --runInBand` or the focused Vitest file named by the task |
-| **Full suite command** | `npm run check` |
-| **Estimated runtime** | Focused tests under 30 seconds; full parity/check may take several minutes |
+| Property               | Value                                                                                     |
+| ---------------------- | ----------------------------------------------------------------------------------------- |
+| **Framework**          | Vitest 4.1.10 plus the isolated Python 3.12 parity orchestrator                           |
+| **Config file**        | `vitest.config.ts`, `tsconfig.json`, `scripts/run-parity.mjs`                             |
+| **Quick run command**  | `npm test -- test/parity/api-parity.test.ts` or the focused Vitest file named by the task |
+| **Full suite command** | `npm run check`                                                                           |
+| **Estimated runtime**  | Focused tests under 30 seconds; full parity/check may take several minutes                |
 
 ---
 
 ## Sampling Rate
 
-- **After every task commit:** Run the focused Vitest file plus `npm run typecheck`.
+- **After every task commit:** Run the task's focused Vitest command plus
+  `npm run typecheck`.
 - **After every plan wave:** Run `npm run lint`, `npm run format:check`, the
-  relevant parity contract, and all Phase-2 focused tests.
-- **Before `$gsd-verify-work`:** `npm run check`, `npm run parity:check`, build,
-  package smoke tests, and the Phase-2 scenario suite must be green.
+  relevant parity contract, and all implemented Phase-2 focused tests.
+- **Before `$gsd-verify-work`:** Run `npm run check`, `npm run parity:check`,
+  `npm audit --omit=dev`, build/package smoke, and the complete Phase-2
+  scenario suite.
 - **Max feedback latency:** 30 seconds for ordinary focused tests; slow isolated
   Python provisioning is reserved for parity gates and phase closure.
 
@@ -40,67 +42,79 @@ created: 2026-07-16
 
 ## Per-Task Verification Map
 
-| Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 02-01-01 | 01 | 1 | TRN-01, TRN-03 | T-02-01, T-02-06 | Closed bounded scenario schema; synthetic endpoints only | contract | `npx vitest run test/contracts test/parity/transport-contract.test.ts` | ❌ W0 | ⬜ pending |
-| 02-01-02 | 01 | 1 | TRN-01, TRN-02 | T-02-02 | Fake transport proves one active operation and stable traces | unit | `npx vitest run test/support test/client/lifecycle.test.ts` | ❌ W0 | ⬜ pending |
-| 02-02-01 | 02 | 1 | ERR-01, DET-02 | T-02-03, T-02-04 | Numeric Code 2 classification and host-redacted immutable errors | unit | `npx vitest run test/client/errors.test.ts test/client/diagnostics.test.ts` | ❌ W0 | ⬜ pending |
-| 02-03-01 | 03 | 2 | TRN-01, TRN-02, ERR-01 | T-02-01, T-02-02 | Bounded retries, exact delays, reconnect, and FIFO serialization | unit | `npx vitest run test/client/lifecycle.test.ts test/client/resilience.test.ts` | ❌ W0 | ⬜ pending |
-| 02-04-01 | 04 | 3 | TRN-02, TRN-03, ERR-01 | T-02-02, T-02-05 | Exact FC03/FC04 requests; no gap/type/overlap merging | unit/contract | `npx vitest run test/client/reads.test.ts test/client/batching.test.ts test/parity/transport-contract.test.ts` | ❌ W0 | ⬜ pending |
-| 02-04-02 | 04 | 3 | TRN-02, DET-02, ERR-01 | T-02-05 | Device fallback only; exact permanent and quarantine state | unit/contract | `npx vitest run test/client/batching.test.ts test/client/resilience.test.ts test/parity/transport-contract.test.ts` | ❌ W0 | ⬜ pending |
-| 02-05-01 | 05 | 4 | DET-01, DET-02 | T-02-02, T-02-05 | Ordered bounded probes; unsupported Navigator 1.x remains absent | unit/contract | `npx vitest run test/client/detection.test.ts test/parity/transport-contract.test.ts` | ❌ W0 | ⬜ pending |
-| 02-06-01 | 06 | 5 | TRN-01, TRN-03, ERR-01 | T-02-03, T-02-04 | Adapter types/errors stay hidden; numeric exceptions and timeouts normalized | unit | `npx vitest run test/transport/modbus-serial-adapter.test.ts` | ❌ W0 | ⬜ pending |
-| 02-06-02 | 06 | 5 | TRN-01, TRN-02, DET-01, DET-02 | T-02-01 through T-02-06 | Public promotion remains private and machine-checked until Phase 3 closes writes | integration | `npm run check && npm run parity:check` | ✅ | ⬜ pending |
+| Task ID  | Plan | Wave | Requirement                                      | Threat Ref                         | Secure Behavior                                                            | Test Type         | Automated Command                                                                                                                                                                      | File Exists | Status     |
+| -------- | ---- | ---- | ------------------------------------------------ | ---------------------------------- | -------------------------------------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ---------- |
+| 02-01-01 | 01   | 1    | TRN-01, TRN-03R                                  | T-02-06                            | Exact 89-row authority plus closed additive/partial governance             | contract          | `npm test -- test/parity/api-parity.test.ts -t "extension\|partial\|89\|release" && npm run parity:api`                                                                                | ✅/❌ W0    | ⬜ pending |
+| 02-01-02 | 01   | 1    | TRN-01, ERR-01R                                  | T-02-03, T-02-04                   | Public-constructor closure and symmetric closed error projection           | contract          | `npm test -- test/parity/api-parity.test.ts -t "constructor\|normalization\|error\|redaction"`                                                                                         | ✅          | ⬜ pending |
+| 02-02-01 | 02   | 2    | TRN-01, TRN-03R                                  | T-02-01, T-02-02, T-02-05          | Exact transport contract plus deterministic fake trace/concurrency/time    | unit/contract     | `npm test -- test/parity/transport-contract.test.ts -t "transport\|fake\|clock\|concurrency"`                                                                                          | ❌ W0       | ⬜ pending |
+| 02-02-02 | 02   | 2    | TRN-03R, DET-02, ERR-01R                         | T-02-01, T-02-04                   | Separate bounded immutable parser with closed normalized errors            | contract          | `npm test -- test/parity/transport-contract.test.ts -t "schema\|parser\|bounds\|immutable\|redaction"`                                                                                 | ❌ W0       | ⬜ pending |
+| 02-03-01 | 03   | 3    | TRN-01, TRN-03R, DET-01, DET-02, ERR-01R         | T-02-03, T-02-04, T-02-06          | Seventh exact pinned synthetic fixture with symmetric normalization        | contract          | `npm test -- test/parity/generator.test.ts test/parity/transport-contract.test.ts -t "transport\|seven\|fixture\|normalization\|deterministic"`                                        | ✅/❌ W0    | ⬜ pending |
+| 02-03-02 | 03   | 3    | TRN-01, TRN-03R                                  | T-02-06                            | Seven fixtures plus two documents staged as nine artifacts transactionally | contract          | `npm test -- test/parity/generator.test.ts test/parity/transport-contract.test.ts -t "nine\|allowlist\|check mode\|rollback\|inventory" && npm run parity:check`                       | ✅/❌ W0    | ⬜ pending |
+| 02-04-01 | 04   | 2    | TRN-01, ERR-01R                                  | T-02-03, T-02-04                   | Numeric Code 2 only; no additive Error code; exact WARN/FATAL aliases      | unit              | `npm test -- test/client/errors.test.ts`                                                                                                                                               | ❌ W0       | ⬜ pending |
+| 02-04-02 | 04   | 2    | DET-02, ERR-01R                                  | T-02-02, T-02-04                   | Exact immutable dataclass fields/defaults with caller-order preservation   | unit              | `npm test -- test/client/diagnostics.test.ts -t "factory\|order\|default\|immutable\|keys"`                                                                                            | ❌ W0       | ⬜ pending |
+| 02-05-01 | 05   | 3    | TRN-01, TRN-02                                   | T-02-01, T-02-02                   | Exact public constructor, internal injection only, FIFO lifecycle          | unit              | `npm test -- test/client/lifecycle.test.ts`                                                                                                                                            | ❌ W0       | ⬜ pending |
+| 02-05-02 | 05   | 3    | TRN-02, ERR-01R                                  | T-02-01 through T-02-04            | Exact attempts/delays/reconnect/Code2/probe/context                        | unit              | `npm test -- test/client/lifecycle.test.ts test/client/resilience.test.ts`                                                                                                             | ❌ W0       | ⬜ pending |
+| 02-06-01 | 06   | 4    | TRN-02, TRN-03R, ERR-01R                         | T-02-02, T-02-05                   | Exact FC03/FC04 and no gap/type/span/overlap merge                         | unit              | `npm test -- test/client/reads.test.ts test/client/batching.test.ts -t "single\|group\|FC03\|FC04\|overlap\|1392\|1442\|1484"`                                                         | ❌ W0       | ⬜ pending |
+| 02-06-02 | 06   | 4    | TRN-02, DET-02, ERR-01R                          | T-02-02, T-02-03, T-02-05          | Device-only fallback and exact permanent/unsupported/quarantine state      | unit              | `npm test -- test/client/batching.test.ts test/client/resilience.test.ts -t "fallback\|unsupported\|permanent\|quarantine\|suspect\|reset\|transport"`                                 | ❌ W0       | ⬜ pending |
+| 02-06-03 | 06   | 4    | TRN-02, TRN-03R, DET-02, ERR-01R                 | T-02-01 through T-02-06            | Closed executable Python-vs-TypeScript read/resilience scenarios           | contract          | `npm test -- test/parity/transport-contract.test.ts test/client/reads.test.ts test/client/batching.test.ts test/client/resilience.test.ts`                                             | ❌ W0       | ⬜ pending |
+| 02-07-01 | 07   | 5    | DET-01, DET-02                                   | T-02-01, T-02-02, T-02-05          | Ordered bounded probes and exact sentinel/model/map rules                  | unit              | `npm test -- test/client/detection.test.ts`                                                                                                                                            | ❌ W0       | ⬜ pending |
+| 02-07-02 | 07   | 5    | TRN-02, DET-01, DET-02, ERR-01R                  | T-02-02, T-02-04, T-02-05          | Client-only sorting, exact diagnostics/reset, executable detection state   | unit/contract     | `npm test -- test/client/detection.test.ts test/client/diagnostics.test.ts test/parity/transport-contract.test.ts -t "detect\|diagnostic\|model\|reset\|state\|sort"`                  | ❌ W0       | ⬜ pending |
+| 02-08-01 | 08   | 6    | TRN-01                                           | T-02-SC                            | Re-audited exact dependency and RED no-network adapter contract            | supply-chain/unit | `npm test -- test/transport/modbus-serial-adapter.test.ts && npm ls modbus-serial --depth=0`                                                                                           | ❌ W0       | ⬜ pending |
+| 02-08-02 | 08   | 6    | TRN-01, TRN-02, TRN-03R, ERR-01R                 | T-02-02 through T-02-05, T-02-SC   | Hidden adapter, timeout restore, exact reads, internal default wiring      | unit              | `npm test -- test/transport/modbus-serial-adapter.test.ts test/client/lifecycle.test.ts test/client/resilience.test.ts && npm ls modbus-serial --depth=0`                              | ❌ W0       | ⬜ pending |
+| 02-09-01 | 09   | 7    | TRN-01, TRN-02, TRN-03R, DET-01, DET-02, ERR-01R | T-02-03, T-02-06                   | Exact complete/partial/additive status and 22/7 member closure             | integration       | `npm test -- test/parity/api-parity.test.ts test/client test/transport/modbus-serial-adapter.test.ts && npm run parity:api`                                                            | ✅/❌ W0    | ⬜ pending |
+| 02-09-02 | 09   | 7    | TRN-01, TRN-02, TRN-03R, DET-01, DET-02, ERR-01R | T-02-04, T-02-06                   | Exact root/declaration exports with no adapter/injection/write leakage     | integration       | `npm test -- test/parity/api-parity.test.ts -t "root\|export\|declaration\|constructor\|member" && npm run parity:check && npm run build`                                              | ✅          | ⬜ pending |
+| 02-10-01 | 10   | 8    | TRN-01, TRN-02                                   | T-02-04, T-02-SC                   | Clean tarball ESM/CJS/type/client/transport smoke without network          | integration       | `npm test -- test/parity/phase-gate.test.ts -t "package\|tarball\|ESM\|CommonJS\|declaration" && npm run pack:check`                                                                   | ✅          | ⬜ pending |
+| 02-10-02 | 10   | 8    | TRN-01, TRN-02, TRN-03R, DET-01, DET-02, ERR-01R | T-02-01, T-02-04, T-02-06, T-02-SC | Full private phase gate; umbrella and write clauses remain pending         | integration       | `npm test -- test/client test/transport test/parity/transport-contract.test.ts test/parity/api-parity.test.ts test/parity/phase-gate.test.ts && npm run check && npm run parity:check` | ✅          | ⬜ pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+_Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky_
 
 ---
 
 ## Threat Model
 
-| Ref | Threat | Required mitigation and evidence |
-|-----|--------|----------------------------------|
-| T-02-01 | Unbounded configuration or retry loops cause denial of service | Validate constructor bounds; client owns finite attempts and exact backoff tests |
-| T-02-02 | Concurrent lifecycle/read calls race transport and client state | One FIFO client mutex covers the complete operation and releases after failure |
-| T-02-03 | Forged/localized error text is mistaken for Illegal Address | Only numeric Modbus exception code `2` maps to `IllegalAddressError` |
-| T-02-04 | Raw socket errors disclose host/IP or adapter internals | Normalize at adapter boundary and assert sanitized diagnostics |
-| T-02-05 | Malformed/short responses or unsafe batch merging corrupt values | Exact count and 16-bit validation before decode; adjacency/type/span/overlap tests |
-| T-02-06 | Oversized or ambient parity fixtures consume resources or leak device data | Closed bounded parser, isolated pinned Python checkout, synthetic example endpoints |
+| Ref     | Threat                                                                          | Required mitigation and evidence                                                     |
+| ------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| T-02-01 | Unbounded configuration, parsing, retry, or probe loops cause denial of service | Explicit bounds, finite scripts/attempts, fixed detection limits, focused tests      |
+| T-02-02 | Concurrent lifecycle/read calls race transport or state                         | One FIFO complete-operation gate and max-active/release-after-error tests            |
+| T-02-03 | Forged error text is mistaken for Illegal Address                               | Numeric Code 2 only and symmetric closed error-kind projection                       |
+| T-02-04 | Raw socket errors or artifacts disclose endpoint/device information             | Exact endpoint redaction, bounded diagnostics, synthetic fixtures, tarball allowlist |
+| T-02-05 | Malformed responses or unsafe batches corrupt values                            | Exact word/count validation and adjacency/type/span/overlap tests                    |
+| T-02-06 | API/artifact/requirement drift weakens parity or closes wrong clauses           | Exact authorities, transactional nine-artifact pipeline, child-clause phase gate     |
+| T-02-SC | Runtime dependency is replaced or compromised                                   | Exact metadata/source recheck, lock integrity, no install script, npm audit          |
 
 ---
 
 ## Wave 0 Requirements
 
-- [ ] `test/support/fake-modbus-transport.ts` — scripted lifecycle, response,
-  exact request trace, and concurrency instrumentation.
-- [ ] `test/support/fake-clock.ts` — deterministic monotonic clock and recorded
-  delay sequence without wall-clock sleeps.
-- [ ] `test/parity/transport-contract.test.ts` — TypeScript execution of pinned
-  Python-generated runtime scenarios.
-- [ ] Versioned transport behavior fixture and strict parser — request/result,
-  error, timing, state, and detection envelopes.
-- [ ] Focused client test files for lifecycle, errors, diagnostics, reads,
-  batching, resilience, and detection.
-- [ ] Mocked adapter test harness for `modbus-serial`; no live TCP or hardware.
+- [ ] `contracts/typescript-extensions.json` and governance mutation coverage.
+- [ ] `src/transport/types.ts`, `test/support/fake-modbus-transport.ts`, and
+      `test/support/fake-clock.ts`.
+- [ ] `src/contracts/transport-scenario.ts` and
+      `test/parity/transport-contract.test.ts`.
+- [ ] `test/fixtures/transport-behavior.json` as the seventh fixture.
+- [ ] Focused client tests for errors, diagnostics, lifecycle, resilience,
+      reads, batching, and detection.
+- [ ] Mocked `modbus-serial` adapter harness; no live TCP or hardware.
+- [ ] Clause-aware phase-gate assertions for TRN-03R/TRN-03W and
+      ERR-01R/ERR-01W.
 
 ---
 
 ## Manual-Only Verifications
 
-All Phase-2 software parity behaviors have automated verification. Live hardware
-reads are intentionally excluded; they are required only if changing an official
-protocol fact or claiming hardware validation during release closure.
+All Phase-2 software parity behavior has automated verification. Live hardware
+reads are intentionally excluded; hardware evidence is required only for a new
+protocol fact or a later truthful release-validation claim.
 
 ---
 
 ## Validation Sign-Off
 
-- [x] All anticipated tasks have an automated command or a Wave 0 dependency.
+- [x] All 21 tasks have an automated command or Wave-0 dependency.
 - [x] Sampling continuity: no three consecutive tasks lack automated verification.
 - [x] Wave 0 lists every currently missing test/support artifact.
-- [x] No watch-mode flags.
+- [x] Commands use existing npm scripts and no watch-mode flags.
 - [x] Focused feedback latency target is below 30 seconds.
 - [x] `nyquist_compliant: true` is set in frontmatter.
 
-**Approval:** approved 2026-07-16 for planning; task IDs may be reconciled to the
-final verified plan set without weakening the listed coverage or threats.
+**Approval:** revised 2026-07-16 for the 10-plan, 8-wave, 21-task plan set.

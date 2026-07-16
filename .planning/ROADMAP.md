@@ -53,7 +53,7 @@ Plans:
 
 **Goal**: Consumers can reliably read IDM heat pumps and observe Python-equivalent model detection, request traces, recovery, state, and diagnostics.
 **Depends on**: Phase 1
-**Requirements**: TRN-01, TRN-02, TRN-03, DET-01, DET-02, ERR-01
+**Requirements**: TRN-01, TRN-02, TRN-03R, DET-01, DET-02, ERR-01R
 **Success Criteria** (what must be TRUE):
 
 1. A consumer can connect, disconnect, reconnect, and perform single or safe batch reads whose ordered function codes, addresses, counts, and results match Python.
@@ -62,13 +62,47 @@ Plans:
 4. Timeouts, disconnects, invalid responses, Code 2, transient failures, batch errors, retry exhaustion, fallback, quarantine, and reconnect produce the same results and recovery state as Python; only Code 2 marks a register unsupported.
 5. Concurrent calls are serialized, concrete Modbus adapter details remain invisible to consumers, and deterministic scenarios expose equivalent unsupported, batch-unsafe, permanently-failed, connection-suspect, and diagnostic state.
 
-**Plans**: TBD
+**Plans**: 10 plans
+Plans:
+**Wave 1**
+
+- [ ] 02-01-PLAN.md — Establish additive/partial API governance and closed runtime error normalization.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 02-02-PLAN.md — Define the adapter-neutral transport contract, bounded parser, fake transport, and fake clock.
+- [ ] 02-04-PLAN.md — Implement exact public errors, logging aliases, immutable context values, and diagnostics factories.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 02-03-PLAN.md — Generate the seventh Python fixture and orchestrate all nine generated artifacts transactionally.
+- [ ] 02-05-PLAN.md — Implement the internal-injection lifecycle, FIFO serialization, retries, reconnects, probes, and error context.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 02-06-PLAN.md — Implement exact single reads, grouping, batch fallback, failure tracking, quarantine, and read scenario execution.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 02-07-PLAN.md — Implement ordered model/capability detection, model-aware maps, state queries, and diagnostic scenarios.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
+- [ ] 02-08-PLAN.md — Add the audited hidden `modbus-serial` adapter and bind it as the public constructor default.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
+- [ ] 02-09-PLAN.md — Promote the exact mapped partial client and additive transport type through machine-checked root exports.
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
+- [ ] 02-10-PLAN.md — Close package smoke, documentation, parity, privacy, and clause-aware Phase-2 gates.
 
 ### Phase 3: Safe Write Parity
 
 **Goal**: Consumers can write supported settings with the same validation, request shape, throttling, heartbeat, and failure safety as the Python reference.
 **Depends on**: Phase 2
-**Requirements**: WRT-01, WRT-02
+**Requirements**: WRT-01, WRT-02, TRN-03W, ERR-01W
 **Success Criteria** (what must be TRUE):
 
 1. A consumer can inspect an equivalent write plan or dry-run result without any Modbus request being sent.
@@ -117,7 +151,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase                                      | Plans Complete | Status      | Completed  |
 | ------------------------------------------ | -------------- | ----------- | ---------- |
 | 1. Reproducible Semantic Contract          | 10/10          | Complete    | 2026-07-16 |
-| 2. Modbus Reads, Detection, and Resilience | 0/TBD          | Not started | -          |
+| 2. Modbus Reads, Detection, and Resilience | 0/10           | Planned     | -          |
 | 3. Safe Write Parity                       | 0/TBD          | Not started | -          |
 | 4. Optional Read-Only Web Parity           | 0/TBD          | Not started | -          |
 | 5. Parity Closure and Release Assurance    | 0/TBD          | Not started | -          |

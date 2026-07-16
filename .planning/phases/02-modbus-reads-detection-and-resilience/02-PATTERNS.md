@@ -25,47 +25,47 @@
 
 ## File Classification
 
-| New/Modified File                                    | Role                    | Data Flow                              | Closest Analog                                                         | Match Quality         |
-| ---------------------------------------------------- | ----------------------- | -------------------------------------- | ---------------------------------------------------------------------- | --------------------- |
-| `src/transport/types.ts`                             | model/provider contract | request-response                       | `src/types.ts`, pinned `client.py:_read_registers`                     | role-match            |
-| `src/transport/errors.ts`                            | model/utility           | transform                              | `src/errors.ts`, pinned `IllegalAddressError`                          | role-match            |
-| `src/transport/modbus-serial-adapter.ts`             | provider/adapter        | request-response                       | pinned `client.py:_read_registers`; no Node adapter exists             | behavioral-match      |
-| `src/transport/index.ts`                             | route/barrel            | module export                          | `src/registers/index.ts`                                               | exact role            |
-| `src/client/diagnostics.ts`                          | model/factory           | state snapshot/transform               | `src/types.ts:FeatureFlags` and `IdmModelInfo`                         | exact role            |
-| `src/client/state.ts`                                | store/model             | event-driven state transitions         | `src/registers/registry.ts`, pinned client fields/reset methods        | partial               |
-| `src/client/read-groups.ts`                          | service/utility         | batch/transform                        | pinned `_group_registers`, `_read_group`, `_read_individual_fallback`  | behavioral-match      |
-| `src/client/detection.ts`                            | service                 | ordered request-response               | pinned `detect_model`; target `getDetectionRegisters`                  | behavioral-match      |
-| `src/client/idm-modbus-client.ts`                    | service/facade          | serialized request-response            | pinned `IdmModbusClient`; no Node client exists                        | behavioral-match      |
-| `src/client/index.ts`                                | route/barrel            | module export                          | `src/registers/index.ts`                                               | exact role            |
-| `src/contracts/transport-scenario.ts`                | utility/parser          | transform                              | `src/contracts/scenario.ts`                                            | exact role            |
-| `test/support/fake-modbus-transport.ts`              | provider/test double    | scripted event-driven request-response | pinned `tests/fake_modbus.py`                                          | exact behavioral role |
-| `test/support/fake-clock.ts`                         | provider/test double    | event-driven time                      | `PollRateLimiter` fake-clock test                                      | role-match            |
-| `test/client/lifecycle.test.ts`                      | test                    | request-response/state                 | pinned lifecycle tests and `test/semantic/constants-and-types.test.ts` | behavioral-match      |
-| `test/client/errors.test.ts`                         | test                    | transform/error                        | `test/semantic/constants-and-types.test.ts`                            | role-match            |
-| `test/client/diagnostics.test.ts`                    | test                    | state snapshot                         | immutable `IdmModelInfo` tests and pinned diagnostics tests            | role-match            |
-| `test/client/reads.test.ts`                          | test                    | request-response                       | `test/parity/codec-contract.test.ts`, pinned fake-transport tests      | behavioral-match      |
-| `test/client/batching.test.ts`                       | test                    | batch                                  | pinned `test_fake_modbus_transport.py`                                 | exact behavioral role |
-| `test/client/resilience.test.ts`                     | test                    | event-driven retry/state               | pinned timeout/Code-2/fallback tests                                   | exact behavioral role |
-| `test/client/detection.test.ts`                      | test                    | ordered request-response               | pinned `test_client.py` detection tests                                | exact behavioral role |
-| `test/transport/modbus-serial-adapter.test.ts`       | test                    | request-response                       | existing process-boundary tests plus pinned request tests              | partial               |
-| `test/parity/transport-contract.test.ts`             | contract test           | scenario request-response              | `test/parity/codec-contract.test.ts`                                   | exact role            |
-| `test/fixtures/transport-behavior.json`              | fixture/data            | scripted request-response              | `test/fixtures/behavior-contract.json`                                 | exact role            |
-| `scripts/generate-python-contract.py`                | generator/utility       | file I/O/transform                     | existing `_scenario` and `_behavior_fixture`                           | exact role            |
-| `scripts/check-parity.mjs`                           | orchestrator            | process/file I/O                       | existing generated-path and staging pipeline                           | exact role            |
-| `test/parity/generator.test.ts`                      | generator test          | file I/O/transform                     | existing fixture allowlist/determinism tests                           | exact role            |
-| `contracts/api-mapping.json`                         | config/authority        | mapping/transform                      | existing Phase-1 mapping rows                                          | exact role            |
-| `contracts/typescript-extensions.json` (conditional) | config/authority        | mapping/transform                      | no existing TypeScript-only authority                                  | no analog             |
-| `scripts/generate-api-parity.mjs`                    | generator/validator     | file I/O/transform                     | existing status/evidence validation                                    | exact role            |
-| `test/parity/api-parity.test.ts`                     | contract test           | mapping/export closure                 | existing promotion and root-export tests                               | exact role            |
-| `test/parity/phase-gate.test.ts`                     | integration gate        | process/package                        | existing package/private/parity gates                                  | exact role            |
-| `docs/API-PARITY.md`                                 | generated documentation | projection                             | current generated document                                             | exact role            |
-| `docs/PARITY-CONTRACT.md` (conditional)              | contract documentation  | policy                                 | current parity contract                                                | exact role            |
-| `src/index.ts`                                       | package route/barrel    | module export                          | current checked root barrel                                            | exact role            |
-| `package.json`                                       | config                  | dependency/build                       | current zero-runtime-dependency package                                | exact role            |
-| `package-lock.json`                                  | config/lock             | dependency graph                       | current npm lockfile                                                   | exact role            |
-| `scripts/check-package.mjs`                          | package verifier        | package/file I/O                       | current ESM/CJS/type smoke test                                        | exact role            |
-| `README.md`                                          | documentation           | projection                             | Phase-1 truthful-scope README pattern                                  | exact role            |
-| `CHANGELOG.md`                                       | documentation           | append-only release notes              | Phase-1 Unreleased entry pattern                                       | exact role            |
+| New/Modified File                              | Role                    | Data Flow                              | Closest Analog                                                         | Match Quality         |
+| ---------------------------------------------- | ----------------------- | -------------------------------------- | ---------------------------------------------------------------------- | --------------------- |
+| `src/transport/types.ts`                       | model/provider contract | request-response                       | `src/types.ts`, pinned `client.py:_read_registers`                     | role-match            |
+| `src/transport/errors.ts`                      | model/utility           | transform                              | `src/errors.ts`, pinned `IllegalAddressError`                          | role-match            |
+| `src/transport/modbus-serial-adapter.ts`       | provider/adapter        | request-response                       | pinned `client.py:_read_registers`; no Node adapter exists             | behavioral-match      |
+| `src/transport/index.ts`                       | route/barrel            | module export                          | `src/registers/index.ts`                                               | exact role            |
+| `src/client/diagnostics.ts`                    | model/factory           | state snapshot/transform               | `src/types.ts:FeatureFlags` and `IdmModelInfo`                         | exact role            |
+| `src/client/state.ts`                          | store/model             | event-driven state transitions         | `src/registers/registry.ts`, pinned client fields/reset methods        | partial               |
+| `src/client/read-groups.ts`                    | service/utility         | batch/transform                        | pinned `_group_registers`, `_read_group`, `_read_individual_fallback`  | behavioral-match      |
+| `src/client/detection.ts`                      | service                 | ordered request-response               | pinned `detect_model`; target `getDetectionRegisters`                  | behavioral-match      |
+| `src/client/idm-modbus-client.ts`              | service/facade          | serialized request-response            | pinned `IdmModbusClient`; no Node client exists                        | behavioral-match      |
+| `src/client/index.ts`                          | route/barrel            | module export                          | `src/registers/index.ts`                                               | exact role            |
+| `src/contracts/transport-scenario.ts`          | utility/parser          | transform                              | `src/contracts/scenario.ts`                                            | exact role            |
+| `test/support/fake-modbus-transport.ts`        | provider/test double    | scripted event-driven request-response | pinned `tests/fake_modbus.py`                                          | exact behavioral role |
+| `test/support/fake-clock.ts`                   | provider/test double    | event-driven time                      | `PollRateLimiter` fake-clock test                                      | role-match            |
+| `test/client/lifecycle.test.ts`                | test                    | request-response/state                 | pinned lifecycle tests and `test/semantic/constants-and-types.test.ts` | behavioral-match      |
+| `test/client/errors.test.ts`                   | test                    | transform/error                        | `test/semantic/constants-and-types.test.ts`                            | role-match            |
+| `test/client/diagnostics.test.ts`              | test                    | state snapshot                         | immutable `IdmModelInfo` tests and pinned diagnostics tests            | role-match            |
+| `test/client/reads.test.ts`                    | test                    | request-response                       | `test/parity/codec-contract.test.ts`, pinned fake-transport tests      | behavioral-match      |
+| `test/client/batching.test.ts`                 | test                    | batch                                  | pinned `test_fake_modbus_transport.py`                                 | exact behavioral role |
+| `test/client/resilience.test.ts`               | test                    | event-driven retry/state               | pinned timeout/Code-2/fallback tests                                   | exact behavioral role |
+| `test/client/detection.test.ts`                | test                    | ordered request-response               | pinned `test_client.py` detection tests                                | exact behavioral role |
+| `test/transport/modbus-serial-adapter.test.ts` | test                    | request-response                       | existing process-boundary tests plus pinned request tests              | partial               |
+| `test/parity/transport-contract.test.ts`       | contract test           | scenario request-response              | `test/parity/codec-contract.test.ts`                                   | exact role            |
+| `test/fixtures/transport-behavior.json`        | fixture/data            | scripted request-response              | `test/fixtures/behavior-contract.json`                                 | exact role            |
+| `scripts/generate-python-contract.py`          | generator/utility       | file I/O/transform                     | existing `_scenario` and `_behavior_fixture`                           | exact role            |
+| `scripts/check-parity.mjs`                     | orchestrator            | process/file I/O                       | existing generated-path and staging pipeline                           | exact role            |
+| `test/parity/generator.test.ts`                | generator test          | file I/O/transform                     | existing fixture allowlist/determinism tests                           | exact role            |
+| `contracts/api-mapping.json`                   | config/authority        | mapping/transform                      | existing Phase-1 mapping rows                                          | exact role            |
+| `contracts/typescript-extensions.json`         | config/authority        | mapping/transform                      | no existing TypeScript-only authority                                  | no analog             |
+| `scripts/generate-api-parity.mjs`              | generator/validator     | file I/O/transform                     | existing status/evidence validation                                    | exact role            |
+| `test/parity/api-parity.test.ts`               | contract test           | mapping/export closure                 | existing promotion and root-export tests                               | exact role            |
+| `test/parity/phase-gate.test.ts`               | integration gate        | process/package                        | existing package/private/parity gates                                  | exact role            |
+| `docs/API-PARITY.md`                           | generated documentation | projection                             | current generated document                                             | exact role            |
+| `docs/PARITY-CONTRACT.md`                      | contract documentation  | policy                                 | current parity contract                                                | exact role            |
+| `src/index.ts`                                 | package route/barrel    | module export                          | current checked root barrel                                            | exact role            |
+| `package.json`                                 | config                  | dependency/build                       | current zero-runtime-dependency package                                | exact role            |
+| `package-lock.json`                            | config/lock             | dependency graph                       | current npm lockfile                                                   | exact role            |
+| `scripts/check-package.mjs`                    | package verifier        | package/file I/O                       | current ESM/CJS/type smoke test                                        | exact role            |
+| `README.md`                                    | documentation           | projection                             | Phase-1 truthful-scope README pattern                                  | exact role            |
+| `CHANGELOG.md`                                 | documentation           | append-only release notes              | Phase-1 Unreleased entry pattern                                       | exact role            |
 
 ## Pattern Assignments
 
@@ -99,13 +99,10 @@ export interface ModbusReadRequest {
 }
 ```
 
-**Extension point:** `ModbusTransport` may be exported from
-`src/transport/index.ts` for internal/deep-module consumers while root export
-governance is unresolved. Do not expose `modbus-serial` types through emitted
-declarations.
-
-**Landmine:** a root-public `ModbusTransport` has no Python mapping row. See
-“Contract Governance Landmines” below before adding it to `src/index.ts`.
+**Selected extension rule (G-01):** `ModbusTransport` is governed by the
+separate closed TypeScript-extension authority and may be promoted as a
+type-only root export only after that authority and its contract evidence are
+green. Do not expose `modbus-serial` types through emitted declarations.
 
 ---
 
@@ -211,8 +208,10 @@ pinned `client.py:321-329`; diagnostic construction is at
 **Exact shape:** `IdmClientDiagnostics` does not include unsupported registers.
 That state remains exposed by `getUnsupportedRegisters()`.
 
-**Ordering:** sort state names using
-`src/contracts/canonical-order.ts:3-18`, not locale-dependent comparison.
+**Ordering:** the public factory clones, freezes, and preserves caller-provided
+array order exactly. `IdmModbusClient.getDiagnostics()` sorts copied internal
+sets using `src/contracts/canonical-order.ts:3-18` before calling the factory;
+the factory itself must never sort semantic sequences.
 
 ---
 
@@ -360,8 +359,12 @@ The exclusive scope must cover lazy connect, all attempts, reconnect, delay,
 batch fallback, individual reread, detection, and state mutation.
 
 Constructor defaults come from `src/constants.ts:27-33`. Validate host, port
-`1..65535`, slave ID `1..247`, retry count `>=1`, adapter retries `>=0`, and
-group size `>=1` before creating a transport.
+`1..65535`, slave ID `1..247`, retry count `>=1`, and group size `>=1` before
+creating a transport. The public TypeScript options object contains only port,
+slave ID, timeout, max retries, and max group size. Python's
+`pymodbus_retries` is internalized at zero. Transport factory, clock, and sleep
+injection use a direct-path internal creation seam that is absent from both
+package barrels and emitted public declarations.
 
 **Retry split:**
 
@@ -607,22 +610,22 @@ complete evidence exists:
 - `ModbusErrorContext`;
 - `quietPymodbusLogging`.
 
-`IdmModbusClient` needs a reviewed cross-phase lifecycle rule because the
-Python class fixture also includes Phase-3 write methods. Keep the generated
-document a projection; never hand-edit it.
+Under G-02, `IdmModbusClient` uses an exact release-blocking `partial`
+lifecycle because the Python class fixture also includes Phase-3 write methods.
+Keep the generated document a projection; never hand-edit it.
 
-If a TypeScript-only extension registry is authorized, validate it separately
-from the exact 89 Python rows and include a generated “TypeScript extensions”
-section. Do not fabricate a Python symbol or change the Python inventory count.
+Under G-01, validate the TypeScript-only extension registry separately from the
+exact 89 Python rows and include a generated “TypeScript extensions” section.
+Do not fabricate a Python symbol or change the Python inventory count.
 
 ---
 
-### `contracts/typescript-extensions.json` (conditional)
+### `contracts/typescript-extensions.json`
 
 **No existing analog.**
 
-Create this only if the planner explicitly resolves `ModbusTransport` as a
-package-root public TypeScript-only type. A safe authority should include:
+The planner resolved `ModbusTransport` as a package-root public TypeScript-only
+type under G-01. The authority includes:
 
 - TypeScript symbol;
 - export path;
@@ -636,14 +639,14 @@ package-root public TypeScript-only type. A safe authority should include:
 It must be validated independently and remain release-safe. The exact Python
 mapping must stay 89/89.
 
-If this governance work is not planned, keep `ModbusTransport` internal or on a
-non-root development boundary and omit this file.
+Validate this authority separately from the exact Python mapping and keep
+release validation red until the extension is complete.
 
 ---
 
 ### `src/index.ts`, `test/parity/phase-gate.test.ts`, and
 
-`docs/PARITY-CONTRACT.md` (conditional)
+`docs/PARITY-CONTRACT.md`
 
 **Analog:** the checked barrel at `src/index.ts:1-53` and export closure at
 `test/parity/api-parity.test.ts:404-440`.
@@ -662,8 +665,8 @@ tests must:
 - reject throwing write stubs;
 - keep `private: true`.
 
-Update `docs/PARITY-CONTRACT.md` only if this new partial-class or
-TypeScript-extension policy becomes a durable contract rule.
+Update `docs/PARITY-CONTRACT.md` with the selected G-01/G-02 durable contract
+rules.
 
 ---
 
@@ -786,22 +789,17 @@ Current tests require every later-owned row to remain planned and absent
 (`test/parity/api-parity.test.ts:390-400`) and export only complete mappings
 (`405-413`).
 
-The planner must choose one explicit rule:
-
-- keep the real read-capable class internal/unexported until Phase 3; or
-- add a reviewed `partial` development lifecycle with exact member-subset
-  evidence and a hard release block.
-
-Do not mark the class `complete`, weaken member closure, or add throwing write
-stubs in Phase 2.
+**Resolved by G-02:** add a reviewed `partial` private-development lifecycle
+with exact implemented/omitted member partition evidence and a hard release
+block. Do not mark the class `complete`, weaken member closure, or add throwing
+write stubs in Phase 2.
 
 ### 2. Public `ModbusTransport` has no Python row
 
 The Python mapping is required to stay exactly 89/89
-(`test/parity/api-parity.test.ts:230-234`). Root runtime/type exports are
-checked against mapping completion. Therefore a root-public transport type
-requires a separate TypeScript-extension authority and tests, or it must remain
-off the root boundary.
+(`test/parity/api-parity.test.ts:230-234`). **Resolved by G-01:**
+`ModbusTransport` uses the separate closed TypeScript-extension authority and a
+type-only root export.
 
 Do not add a fake Python row and do not relax the exact inventory assertion.
 
@@ -840,9 +838,9 @@ No no-overlap invariant, datatype shrink, address shift, gap spanning, or
 
 ### 7. Compound roadmap requirements remain partially open
 
-TRN-03 also mentions write payloads and ERR-01 also mentions write errors.
-Phase 2 can close their read clauses but must not mark the compound milestone
-requirements globally complete until Phase 3 supplies write evidence.
+**Resolved by G-04:** TRN-03R and ERR-01R are the Phase-2 child clauses;
+TRN-03W and ERR-01W are the Phase-3 child clauses. TRN-03 and ERR-01 remain
+umbrella rows and cannot be phase-completed directly.
 
 ## No Analog Found
 
