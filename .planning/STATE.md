@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-04-PLAN.md; next first incomplete 02-03-PLAN.md
-last_updated: "2026-07-16T20:18:47.071Z"
-last_activity: 2026-07-16 -- Completed Phase 02 Plan 04 transport errors, logging, and diagnostics
+stopped_at: Completed 02-03-PLAN.md; next first incomplete 02-05-PLAN.md
+last_updated: "2026-07-16T20:40:27.836Z"
+last_activity: 2026-07-16 -- Completed Phase 02 Plan 03 pinned runtime evidence and transactional parity orchestration
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 20
-  completed_plans: 13
-  percent: 65
+  completed_plans: 14
+  percent: 70
 ---
 
 # Project State
@@ -26,31 +26,31 @@ See: .planning/PROJECT.md (updated 2026-07-14)
 ## Current Position
 
 Phase: 02 (modbus-reads-detection-and-resilience) — EXECUTING
-Plan: 3 of 10
+Plan: 5 of 10
 Status: Ready to execute
-Last activity: 2026-07-16 -- Completed Phase 02 Plan 04 transport errors, logging, and diagnostics
+Last activity: 2026-07-16 -- Completed Phase 02 Plan 03 pinned runtime evidence and transactional parity orchestration
 
-Milestone progress: [███████░░░] 65% (13/20 milestone plans)
+Milestone progress: [███████░░░] 70% (14/20 milestone plans)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 13
-- Average duration: 76 min
-- Total execution time: 16h 28m
+- Total plans completed: 14
+- Average duration: 72 min
+- Total execution time: 16h 49m
 
 **By Phase:**
 
 | Phase | Plans | Total   | Avg/Plan |
 | ----- | ----- | ------- | -------- |
 | 01    | 10    | 15h 22m | 92 min   |
-| 02    | 3     | 1h 6m   | 22 min   |
+| 02    | 4     | 1h 27m  | 22 min   |
 
 **Recent Trend:**
 
-- Last 5 plans: 11h 55m (interrupted), 22 min, 39 min, 18 min, 9 min
-- Trend: Phase 2 now also has safe failure classification, logging aliases, and immutable diagnostics
+- Last 5 plans: 22 min, 39 min, 18 min, 9 min, 21 min
+- Trend: Phase 2 now has exact pinned runtime evidence and a fixed transactional nine-artifact lifecycle
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |
@@ -66,6 +66,7 @@ _Updated after each plan completion_
 | Phase 02 P01 | 39 min | 2 tasks | 10 files |
 | Phase 02 P02 | 18 min | 2 tasks | 5 files |
 | Phase 02 P04 | 9 min | 2 tasks | 5 files |
+| Phase 02 P03 | 21 min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -117,6 +118,8 @@ Recent decisions affecting current work:
 - [Phase 02]: Represent the seven closed runtime outcomes as six normalized failure kinds plus the dedicated IllegalAddressError marker.
 - [Phase 02]: Create IllegalAddressError only from structured numeric Modbus Code 2; messages and numeric strings remain ordinary Modbus failures.
 - [Phase 02]: Preserve caller order and duplicates in public diagnostics factories; sorting belongs only to later internal-set snapshots.
+- [Phase 02]: Keep Phase-2 runtime evidence in a separate closed transport fixture. — Preserves the Phase-1 scenario schema while allowing exact lifecycle, read, resilience, detection, and diagnostics evidence.
+- [Phase 02]: Replace all seven fixtures and two generated documents through one fixed transaction. — Rejects missing, extra, oversized, or symlinked output before replacement and restores all nine artifacts after failure.
 
 ### Pending Todos
 
@@ -135,6 +138,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-16T20:18:25.419Z
-Stopped at: Completed 02-04-PLAN.md; next first incomplete 02-03-PLAN.md
+Last session: 2026-07-16T20:40:27.825Z
+Stopped at: Completed 02-03-PLAN.md; next first incomplete 02-05-PLAN.md
 Resume file: None
