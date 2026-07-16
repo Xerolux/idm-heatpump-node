@@ -2,12 +2,14 @@ import { spawnSync } from "node:child_process";
 import {
   cpSync,
   existsSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
   rmSync,
   statSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -32,6 +34,7 @@ const generatedPaths = [
   "test/fixtures/register-schema.json",
   "test/fixtures/behavior-contract.json",
   "test/fixtures/web-contract.json",
+  "test/fixtures/transport-behavior.json",
   "docs/API-PARITY.md",
   "docs/BASELINE.md",
 ] as const;
@@ -227,7 +230,7 @@ describe.sequential("parity orchestrator phase gate", () => {
   }, 45_000);
 
   it("detects drift in check mode without changing bytes or mtimes and cleans temporary state", () => {
-    const target = resolve(root, generatedPaths[0]);
+    const target = resolve(root, "test/fixtures/transport-behavior.json");
     const original = readFileSync(target);
     writeFileSync(target, Buffer.concat([original, Buffer.from(" \n")]));
     const drifted = snapshotGenerated();
@@ -242,6 +245,56 @@ describe.sequential("parity orchestrator phase gate", () => {
     } finally {
       writeFileSync(target, original);
     }
+  }, 180_000);
+
+  it("rejects symlinked committed artifacts without changing the nine generated artifacts", () => {
+    const target = resolve(root, "test/fixtures/transport-behavior.json");
+    const preserved = join(temporaryDirectory, "preserved-transport-behavior.json");
+    writeFileSync(preserved, readFileSync(target));
+    rmSync(target);
+    symlinkSync(preserved, target, "file");
+    const beforeTemporary = parityTemporaryEntries();
+    try {
+      const result = runOrchestrator("check", exactCheckout);
+
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain("artifact_invalid");
+      expect(lstatSync(target).isSymbolicLink()).toBe(true);
+      expectNoNewTemporaryEntries(beforeTemporary);
+    } finally {
+      rmSync(target, { force: true });
+      writeFileSync(target, readFileSync(preserved));
+    }
+  }, 180_000);
+
+  it("rejects extra staged generated paths without mutating committed artifacts", () => {
+    const beforeGenerated = snapshotGenerated();
+    const beforeTemporary = parityTemporaryEntries();
+
+    const result = runOrchestrator("check", exactCheckout, {
+      ...process.env,
+      IDM_PARITY_TEST_EXTRA_ARTIFACT: "1",
+    });
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("artifact_invalid");
+    expectGeneratedUnchanged(beforeGenerated);
+    expectNoNewTemporaryEntries(beforeTemporary);
+  }, 180_000);
+
+  it("rolls back all nine artifacts after an injected replacement failure", () => {
+    const beforeGenerated = snapshotGenerated();
+    const beforeTemporary = parityTemporaryEntries();
+
+    const result = runOrchestrator("generate", exactCheckout, {
+      ...process.env,
+      IDM_PARITY_TEST_FAIL_AFTER_REPLACE: "7",
+    });
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("artifact_replace_failed");
+    expectGeneratedUnchanged(beforeGenerated);
+    expectNoNewTemporaryEntries(beforeTemporary);
   }, 180_000);
 
   it("rolls back an injected mid-generation failure and always cleans owned paths", () => {

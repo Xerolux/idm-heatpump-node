@@ -16,6 +16,7 @@ import { afterEach, describe, expect, it } from "vitest";
 const ROOT = resolve(import.meta.dirname, "../..");
 const UPSTREAM_SOURCE = resolve(ROOT, "../idm-heatpump-api");
 const GENERATOR = resolve(ROOT, "scripts/generate-python-contract.py");
+const ORCHESTRATOR = resolve(ROOT, "scripts/check-parity.mjs");
 const MANIFEST = resolve(ROOT, "UPSTREAM-PARITY.json");
 const PYTHON =
   process.env.IDM_CONTRACT_PYTHON ??
@@ -215,6 +216,35 @@ afterEach(() => {
 }, 60_000);
 
 describe("verified Python contract generator", () => {
+  it("keeps a fixed allowlist of seven fixtures, two generated documents, and nine generated artifacts", () => {
+    const source = readFileSync(ORCHESTRATOR, "utf8");
+    const generatedPathsBlock = source.match(
+      /const GENERATED_PATHS = Object\.freeze\(\[(?<paths>[\s\S]*?)\]\);/u,
+    )?.groups?.paths;
+
+    expect(generatedPathsBlock).toBeDefined();
+    const paths = [...(generatedPathsBlock?.matchAll(/"([^"]+)"/gu) ?? [])].map(
+      (match) => match[1],
+    );
+    expect(paths).toEqual([
+      "test/fixtures/public-api.json",
+      "test/fixtures/public-classes.json",
+      "test/fixtures/codec-vectors.json",
+      "test/fixtures/register-schema.json",
+      "test/fixtures/behavior-contract.json",
+      "test/fixtures/web-contract.json",
+      "test/fixtures/transport-behavior.json",
+      "docs/API-PARITY.md",
+      "docs/BASELINE.md",
+    ]);
+    expect(source).toContain("seven fixtures");
+    expect(source).toContain("two generated documents");
+    expect(source).toContain("nine generated artifacts");
+    expect(source).toContain("IDM_PARITY_TEST_FAIL_AFTER_REPLACE");
+    expect(source).toContain("IDM_PARITY_TEST_EXTRA_ARTIFACT");
+    expect(source).toMatch(/lstatSync\(committedPath\)[\s\S]*isSymbolicLink/u);
+  });
+
   it("verifies before import when a dirty module contains an import sentinel", () => {
     const checkout = createExactCheckout();
     const sentinel = join(checkout.root, "import-side-effect");
