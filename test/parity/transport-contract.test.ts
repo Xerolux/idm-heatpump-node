@@ -105,6 +105,13 @@ describe("adapter-neutral transport contract", () => {
     ]) {
       expect(() => createModbusReadRequest({ ...base, ...patch })).toThrow(RangeError);
     }
+    expect(() =>
+      createModbusReadRequest({
+        ...base,
+        address: 65_535,
+        count: 2,
+      }),
+    ).toThrow(RangeError);
   });
 
   it("implements the contract without exposing adapter response or client types", async () => {

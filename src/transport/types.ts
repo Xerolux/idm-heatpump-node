@@ -67,6 +67,9 @@ export function createModbusReadRequest(input: ModbusReadRequestInput): ModbusRe
     MODBUS_READ_LIMITS.maximumCount,
     "count",
   );
+  if (input.address + input.count > MODBUS_READ_LIMITS.maximumAddress + 1) {
+    throw new RangeError("address and count exceed the Modbus address space");
+  }
   if (input.timeoutMs !== undefined) {
     requireBoundedInteger(
       input.timeoutMs,
