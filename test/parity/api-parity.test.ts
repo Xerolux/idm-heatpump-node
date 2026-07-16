@@ -25,6 +25,7 @@ const GENERATOR_INPUTS = [
   GENERATOR,
   "scripts/evidence-path.mjs",
   "contracts/api-mapping.json",
+  "contracts/normalization.md",
   "contracts/typescript-extensions.json",
   "test/fixtures/public-api.json",
   "test/fixtures/public-classes.json",
@@ -121,6 +122,124 @@ interface TypeScriptExtensions {
   readonly schema_version: number;
   readonly extensions: readonly TypeScriptExtensionRow[];
 }
+
+interface RuntimeNormalizationAuthority {
+  readonly schema_version: 1;
+  readonly constructor_options: {
+    readonly code: "idm_modbus_client_options";
+    readonly python_parameters: readonly string[];
+    readonly typescript_required: readonly string[];
+    readonly typescript_options: readonly string[];
+    readonly internalized: {
+      readonly code: "internal_adapter_retries_zero";
+      readonly pymodbusRetries: 0;
+    };
+    readonly forbidden_public_options: readonly string[];
+  };
+  readonly transport_error_type_to_closed_kind: {
+    readonly code: "transport_error_type_to_closed_kind";
+    readonly kinds: readonly string[];
+    readonly rules: readonly {
+      readonly source: string;
+      readonly kind: string;
+    }[];
+    readonly forbidden_equivalence: readonly string[];
+  };
+  readonly diagnostic_message_redaction: {
+    readonly code: "diagnostic_message_redaction";
+    readonly python_candidates: readonly string[];
+    readonly typescript_candidates: readonly string[];
+    readonly order: "longest_first";
+    readonly placeholder: "<endpoint>";
+    readonly preserve_remaining_text_and_order: true;
+    readonly maximum_output_length: 1024;
+    readonly overlong_behavior: "reject";
+    readonly include_raw_cause: false;
+    readonly include_raw_payload: false;
+  };
+}
+
+const RUNTIME_NORMALIZATION_START = "<!-- runtime-normalization-contract:start -->";
+const RUNTIME_NORMALIZATION_END = "<!-- runtime-normalization-contract:end -->";
+const RUNTIME_NORMALIZATION_AUTHORITY: RuntimeNormalizationAuthority = {
+  schema_version: 1,
+  constructor_options: {
+    code: "idm_modbus_client_options",
+    python_parameters: [
+      "host",
+      "port",
+      "slave_id",
+      "timeout",
+      "max_retries",
+      "pymodbus_retries",
+      "max_group_size",
+    ],
+    typescript_required: ["host"],
+    typescript_options: ["port", "slaveId", "timeout", "maxRetries", "maxGroupSize"],
+    internalized: {
+      code: "internal_adapter_retries_zero",
+      pymodbusRetries: 0,
+    },
+    forbidden_public_options: [
+      "transport",
+      "transportFactory",
+      "clock",
+      "sleep",
+      "pymodbusRetries",
+    ],
+  },
+  transport_error_type_to_closed_kind: {
+    code: "transport_error_type_to_closed_kind",
+    kinds: [
+      "timeout",
+      "disconnected",
+      "socket",
+      "no_response",
+      "modbus",
+      "illegal_address",
+      "invalid_response",
+    ],
+    rules: [
+      { source: "numeric_modbus_exception_code_2", kind: "illegal_address" },
+      { source: "structured_illegal_address_marker", kind: "illegal_address" },
+      { source: "timeout_exception", kind: "timeout" },
+      { source: "connection_exception", kind: "disconnected" },
+      { source: "socket_or_os_error", kind: "socket" },
+      {
+        source: "modbus_io_exception_or_structured_no_response",
+        kind: "no_response",
+      },
+      { source: "other_modbus_exception", kind: "modbus" },
+      { source: "malformed_response", kind: "invalid_response" },
+    ],
+    forbidden_equivalence: [
+      "exception_class_name",
+      "message_substring",
+      "case_folding",
+      "undocumented_fallback",
+    ],
+  },
+  diagnostic_message_redaction: {
+    code: "diagnostic_message_redaction",
+    python_candidates: [
+      "configured_host:configured_port",
+      "[configured_host]:configured_port",
+      "configured_host",
+    ],
+    typescript_candidates: [
+      "configured_host:configured_port",
+      "[configured_host]:configured_port",
+      "configured_host",
+    ],
+    order: "longest_first",
+    placeholder: "<endpoint>",
+    preserve_remaining_text_and_order: true,
+    maximum_output_length: 1024,
+    overlong_behavior: "reject",
+    include_raw_cause: false,
+    include_raw_payload: false,
+  },
+};
 
 const MODBUS_TRANSPORT_EXTENSION: TypeScriptExtensions = {
   schema_version: 1,
@@ -305,6 +424,28 @@ function preparePartialIdmModbusClient(project: string): void {
       omitted_members: [...IDM_MODBUS_OMITTED_MEMBERS],
     };
   });
+}
+
+function writeRuntimeNormalizationAuthority(
+  project: string,
+  authority: RuntimeNormalizationAuthority = RUNTIME_NORMALIZATION_AUTHORITY,
+): void {
+  const path = resolve(project, "contracts/normalization.md");
+  const source = readFileSync(path, "utf8");
+  const block = [
+    RUNTIME_NORMALIZATION_START,
+    "```json",
+    JSON.stringify(authority, undefined, 2),
+    "```",
+    RUNTIME_NORMALIZATION_END,
+  ].join("\n");
+  const start = source.indexOf(RUNTIME_NORMALIZATION_START);
+  const end = source.indexOf(RUNTIME_NORMALIZATION_END);
+  const next =
+    start === -1 || end === -1
+      ? `${source.trimEnd()}\n\n${block}\n`
+      : `${source.slice(0, start)}${block}${source.slice(end + RUNTIME_NORMALIZATION_END.length)}`;
+  writeFileSync(path, next);
 }
 
 afterEach(() => {
@@ -714,6 +855,119 @@ describe("generated API and baseline documentation", () => {
     const extensionResult = runGenerator(extensionProject, ["--release"]);
     expect(extensionResult.status).not.toBe(0);
     expect(extensionResult.stderr).toContain("extension_release_status_incomplete");
+  });
+
+  it("documents one exact public constructor and closed runtime error normalization authority", () => {
+    const project = createGeneratorProject();
+    writeRuntimeNormalizationAuthority(project);
+    requireSuccess(runGenerator(project), "runtime normalization generation");
+
+    const apiDocument = readFileSync(resolve(project, "docs/API-PARITY.md"), "utf8");
+    expect(apiDocument).toContain("## Runtime normalization authority");
+    expect(apiDocument).toContain("`host` plus mapped options");
+    expect(apiDocument).toContain("`port`, `slaveId`, `timeout`, `maxRetries`, `maxGroupSize`");
+    expect(apiDocument).toContain("pymodbus adapter retries are internalized at `0`");
+    for (const kind of RUNTIME_NORMALIZATION_AUTHORITY.transport_error_type_to_closed_kind.kinds) {
+      expect(apiDocument).toContain(`\`${kind}\``);
+    }
+    expect(apiDocument).toContain("`<endpoint>`");
+    expect(apiDocument).toContain("1024");
+  });
+
+  it("rejects extra constructor injection options and non-zero public adapter retries", () => {
+    const cases: readonly ((authority: RuntimeNormalizationAuthority) => void)[] = [
+      (authority) => {
+        (authority.constructor_options.typescript_options as string[]).push("transportFactory");
+      },
+      (authority) => {
+        (
+          authority.constructor_options.internalized as { pymodbusRetries: number }
+        ).pymodbusRetries = 1;
+      },
+      (authority) => {
+        (authority.constructor_options.forbidden_public_options as string[]).splice(
+          authority.constructor_options.forbidden_public_options.indexOf("clock"),
+          1,
+        );
+      },
+    ];
+
+    for (const mutate of cases) {
+      const project = createGeneratorProject();
+      const authority = structuredClone(RUNTIME_NORMALIZATION_AUTHORITY);
+      mutate(authority);
+      writeRuntimeNormalizationAuthority(project, authority);
+      const result = runGenerator(project);
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain("runtime_normalization_invalid");
+    }
+  });
+
+  it("rejects unknown error kinds, message-only Code 2, and undocumented fallback equivalence", () => {
+    const cases: readonly ((authority: RuntimeNormalizationAuthority) => void)[] = [
+      (authority) => {
+        (authority.transport_error_type_to_closed_kind.kinds as string[]).push("mystery");
+      },
+      (authority) => {
+        (
+          authority.transport_error_type_to_closed_kind.rules[0] as {
+            source: string;
+          }
+        ).source = "message_contains_illegal_data_address";
+      },
+      (authority) => {
+        (authority.transport_error_type_to_closed_kind.forbidden_equivalence as string[]).pop();
+      },
+    ];
+
+    for (const mutate of cases) {
+      const project = createGeneratorProject();
+      const authority = structuredClone(RUNTIME_NORMALIZATION_AUTHORITY);
+      mutate(authority);
+      writeRuntimeNormalizationAuthority(project, authority);
+      const result = runGenerator(project);
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain("runtime_normalization_invalid");
+    }
+  });
+
+  it("rejects asymmetric redaction, alternate placeholders, and overlong diagnostic policy drift", () => {
+    const cases: readonly ((authority: RuntimeNormalizationAuthority) => void)[] = [
+      (authority) => {
+        (authority.diagnostic_message_redaction.typescript_candidates as string[]).pop();
+      },
+      (authority) => {
+        (
+          authority.diagnostic_message_redaction as {
+            placeholder: string;
+          }
+        ).placeholder = "[redacted]";
+      },
+      (authority) => {
+        (
+          authority.diagnostic_message_redaction as {
+            maximum_output_length: number;
+          }
+        ).maximum_output_length = 2048;
+      },
+      (authority) => {
+        (
+          authority.diagnostic_message_redaction as {
+            overlong_behavior: string;
+          }
+        ).overlong_behavior = "truncate";
+      },
+    ];
+
+    for (const mutate of cases) {
+      const project = createGeneratorProject();
+      const authority = structuredClone(RUNTIME_NORMALIZATION_AUTHORITY);
+      mutate(authority);
+      writeRuntimeNormalizationAuthority(project, authority);
+      const result = runGenerator(project);
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain("runtime_normalization_invalid");
+    }
   });
 
   it("release mode rejects escaped, directory, symlink, empty, and oversized evidence", () => {
