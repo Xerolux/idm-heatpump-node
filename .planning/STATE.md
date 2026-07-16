@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 01 verified and security-approved
-last_updated: "2026-07-16T19:03:15.316Z"
-last_activity: 2026-07-16 -- Phase 02 execution started
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-07-16T19:44:50.528Z"
+last_activity: 2026-07-16 -- Completed Phase 02 Plan 01 public governance and runtime normalization
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 20
-  completed_plans: 10
-  percent: 20
+  completed_plans: 11
+  percent: 55
 ---
 
 # Project State
@@ -26,30 +26,31 @@ See: .planning/PROJECT.md (updated 2026-07-14)
 ## Current Position
 
 Phase: 02 (modbus-reads-detection-and-resilience) — EXECUTING
-Plan: 1 of 10
-Status: Executing Phase 02
-Last activity: 2026-07-16 -- Phase 02 execution started
+Plan: 2 of 10
+Status: Ready to execute
+Last activity: 2026-07-16 -- Completed Phase 02 Plan 01 public governance and runtime normalization
 
-Milestone progress: [██░░░░░░░░] 20% (Phase 01 plans: 10/10)
+Milestone progress: [██████░░░░] 55% (11/20 milestone plans)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 10
-- Average duration: 92 min
-- Total execution time: 15h 22m
+- Total plans completed: 11
+- Average duration: 87 min
+- Total execution time: 16h 1m
 
 **By Phase:**
 
 | Phase | Plans | Total   | Avg/Plan |
 | ----- | ----- | ------- | -------- |
 | 01    | 10    | 15h 22m | 92 min   |
+| 02    | 1     | 39 min  | 39 min   |
 
 **Recent Trend:**
 
-- Last 5 plans: 15 min, 22 min, 44 min, 11h 55m (interrupted), 22 min
-- Trend: Phase-1 semantic contracts are verified and security-approved; Phase 2 is next
+- Last 5 plans: 22 min, 44 min, 11h 55m (interrupted), 22 min, 39 min
+- Trend: Phase 2 started with closed additive, partial-class, constructor, and error governance
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |
@@ -62,6 +63,7 @@ _Updated after each plan completion_
 | Phase 01 P07 | 44 min | 2 tasks | 3 files |
 | Phase 01 P09 | 11h 55m | 2 tasks | 6 files |
 | Phase 01 P10 | 22 min | 2 tasks | 4 files |
+| Phase 02 P01 | 39 min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -104,6 +106,10 @@ Recent decisions affecting current work:
 - [Phase 01]: Pin all CI actions by full SHA under contents-read permissions. — Prevents mutable action references and avoids secrets, environments, or device inputs.
 - [Phase 01]: Document exactly 53 complete Phase-1 mappings and 36 planned runtime mappings. — Keeps the usable semantic core distinct from absent transport, write, and web behavior.
 - [Phase 01]: Keep private: true and record that no Node hardware validation was performed. — Prevents premature publication or unsupported validation claims.
+- [Phase 02]: Keep ModbusTransport in a separate additive authority with no fabricated Python mapping row.
+- [Phase 02]: Allow IdmModbusClient to be partial only during private development, with an exact pinned member partition and an unconditional release block.
+- [Phase 02]: Expose only host plus mapped camelCase options publicly; keep transport, clock, sleep, and zero adapter retries internal.
+- [Phase 02]: Normalize runtime errors to seven closed kinds and symmetrically redact configured endpoints with a bounded projection.
 
 ### Pending Todos
 
@@ -122,6 +128,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-16T16:58:42.151Z
-Stopped at: Phase 01 verified and security-approved
+Last session: 2026-07-16T19:44:50.515Z
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None
