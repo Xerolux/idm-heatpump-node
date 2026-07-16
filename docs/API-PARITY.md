@@ -63,12 +63,12 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `AdaptiveBackoff` | `AdaptiveBackoff` | `.` | 1 | `complete` | `class` | `snake_case_to_camelCase` | `timing`: `test/semantic/constants-and-types.test.ts` |
 | `DataType` | `DataType` | `.` | 1 | `complete` | `frozen_const_and_union` | `enum_to_const_union` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
 | `FeatureFlags` | `FeatureFlags` | `.` | 1 | `complete` | `readonly_object_factory` | `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
-| `IdmClientDiagnostics` | `IdmClientDiagnostics` | `.` | 2 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `transport_diagnostics`: `test/parity/transport-contract.test.ts` |
+| `IdmClientDiagnostics` | `IdmClientDiagnostics` | `.` | 2 | `complete` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `transport_diagnostics`: `test/client/diagnostics.test.ts` |
 | `IdmNavigator10WebClient` | `IdmNavigator10WebClient` | `./web` | 4 | `planned` | `class` | `none_to_null`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_client`: `test/parity/web-contract.test.ts` |
 | `IdmNavigator20WebClient` | `IdmNavigator20WebClient` | `./web` | 4 | `planned` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_client`: `test/parity/web-contract.test.ts` |
 | `IdmModelInfo` | `IdmModelInfo` | `.` | 1 | `complete` | `readonly_object_factory` | `list_to_readonly_array`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `set_to_immutable_set_like`, `snake_case_to_camelCase` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
 | `IdmModbusClient` | `IdmModbusClient` | `.` | 2 | `partial` | `class` | `diagnostic_message_redaction`, `idm_modbus_client_options`, `internal_adapter_retries_zero`, `mapping_to_readonly_map_or_record`, `none_to_null`, `set_to_immutable_set_like`, `snake_case_to_camelCase`, `transport_error_type_to_closed_kind`, `tuple_to_readonly_array` | `transport_client`: `test/parity/transport-contract.test.ts` |
-| `IllegalAddressError` | `IllegalAddressError` | `.` | 2 | `planned` | `error_class` | `python_exception_to_error_class` | `transport_errors`: `test/parity/transport-contract.test.ts` |
+| `IllegalAddressError` | `IllegalAddressError` | `.` | 2 | `complete` | `error_class` | `python_exception_to_error_class` | `transport_errors`: `test/client/errors.test.ts` |
 | `ModbusCodec` | `ModbusCodec` | `.` | 1 | `complete` | `class` | `snake_case_to_camelCase` | `codec`: `test/codec.test.ts` |
 | `IdmWebAuthenticationError` | `IdmWebAuthenticationError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `IdmWebConnectionError` | `IdmWebConnectionError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
@@ -90,7 +90,7 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `WebSocketError` | `WebSocketError` | `./web` | 4 | `planned` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `IdmWebValue` | `IdmWebValue` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
 | `IdmWebValueDescription` | `IdmWebValueDescription` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
-| `ModbusErrorContext` | `ModbusErrorContext` | `.` | 2 | `planned` | `readonly_object_factory` | `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `transport_errors`: `test/parity/transport-contract.test.ts` |
+| `ModbusErrorContext` | `ModbusErrorContext` | `.` | 2 | `complete` | `readonly_object_factory` | `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `transport_errors`: `test/client/diagnostics.test.ts` |
 | `PollRateLimiter` | `PollRateLimiter` | `.` | 1 | `complete` | `class` | — | `timing`: `test/semantic/constants-and-types.test.ts` |
 | `RECOMMENDED_WEB_SCAN_INTERVAL` | `RECOMMENDED_WEB_SCAN_INTERVAL` | `./web` | 4 | `planned` | `frozen_constant` | — | `web_constants`: `test/parity/web-contract.test.ts` |
 | `RegisterDef` | `RegisterDef` | `.` | 1 | `complete` | `readonly_object_factory` | `mapping_to_readonly_map_or_record`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `set_to_immutable_set_like`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `register_definition`: `test/registers/register-def.test.ts` |
@@ -108,7 +108,7 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `get_register` | `getRegister` | `.` | 1 | `complete` | `function` | `none_to_null`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `get_register_registry` | `getRegisterRegistry` | `.` | 1 | `complete` | `function` | `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `get_zone_module_registers` | `getZoneModuleRegisters` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
-| `quiet_pymodbus_logging` | `quietPymodbusLogging` | `.` | 2 | `planned` | `function` | `snake_case_to_camelCase` | `transport_logging`: `test/parity/transport-contract.test.ts` |
+| `quiet_pymodbus_logging` | `quietPymodbusLogging` | `.` | 2 | `complete` | `function` | `snake_case_to_camelCase` | `transport_logging`: `test/client/errors.test.ts` |
 | `web_pin_configured` | `webPinConfigured` | `./web` | 4 | `planned` | `function` | `snake_case_to_camelCase` | `web_configuration`: `test/parity/web-contract.test.ts` |
 
 ## TypeScript-only extensions
@@ -117,7 +117,7 @@ These explicitly additive symbols have no Python counterpart and do not count to
 
 | TypeScript symbol | Export path | Owner | Status | Kind | Rationale | Contract evidence |
 | --- | --- | ---: | --- | --- | --- | --- |
-| `ModbusTransport` | `.` | 2 | `planned` | `type` | Node transport abstraction required for deterministic runtime parity without exposing the concrete adapter. | `test/parity/transport-contract.test.ts` |
+| `ModbusTransport` | `.` | 2 | `complete` | `type` | Node transport abstraction required for deterministic runtime parity without exposing the concrete adapter. | `test/parity/transport-contract.test.ts` |
 
 ## Runtime normalization authority
 
@@ -133,9 +133,9 @@ Partial classes are private-development authorities only. Their implemented and 
 
 ### IdmModbusClient
 
-- Partition: 21 implemented, 8 omitted
-- Implemented: `clearLastErrorContext`, `connect`, `decodeValue`, `detectModel`, `disconnect`, `forceReconnect`, `getBatchUnsafeRegisters`, `getDiagnostics`, `getLastErrorContext`, `getUnsupportedRegisters`, `host`, `isConnected`, `markBatchUnsafe`, `modelInfo`, `modelName`, `port`, `probeRegister`, `readBatch`, `readRegister`, `readValue`, `resetFailedRegisters`
-- Omitted: `encodeValue`, `getActiveCyclicWrites`, `getExpiredCyclicWrites`, `resetCyclicWriteState`, `resetWriteThrottle`, `setValue`, `simulateWrite`, `writeRegister`
+- Partition: 22 implemented, 7 omitted
+- Implemented: `clearLastErrorContext`, `connect`, `decodeValue`, `detectModel`, `disconnect`, `encodeValue`, `forceReconnect`, `getBatchUnsafeRegisters`, `getDiagnostics`, `getLastErrorContext`, `getUnsupportedRegisters`, `host`, `isConnected`, `markBatchUnsafe`, `modelInfo`, `modelName`, `port`, `probeRegister`, `readBatch`, `readRegister`, `readValue`, `resetFailedRegisters`
+- Omitted: `getActiveCyclicWrites`, `getExpiredCyclicWrites`, `resetCyclicWriteState`, `resetWriteThrottle`, `setValue`, `simulateWrite`, `writeRegister`
 
 ## Phase 1 class/member contract
 

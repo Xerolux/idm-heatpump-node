@@ -702,9 +702,9 @@
       "export_path": ".",
       "kind": "class",
       "owner_phase": 2,
-      "status": "planned",
+      "status": "complete",
       "evidence_category": "transport_diagnostics",
-      "contract_test": "test/parity/transport-contract.test.ts",
+      "contract_test": "test/client/diagnostics.test.ts",
       "normalizations": [
         "none_to_null",
         "python_dataclass_to_readonly_object_factory",
@@ -818,6 +818,7 @@
           "decodeValue",
           "detectModel",
           "disconnect",
+          "encodeValue",
           "forceReconnect",
           "getBatchUnsafeRegisters",
           "getDiagnostics",
@@ -836,7 +837,6 @@
           "resetFailedRegisters"
         ],
         "omitted_members": [
-          "encodeValue",
           "getActiveCyclicWrites",
           "getExpiredCyclicWrites",
           "resetCyclicWriteState",
@@ -853,9 +853,9 @@
       "export_path": ".",
       "kind": "class",
       "owner_phase": 2,
-      "status": "planned",
+      "status": "complete",
       "evidence_category": "transport_errors",
-      "contract_test": "test/parity/transport-contract.test.ts",
+      "contract_test": "test/client/errors.test.ts",
       "normalizations": ["python_exception_to_error_class"],
       "representation": {
         "form": "error_class",
@@ -1281,9 +1281,9 @@
       "export_path": ".",
       "kind": "class",
       "owner_phase": 2,
-      "status": "planned",
+      "status": "complete",
       "evidence_category": "transport_errors",
-      "contract_test": "test/parity/transport-contract.test.ts",
+      "contract_test": "test/client/diagnostics.test.ts",
       "normalizations": ["python_dataclass_to_readonly_object_factory", "snake_case_to_camelCase"],
       "representation": {
         "form": "readonly_object_factory",
@@ -1598,9 +1598,9 @@
       "export_path": ".",
       "kind": "function",
       "owner_phase": 2,
-      "status": "planned",
+      "status": "complete",
       "evidence_category": "transport_logging",
-      "contract_test": "test/parity/transport-contract.test.ts",
+      "contract_test": "test/client/errors.test.ts",
       "normalizations": ["snake_case_to_camelCase"],
       "representation": {
         "form": "function",
