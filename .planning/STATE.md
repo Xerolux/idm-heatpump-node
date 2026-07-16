@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-05-PLAN.md; next first incomplete 02-06-PLAN.md
-last_updated: "2026-07-16T20:58:37.198Z"
-last_activity: 2026-07-16 -- Completed Phase 02 Plan 05 serialized lifecycle, retry, reconnect, probes, and normalized error state
+stopped_at: Completed 02-06-PLAN.md; next first incomplete 02-07-PLAN.md
+last_updated: "2026-07-16T21:27:15.044Z"
+last_activity: 2026-07-16 -- Completed Phase 02 Plan 06 exact reads, safe batching, fallback, quarantine, and executable read parity
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 20
-  completed_plans: 15
-  percent: 75
+  completed_plans: 16
+  percent: 80
 ---
 
 # Project State
@@ -26,31 +26,31 @@ See: .planning/PROJECT.md (updated 2026-07-14)
 ## Current Position
 
 Phase: 02 (modbus-reads-detection-and-resilience) — EXECUTING
-Plan: 6 of 10
+Plan: 7 of 10
 Status: Ready to execute
-Last activity: 2026-07-16 -- Completed Phase 02 Plan 05 serialized lifecycle, retry, reconnect, probes, and normalized error state
+Last activity: 2026-07-16 -- Completed Phase 02 Plan 06 exact reads, safe batching, fallback, quarantine, and executable read parity
 
-Milestone progress: [████████░░] 75% (15/20 milestone plans)
+Milestone progress: [████████░░] 80% (16/20 milestone plans)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 15
-- Average duration: 68 min
-- Total execution time: 17h 03m
+- Total plans completed: 16
+- Average duration: 65 min
+- Total execution time: 17h 22m
 
 **By Phase:**
 
 | Phase | Plans | Total   | Avg/Plan |
 | ----- | ----- | ------- | -------- |
 | 01    | 10    | 15h 22m | 92 min   |
-| 02    | 5     | 1h 41m  | 20 min   |
+| 02    | 6     | 2h 00m  | 20 min   |
 
 **Recent Trend:**
 
-- Last 5 plans: 39 min, 18 min, 9 min, 21 min, 14 min
-- Trend: Phase 2 now has one FIFO-owned lifecycle with exact retry, reconnect, probe, and normalized diagnostic state
+- Last 5 plans: 18 min, 9 min, 21 min, 14 min, 19 min
+- Trend: Phase 2 now has exact FIFO-owned single/batch reads, fallback, quarantine, and executable read parity
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |
@@ -68,6 +68,7 @@ _Updated after each plan completion_
 | Phase 02 P04 | 9 min | 2 tasks | 5 files |
 | Phase 02 P03 | 21 min | 2 tasks | 6 files |
 | Phase 02 P05 | 14 min | 2 tasks | 6 files |
+| Phase 02 P06 | 19 min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -125,6 +126,7 @@ Recent decisions affecting current work:
 - [Phase 02]: Hold one FIFO acquisition across ensure/connect, every attempt, reconnect, delay, validation, and state mutation.
 - [Phase 02]: Reconnect timeout, disconnected, socket, and no-response failures; retry Modbus and invalid-response failures on the same connection; never retry Code 2.
 - [Phase 02]: Preserve the latest immutable normalized error context after later success until explicit clearing.
+- [Phase 02]: Keep exact documented logical starts/sizes and isolate direct reads from fallback failure state. — Grouping merges only same-type strict adjacency within the complete span; only ordered individual fallback mutates unsupported, permanent, or transient register state.
 
 ### Pending Todos
 
@@ -143,6 +145,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-16T20:58:37.185Z
-Stopped at: Completed 02-05-PLAN.md; next first incomplete 02-06-PLAN.md
+Last session: 2026-07-16T21:26:49.097Z
+Stopped at: Completed 02-06-PLAN.md; next first incomplete 02-07-PLAN.md
 Resume file: None

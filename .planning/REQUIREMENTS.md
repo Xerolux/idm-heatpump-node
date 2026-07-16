@@ -29,7 +29,7 @@ Requirements for the initial `0.1.0` release. The existing package/tooling found
 ### Modbus Reads, Detection, and Resilience
 
 - [x] **TRN-01**: Domain logic uses a `ModbusTransport` abstraction whose first real adapter encapsulates `modbus-serial`; deterministic tests can replace it with a fake transport and controlled clock without adapter details leaking into domain behavior.
-- [ ] **TRN-02**: Consumers can connect, disconnect, reconnect, retry with backoff, serialize requests, perform single and safe batch reads, recover through fallback, and observe Illegal Address, permanent-error, and batch-unsafe quarantine behavior matching Python request traces and outcomes.
+- [x] **TRN-02**: Consumers can connect, disconnect, reconnect, retry with backoff, serialize requests, perform single and safe batch reads, recover through fallback, and observe Illegal Address, permanent-error, and batch-unsafe quarantine behavior matching Python request traces and outcomes.
 - [ ] **TRN-03 (umbrella)**: Identical selections emit the same ordered Modbus read/write function, address, count, and payload semantics as Python; batching combines only exactly adjacent, non-overlapping ranges of one register type, and overlapping `1392/count=2` and `1393/count=1` remain distinct requests. This umbrella is complete only when both child clauses below are complete and is never mapped directly to one phase.
 - [x] **TRN-03R**: Phase 2 proves the read/lifecycle clause of TRN-03: identical selections emit the same ordered FC03/FC04 function, address, and count; batching uses only exact same-type adjacency and preserves all gaps and logical overlaps as distinct requests.
 - [ ] **TRN-03W**: Phase 3 proves the write clause of TRN-03: accepted writes emit the same ordered function, address, count, and payload words as Python, while rejected and dry-run writes emit no unintended traffic.
@@ -135,7 +135,7 @@ add new ingested constraints or weaken the parent meaning.
 | COD-01      | Phase 1  | Complete                                   |
 | CTR-01      | Phase 1  | Complete                                   |
 | TRN-01      | Phase 2  | Complete                                   |
-| TRN-02      | Phase 2  | Pending                                    |
+| TRN-02      | Phase 2  | Complete                                   |
 | TRN-03      | Umbrella | Pending until TRN-03R and TRN-03W complete |
 | TRN-03R     | Phase 2  | Complete                                   |
 | TRN-03W     | Phase 3  | Pending                                    |

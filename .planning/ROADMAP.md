@@ -80,7 +80,7 @@ Plans:
 
 **Wave 4** _(blocked on Wave 3 completion)_
 
-- [ ] 02-06-PLAN.md — Implement exact single reads, grouping, batch fallback, failure tracking, quarantine, and read scenario execution.
+- [x] 02-06-PLAN.md — Implement exact single reads, grouping, batch fallback, failure tracking, quarantine, and read scenario execution.
 
 **Wave 5** _(blocked on Wave 4 completion)_
 
@@ -151,7 +151,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase                                      | Plans Complete | Status      | Completed  |
 | ------------------------------------------ | -------------- | ----------- | ---------- |
 | 1. Reproducible Semantic Contract          | 10/10          | Complete    | 2026-07-16 |
-| 2. Modbus Reads, Detection, and Resilience | 5/10           | In Progress |            |
+| 2. Modbus Reads, Detection, and Resilience | 6/10           | In Progress |            |
 | 3. Safe Write Parity                       | 0/TBD          | Not started | -          |
 | 4. Optional Read-Only Web Parity           | 0/TBD          | Not started | -          |
 | 5. Parity Closure and Release Assurance    | 0/TBD          | Not started | -          |
