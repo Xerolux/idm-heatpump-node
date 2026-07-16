@@ -67,7 +67,7 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `IdmNavigator10WebClient` | `IdmNavigator10WebClient` | `./web` | 4 | `planned` | `class` | `none_to_null`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_client`: `test/parity/web-contract.test.ts` |
 | `IdmNavigator20WebClient` | `IdmNavigator20WebClient` | `./web` | 4 | `planned` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_client`: `test/parity/web-contract.test.ts` |
 | `IdmModelInfo` | `IdmModelInfo` | `.` | 1 | `complete` | `readonly_object_factory` | `list_to_readonly_array`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `set_to_immutable_set_like`, `snake_case_to_camelCase` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
-| `IdmModbusClient` | `IdmModbusClient` | `.` | 2 | `partial` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `set_to_immutable_set_like`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `transport_client`: `test/parity/transport-contract.test.ts` |
+| `IdmModbusClient` | `IdmModbusClient` | `.` | 2 | `partial` | `class` | `diagnostic_message_redaction`, `idm_modbus_client_options`, `internal_adapter_retries_zero`, `mapping_to_readonly_map_or_record`, `none_to_null`, `set_to_immutable_set_like`, `snake_case_to_camelCase`, `transport_error_type_to_closed_kind`, `tuple_to_readonly_array` | `transport_client`: `test/parity/transport-contract.test.ts` |
 | `IllegalAddressError` | `IllegalAddressError` | `.` | 2 | `planned` | `error_class` | `python_exception_to_error_class` | `transport_errors`: `test/parity/transport-contract.test.ts` |
 | `ModbusCodec` | `ModbusCodec` | `.` | 1 | `complete` | `class` | `snake_case_to_camelCase` | `codec`: `test/codec.test.ts` |
 | `IdmWebAuthenticationError` | `IdmWebAuthenticationError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
@@ -118,6 +118,14 @@ These explicitly additive symbols have no Python counterpart and do not count to
 | TypeScript symbol | Export path | Owner | Status | Kind | Rationale | Contract evidence |
 | --- | --- | ---: | --- | --- | --- | --- |
 | `ModbusTransport` | `.` | 2 | `planned` | `type` | Node transport abstraction required for deterministic runtime parity without exposing the concrete adapter. | `test/parity/transport-contract.test.ts` |
+
+## Runtime normalization authority
+
+- Public constructor: `host` plus mapped options `port`, `slaveId`, `timeout`, `maxRetries`, `maxGroupSize`
+- Internal adapter policy: pymodbus adapter retries are internalized at `0`
+- Closed error kinds: `timeout`, `disconnected`, `socket`, `no_response`, `modbus`, `illegal_address`, `invalid_response`
+- Diagnostic redaction: longest-first endpoint replacement with `<endpoint>`, unchanged remaining text/order, and rejection above 1024 characters
+- Error equivalence never uses exception class names, message substrings, case folding, or undocumented fallbacks.
 
 ## Partial class lifecycle
 

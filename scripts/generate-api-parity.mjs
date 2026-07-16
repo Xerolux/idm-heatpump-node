@@ -18,6 +18,7 @@ import { isEvidenceTestPath, validateEvidencePath } from "./evidence-path.mjs";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PATHS = Object.freeze({
   mapping: resolve(ROOT, "contracts/api-mapping.json"),
+  normalization: resolve(ROOT, "contracts/normalization.md"),
   extensions: resolve(ROOT, "contracts/typescript-extensions.json"),
   publicApi: resolve(ROOT, "test/fixtures/public-api.json"),
   publicClasses: resolve(ROOT, "test/fixtures/public-classes.json"),
@@ -34,7 +35,10 @@ const IDENTIFIER = /^[A-Za-z][A-Za-z0-9_]*$/u;
 const CAMEL_IDENTIFIER = /^[A-Za-z][A-Za-z0-9]*$/u;
 const ALLOWED_STATUSES = new Set(["planned", "partial", "complete", "not_applicable"]);
 const ALLOWED_NORMALIZATIONS = new Set([
+  "diagnostic_message_redaction",
   "enum_to_const_union",
+  "idm_modbus_client_options",
+  "internal_adapter_retries_zero",
   "list_to_readonly_array",
   "mapping_to_readonly_map_or_record",
   "none_to_null",
@@ -43,6 +47,7 @@ const ALLOWED_NORMALIZATIONS = new Set([
   "python_exception_to_error_class",
   "set_to_immutable_set_like",
   "snake_case_to_camelCase",
+  "transport_error_type_to_closed_kind",
   "tuple_to_readonly_array",
 ]);
 const ALLOWED_REPRESENTATIONS = new Set([
@@ -57,6 +62,87 @@ const ALLOWED_REPRESENTATIONS = new Set([
 ]);
 const ALLOWED_CONSTRUCTORS = new Set(["class", "factory", "not_constructible", "value"]);
 const ALLOWED_EXTENSION_STATUSES = new Set(["planned", "complete"]);
+const RUNTIME_NORMALIZATION_START = "<!-- runtime-normalization-contract:start -->";
+const RUNTIME_NORMALIZATION_END = "<!-- runtime-normalization-contract:end -->";
+const EXPECTED_RUNTIME_NORMALIZATION = Object.freeze({
+  schema_version: 1,
+  constructor_options: {
+    code: "idm_modbus_client_options",
+    python_parameters: [
+      "host",
+      "port",
+      "slave_id",
+      "timeout",
+      "max_retries",
+      "pymodbus_retries",
+      "max_group_size",
+    ],
+    typescript_required: ["host"],
+    typescript_options: ["port", "slaveId", "timeout", "maxRetries", "maxGroupSize"],
+    internalized: {
+      code: "internal_adapter_retries_zero",
+      pymodbusRetries: 0,
+    },
+    forbidden_public_options: [
+      "transport",
+      "transportFactory",
+      "clock",
+      "sleep",
+      "pymodbusRetries",
+    ],
+  },
+  transport_error_type_to_closed_kind: {
+    code: "transport_error_type_to_closed_kind",
+    kinds: [
+      "timeout",
+      "disconnected",
+      "socket",
+      "no_response",
+      "modbus",
+      "illegal_address",
+      "invalid_response",
+    ],
+    rules: [
+      { source: "numeric_modbus_exception_code_2", kind: "illegal_address" },
+      { source: "structured_illegal_address_marker", kind: "illegal_address" },
+      { source: "timeout_exception", kind: "timeout" },
+      { source: "connection_exception", kind: "disconnected" },
+      { source: "socket_or_os_error", kind: "socket" },
+      {
+        source: "modbus_io_exception_or_structured_no_response",
+        kind: "no_response",
+      },
+      { source: "other_modbus_exception", kind: "modbus" },
+      { source: "malformed_response", kind: "invalid_response" },
+    ],
+    forbidden_equivalence: [
+      "exception_class_name",
+      "message_substring",
+      "case_folding",
+      "undocumented_fallback",
+    ],
+  },
+  diagnostic_message_redaction: {
+    code: "diagnostic_message_redaction",
+    python_candidates: [
+      "configured_host:configured_port",
+      "[configured_host]:configured_port",
+      "configured_host",
+    ],
+    typescript_candidates: [
+      "configured_host:configured_port",
+      "[configured_host]:configured_port",
+      "configured_host",
+    ],
+    order: "longest_first",
+    placeholder: "<endpoint>",
+    preserve_remaining_text_and_order: true,
+    maximum_output_length: 1024,
+    overlong_behavior: "reject",
+    include_raw_cause: false,
+    include_raw_payload: false,
+  },
+});
 const NODE_DECISION_KEYS = new Set([
   "alias_of",
   "contract_test",
@@ -131,6 +217,20 @@ function readJson(path, label) {
 
 function canonical(value) {
   return JSON.stringify(value);
+}
+
+function structuralCanonical(value) {
+  if (Array.isArray(value)) {
+    return value.map(structuralCanonical);
+  }
+  if (isRecord(value)) {
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, structuralCanonical(value[key])]),
+    );
+  }
+  return value;
 }
 
 function baselineFromManifest(manifest) {
@@ -934,6 +1034,63 @@ function validateExtensions(value, mapping, releaseMode) {
   return value;
 }
 
+function validateRuntimeNormalization(source, publicClasses) {
+  const start = source.indexOf(RUNTIME_NORMALIZATION_START);
+  const end = source.indexOf(RUNTIME_NORMALIZATION_END);
+  if (
+    start === -1 ||
+    end === -1 ||
+    end <= start ||
+    source.lastIndexOf(RUNTIME_NORMALIZATION_START) !== start ||
+    source.lastIndexOf(RUNTIME_NORMALIZATION_END) !== end
+  ) {
+    fail(
+      "runtime_normalization_invalid",
+      "contracts/normalization.md must contain one runtime normalization authority",
+    );
+  }
+  const match = source
+    .slice(start + RUNTIME_NORMALIZATION_START.length, end)
+    .trim()
+    .match(/^```json\n([\s\S]+)\n```$/u);
+  if (match === null) {
+    fail(
+      "runtime_normalization_invalid",
+      "Runtime normalization authority must be one fenced JSON object",
+    );
+  }
+  let authority;
+  try {
+    authority = JSON.parse(match[1]);
+  } catch (error) {
+    fail(
+      "runtime_normalization_invalid",
+      `Runtime normalization authority is invalid JSON: ${String(error)}`,
+    );
+  }
+  if (
+    canonical(structuralCanonical(authority)) !==
+    canonical(structuralCanonical(EXPECTED_RUNTIME_NORMALIZATION))
+  ) {
+    fail(
+      "runtime_normalization_invalid",
+      "Runtime normalization authority differs from the reviewed closed contract",
+    );
+  }
+  const clientFact = publicClasses.byPublicName.get("IdmModbusClient");
+  if (
+    clientFact === undefined ||
+    canonical(clientFact.constructor.parameters.map(({ name }) => name)) !==
+      canonical(authority.constructor_options.python_parameters)
+  ) {
+    fail(
+      "runtime_normalization_invalid",
+      "Runtime constructor authority differs from the pinned Python class fixture",
+    );
+  }
+  return authority;
+}
+
 function markdown(value) {
   return String(value).replaceAll("|", "\\|").replaceAll("\n", " ");
 }
@@ -942,7 +1099,14 @@ function code(value) {
   return `\`${markdown(value)}\``;
 }
 
-function renderApiDocument(mapping, extensions, publicApi, publicClasses, manifest) {
+function renderApiDocument(
+  mapping,
+  extensions,
+  runtimeNormalization,
+  publicApi,
+  publicClasses,
+  manifest,
+) {
   const lines = [
     "<!-- GENERATED FILE — DO NOT EDIT. Run `node scripts/generate-api-parity.mjs` to regenerate. -->",
     "",
@@ -989,6 +1153,19 @@ function renderApiDocument(mapping, extensions, publicApi, publicClasses, manife
       `| ${code(extension.typescript_symbol)} | ${code(extension.export_path)} | ${extension.owner_phase} | ${code(extension.status)} | ${code(extension.kind)} | ${markdown(extension.rationale)} | ${code(extension.contract_test)} |`,
     );
   }
+  const constructor = runtimeNormalization.constructor_options;
+  const errorKinds = runtimeNormalization.transport_error_type_to_closed_kind.kinds;
+  const redaction = runtimeNormalization.diagnostic_message_redaction;
+  lines.push(
+    "",
+    "## Runtime normalization authority",
+    "",
+    `- Public constructor: ${code("host")} plus mapped options ${constructor.typescript_options.map(code).join(", ")}`,
+    `- Internal adapter policy: pymodbus adapter retries are internalized at ${code(constructor.internalized.pymodbusRetries)}`,
+    `- Closed error kinds: ${errorKinds.map(code).join(", ")}`,
+    `- Diagnostic redaction: longest-first endpoint replacement with ${code(redaction.placeholder)}, unchanged remaining text/order, and rejection above ${redaction.maximum_output_length} characters`,
+    "- Error equivalence never uses exception class names, message substrings, case folding, or undocumented fallbacks.",
+  );
   const partialRows = mapping.mappings.filter(({ status }) => status === "partial");
   lines.push(
     "",
@@ -1182,11 +1359,25 @@ function main() {
     mapping,
     options.release,
   );
+  const runtimeNormalization = validateRuntimeNormalization(
+    readFileSync(PATHS.normalization, "utf8"),
+    publicClasses,
+  );
   if (options.release && manifest.parity_status !== "complete") {
     fail("baseline_release_status_incomplete", "Baseline manifest is not complete");
   }
   const documents = [
-    [PATHS.apiDocument, renderApiDocument(mapping, extensions, publicApi, publicClasses, manifest)],
+    [
+      PATHS.apiDocument,
+      renderApiDocument(
+        mapping,
+        extensions,
+        runtimeNormalization,
+        publicApi,
+        publicClasses,
+        manifest,
+      ),
+    ],
     [PATHS.baselineDocument, renderBaselineDocument(manifest)],
   ];
   if (options.check) {

@@ -109,6 +109,134 @@ New codes require a reviewed update to this document and focused Python and
 TypeScript evidence. Implementations must not collapse undocumented exceptions
 into a permissive catch-all equivalence.
 
+## Runtime constructor, error, and diagnostic authority
+
+The following JSON block is the machine-readable authority consumed by parity
+generation and, in later Phase-2 plans, by both the pinned Python scenario
+generator and the TypeScript scenario runner. The public client constructor is
+`new IdmModbusClient(host, options?)`; only the five listed camelCase options
+are public. Concrete transport, clock, delay, and adapter retry injection remain
+internal source/test seams. Pymodbus-compatible adapter retries are fixed to
+zero so only the IDM client owns retry and backoff behavior.
+
+Runtime failures are classified from structured evidence before comparison.
+Numeric Modbus exception Code 2 and the structured illegal-address marker are
+the only unsupported-address evidence. Exception class names, message
+substrings, case folding, and undocumented fallback categories never establish
+equivalence.
+
+Diagnostic redaction builds the configured endpoint candidates, orders the
+actual strings longest first, and replaces each occurrence with `<endpoint>`.
+All remaining text and order are preserved. Output longer than 1024 characters
+is rejected; raw causes and payloads are not included.
+
+<!-- runtime-normalization-contract:start -->
+
+```json
+{
+  "schema_version": 1,
+  "constructor_options": {
+    "code": "idm_modbus_client_options",
+    "python_parameters": [
+      "host",
+      "port",
+      "slave_id",
+      "timeout",
+      "max_retries",
+      "pymodbus_retries",
+      "max_group_size"
+    ],
+    "typescript_required": ["host"],
+    "typescript_options": ["port", "slaveId", "timeout", "maxRetries", "maxGroupSize"],
+    "internalized": {
+      "code": "internal_adapter_retries_zero",
+      "pymodbusRetries": 0
+    },
+    "forbidden_public_options": [
+      "transport",
+      "transportFactory",
+      "clock",
+      "sleep",
+      "pymodbusRetries"
+    ]
+  },
+  "transport_error_type_to_closed_kind": {
+    "code": "transport_error_type_to_closed_kind",
+    "kinds": [
+      "timeout",
+      "disconnected",
+      "socket",
+      "no_response",
+      "modbus",
+      "illegal_address",
+      "invalid_response"
+    ],
+    "rules": [
+      {
+        "source": "numeric_modbus_exception_code_2",
+        "kind": "illegal_address"
+      },
+      {
+        "source": "structured_illegal_address_marker",
+        "kind": "illegal_address"
+      },
+      {
+        "source": "timeout_exception",
+        "kind": "timeout"
+      },
+      {
+        "source": "connection_exception",
+        "kind": "disconnected"
+      },
+      {
+        "source": "socket_or_os_error",
+        "kind": "socket"
+      },
+      {
+        "source": "modbus_io_exception_or_structured_no_response",
+        "kind": "no_response"
+      },
+      {
+        "source": "other_modbus_exception",
+        "kind": "modbus"
+      },
+      {
+        "source": "malformed_response",
+        "kind": "invalid_response"
+      }
+    ],
+    "forbidden_equivalence": [
+      "exception_class_name",
+      "message_substring",
+      "case_folding",
+      "undocumented_fallback"
+    ]
+  },
+  "diagnostic_message_redaction": {
+    "code": "diagnostic_message_redaction",
+    "python_candidates": [
+      "configured_host:configured_port",
+      "[configured_host]:configured_port",
+      "configured_host"
+    ],
+    "typescript_candidates": [
+      "configured_host:configured_port",
+      "[configured_host]:configured_port",
+      "configured_host"
+    ],
+    "order": "longest_first",
+    "placeholder": "<endpoint>",
+    "preserve_remaining_text_and_order": true,
+    "maximum_output_length": 1024,
+    "overlong_behavior": "reject",
+    "include_raw_cause": false,
+    "include_raw_payload": false
+  }
+}
+```
+
+<!-- runtime-normalization-contract:end -->
+
 ## Explicitly forbidden normalizations
 
 - Exception class/name/message matching as semantic evidence.

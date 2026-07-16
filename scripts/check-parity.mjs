@@ -29,6 +29,7 @@ const API_GENERATOR_PATH = resolve(ROOT, "scripts/generate-api-parity.mjs");
 const EVIDENCE_VALIDATOR_PATH = resolve(ROOT, "scripts/evidence-path.mjs");
 const MAPPING_PATH = resolve(ROOT, "contracts/api-mapping.json");
 const EXTENSIONS_PATH = resolve(ROOT, "contracts/typescript-extensions.json");
+const NORMALIZATION_PATH = resolve(ROOT, "contracts/normalization.md");
 
 const EXPECTED_MANIFEST_FIELDS = Object.freeze([
   "schema_version",
@@ -472,6 +473,7 @@ function prepareShadowRoot(stageRoot) {
   copyFileSync(EVIDENCE_VALIDATOR_PATH, resolve(stageRoot, "scripts/evidence-path.mjs"));
   copyFileSync(MAPPING_PATH, resolve(stageRoot, "contracts/api-mapping.json"));
   copyFileSync(EXTENSIONS_PATH, resolve(stageRoot, "contracts/typescript-extensions.json"));
+  copyFileSync(NORMALIZATION_PATH, resolve(stageRoot, "contracts/normalization.md"));
   copyFileSync(MANIFEST_PATH, resolve(stageRoot, "UPSTREAM-PARITY.json"));
 
   let mapping;

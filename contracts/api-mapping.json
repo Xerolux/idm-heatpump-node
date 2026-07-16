@@ -794,10 +794,14 @@
       "evidence_category": "transport_client",
       "contract_test": "test/parity/transport-contract.test.ts",
       "normalizations": [
+        "diagnostic_message_redaction",
+        "idm_modbus_client_options",
+        "internal_adapter_retries_zero",
         "mapping_to_readonly_map_or_record",
         "none_to_null",
         "set_to_immutable_set_like",
         "snake_case_to_camelCase",
+        "transport_error_type_to_closed_kind",
         "tuple_to_readonly_array"
       ],
       "representation": {

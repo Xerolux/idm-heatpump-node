@@ -500,7 +500,10 @@ describe("API mapping inventory", () => {
 
   it("mapping promotion completes exactly the fully evidenced Phase-1 semantic surface", () => {
     const allowedNormalizations = new Set([
+      "diagnostic_message_redaction",
       "enum_to_const_union",
+      "idm_modbus_client_options",
+      "internal_adapter_retries_zero",
       "list_to_readonly_array",
       "mapping_to_readonly_map_or_record",
       "none_to_null",
@@ -509,6 +512,7 @@ describe("API mapping inventory", () => {
       "python_exception_to_error_class",
       "set_to_immutable_set_like",
       "snake_case_to_camelCase",
+      "transport_error_type_to_closed_kind",
       "tuple_to_readonly_array",
     ]);
     const counterpartKeys = new Set<string>();
@@ -1185,6 +1189,7 @@ describe("generated API and baseline documentation", () => {
     expect(source).not.toMatch(/node:child_process|spawn|execFile|\bfetch\s*\(|https?:\/\//u);
     expect(source).not.toMatch(/process\.cwd|--root|--output/u);
     expect(source).toContain('"contracts/api-mapping.json"');
+    expect(source).toContain('"contracts/normalization.md"');
     expect(source).toContain('"contracts/typescript-extensions.json"');
     expect(source).toContain('"docs/API-PARITY.md"');
     expect(source).toContain('"docs/BASELINE.md"');

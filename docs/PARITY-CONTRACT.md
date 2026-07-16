@@ -110,6 +110,30 @@ müssen semantisch gleich reagieren auf:
 - Fehler während eines Writes;
 - Reconnect und Retry-Erschöpfung.
 
+Die öffentliche TypeScript-Konstruktion lautet
+`new IdmModbusClient(host, options?)`. `options` ist geschlossen auf `port`,
+`slaveId`, `timeout`, `maxRetries` und `maxGroupSize`. Transport-Factory,
+monotone Uhr, Delay/Sleep und Adapter-Retries sind ausschließlich interne
+Test-/Implementierungsseams. Die zum Python-Parameter `pymodbus_retries`
+gehörenden Adapter-Retries werden intern auf `0` festgelegt.
+
+Runtimefehler werden vor dem Vergleich auf genau sieben Werte projiziert:
+`timeout`, `disconnected`, `socket`, `no_response`, `modbus`,
+`illegal_address` und `invalid_response`. Nur numerischer Modbus Exception Code
+2 oder der strukturierte `IllegalAddressError`-Marker ergeben
+`illegal_address`. Timeout, ConnectionException, Socket/OSError,
+ModbusIOException beziehungsweise strukturierter No-Response-Nachweis, übrige
+ModbusException und beschädigte Antworten besitzen jeweils die im
+maschinenlesbaren Block von `contracts/normalization.md` festgelegte Kategorie.
+Klassennamen, Nachrichtenteile, Groß-/Kleinschreibung oder ein Catch-all dürfen
+keine Gleichheit herstellen.
+
+Diagnostiknachrichten ersetzen den konfigurierten Host mit Port, den
+geklammerten Host mit Port und den reinen Host nach tatsächlicher Tokenlänge
+absteigend durch `<endpoint>`. Der übrige Text und seine Reihenfolge bleiben
+unverändert. Mehr als 1024 Ausgabezeichen werden abgelehnt; rohe Causes und
+Payloads werden nicht übernommen.
+
 ### 7. Write-Sicherheit
 
 Für denselben Registerzustand und Wert müssen beide Implementierungen den Write
