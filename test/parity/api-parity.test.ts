@@ -13,6 +13,8 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
+import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -693,15 +695,21 @@ describe("Phase-1 class representation mapping", () => {
 });
 
 describe("checked mapping export closure", () => {
-  it("keeps the existing Phase-1 runtime surface before final Phase-2 promotion", () => {
+  it("exports exactly the authorized complete mappings and reviewed partial client", () => {
     const expectedRuntimeSymbols = apiMapping.mappings
-      .filter(({ export_path, owner_phase }) => export_path === "." && owner_phase === 1)
+      .filter(
+        ({ export_path, status, python_symbol }) =>
+          export_path === "." &&
+          (status === "complete" ||
+            (python_symbol === "IdmModbusClient" && status === "partial")),
+      )
       .map(({ typescript_symbol }) => typescript_symbol)
       .sort();
 
     expect(Object.keys(rootExports).sort()).toEqual(expectedRuntimeSymbols);
     expect(Object.keys(webExports)).toEqual([]);
-    expect(expectedRuntimeSymbols).toHaveLength(53);
+    expect(expectedRuntimeSymbols).toHaveLength(58);
+    expect(rootExports).not.toHaveProperty("ModbusTransport");
   });
 
   it("keeps internal or later symbols unexported", () => {
@@ -725,14 +733,127 @@ describe("checked mapping export closure", () => {
       expect(rootExports, symbol).not.toHaveProperty(symbol);
       expect(rootSource, symbol).not.toContain(symbol);
     }
-    for (const row of apiMapping.mappings.filter(
-      ({ owner_phase, python_symbol }) =>
-        owner_phase > 1 && python_symbol !== "IdmModbusClient",
-    )) {
+    for (const row of apiMapping.mappings.filter(({ owner_phase }) => owner_phase > 2)) {
       expect(rootExports, row.typescript_symbol).not.toHaveProperty(row.typescript_symbol);
       expect(webExports, row.typescript_symbol).not.toHaveProperty(row.typescript_symbol);
       expect(rootSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
       expect(webSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
+    }
+  });
+
+  it("uses explicit named root exports and keeps every internal seam unreachable", () => {
+    const rootSource = readFileSync(resolve(ROOT, "src/index.ts"), "utf8");
+    const clientSource = readFileSync(resolve(ROOT, "src/client/index.ts"), "utf8");
+    const forbidden = [
+      "InternalClientDependencies",
+      "InternalClientSnapshot",
+      "InternalReadRegistersOptions",
+      "InternalReadStateSeed",
+      "InternalTransportFactoryConfiguration",
+      "NormalizedTransportFailure",
+      "PymodbusLoggingHook",
+      "attachInternalModbusTransport",
+      "createInternalIdmModbusClient",
+      "createModbusSerialTransport",
+      "createNormalizedTransportFailure",
+      "getInternalClientSnapshot",
+      "readInternalModbusRegisters",
+      "registerPymodbusLoggingHook",
+      "seedInternalReadState",
+      "withInternalClientDependencies",
+    ] as const;
+
+    expect(rootSource).not.toMatch(/export\s+\*/u);
+    expect(clientSource).not.toMatch(/export\s+\*/u);
+    expect(rootSource).toContain('export { IdmModbusClient } from "./client/index.js";');
+    expect(rootSource).toContain(
+      'export { IdmClientDiagnostics, ModbusErrorContext } from "./client/index.js";',
+    );
+    expect(rootSource).toContain('export { IllegalAddressError } from "./transport/errors.js";');
+    expect(rootSource).toContain(
+      'export { quietPymodbusLogging } from "./transport/logging.js";',
+    );
+    expect(rootSource).toContain(
+      'export type { ModbusTransport } from "./transport/types.js";',
+    );
+    for (const symbol of forbidden) {
+      expect(rootSource, symbol).not.toContain(symbol);
+      expect(clientSource, symbol).not.toContain(symbol);
+    }
+  });
+
+  it("builds exact ESM, CJS, and declaration surfaces without Phase-3 stubs", async () => {
+    const build = spawnSync(
+      process.execPath,
+      [resolve(ROOT, "node_modules/tsup/dist/cli-default.js")],
+      {
+        cwd: ROOT,
+        encoding: "utf8",
+        maxBuffer: 8 * 1024 * 1024,
+        shell: false,
+        timeout: 30_000,
+      },
+    );
+    requireSuccess(build, "package build for declaration closure");
+
+    const expectedRuntimeSymbols = apiMapping.mappings
+      .filter(
+        ({ export_path, status, python_symbol }) =>
+          export_path === "." &&
+          (status === "complete" ||
+            (python_symbol === "IdmModbusClient" && status === "partial")),
+      )
+      .map(({ typescript_symbol }) => typescript_symbol)
+      .sort();
+    const esm = (await import(`${pathToFileURL(resolve(ROOT, "dist/index.js")).href}?api-parity`)) as
+      | Record<string, unknown>;
+    const cjs = createRequire(import.meta.url)(resolve(ROOT, "dist/index.cjs")) as Record<
+      string,
+      unknown
+    >;
+    expect(Object.keys(esm).sort()).toEqual(expectedRuntimeSymbols);
+    expect(Object.keys(cjs).sort()).toEqual(expectedRuntimeSymbols);
+    expect(esm).not.toHaveProperty("ModbusTransport");
+    expect(cjs).not.toHaveProperty("ModbusTransport");
+
+    const declarations = [
+      readFileSync(resolve(ROOT, "dist/index.d.ts"), "utf8"),
+      readFileSync(resolve(ROOT, "dist/index.d.cts"), "utf8"),
+    ];
+    const forbidden = [
+      "InternalClientDependencies",
+      "InternalClientSnapshot",
+      "InternalReadRegistersOptions",
+      "InternalReadStateSeed",
+      "InternalTransportFactoryConfiguration",
+      "ModbusSerialClientBoundary",
+      "ModbusSerialClientFactory",
+      "NormalizedTransportFailure",
+      "attachInternalModbusTransport",
+      "createInternalIdmModbusClient",
+      "createModbusSerialTransport",
+      "getInternalClientSnapshot",
+      "readInternalModbusRegisters",
+      "registerPymodbusLoggingHook",
+      "seedInternalReadState",
+      "withInternalClientDependencies",
+    ] as const;
+    const omitted = [...IDM_MODBUS_OMITTED_MEMBERS];
+
+    for (const declaration of declarations) {
+      expect(declaration).toContain("declare class IdmModbusClient");
+      expect(declaration).toMatch(/constructor\(host: string, options\?: IdmModbusClientOptions\)/u);
+      expect(declaration).toContain("interface ModbusTransport");
+      expect(declaration).toMatch(/export[^;]*\bModbusTransport\b/u);
+      for (const member of IDM_MODBUS_IMPLEMENTED_MEMBERS) {
+        expect(declaration, member).toMatch(new RegExp(`\\b${member}\\b`, "u"));
+      }
+      for (const member of omitted) {
+        expect(declaration, member).not.toMatch(new RegExp(`\\b${member}\\b`, "u"));
+      }
+      for (const symbol of forbidden) {
+        expect(declaration, symbol).not.toContain(symbol);
+      }
     }
   });
 });
