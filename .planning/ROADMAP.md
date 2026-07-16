@@ -14,7 +14,7 @@ The existing package and tooling foundation is already delivered, so this roadma
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Reproducible Semantic Contract** - The pinned Python public API, codecs, registers, and contract artifacts have exact TypeScript counterparts. (completed 2026-07-15)
-- [ ] **Phase 2: Modbus Reads, Detection, and Resilience** - Consumers receive Python-equivalent requests, values, capabilities, state, diagnostics, and recovery from the Modbus path.
+- [x] **Phase 2: Modbus Reads, Detection, and Resilience** - Consumers receive Python-equivalent requests, values, capabilities, state, diagnostics, and recovery from the Modbus path. (completed 2026-07-17)
 - [ ] **Phase 3: Safe Write Parity** - Consumers can plan, validate, dry-run, and execute writes with the same safety and time-dependent behavior as Python.
 - [ ] **Phase 4: Optional Read-Only Web Parity** - Consumers can opt into equivalent Navigator 10 WebSocket and Navigator 2.0 HTTP data without changing the Modbus baseline.
 - [ ] **Phase 5: Parity Closure and Release Assurance** - The complete standalone package proves latest-stable parity and satisfies every gate for `0.1.0` publication.
@@ -96,7 +96,7 @@ Plans:
 
 **Wave 8** _(blocked on Wave 7 completion)_
 
-- [ ] 02-10-PLAN.md — Close package smoke, documentation, parity, privacy, and clause-aware Phase-2 gates.
+- [x] 02-10-PLAN.md — Close package smoke, documentation, parity, privacy, and clause-aware Phase-2 gates.
 
 ### Phase 3: Safe Write Parity
 
@@ -151,7 +151,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase                                      | Plans Complete | Status      | Completed  |
 | ------------------------------------------ | -------------- | ----------- | ---------- |
 | 1. Reproducible Semantic Contract          | 10/10          | Complete    | 2026-07-16 |
-| 2. Modbus Reads, Detection, and Resilience | 9/10           | In Progress |            |
+| 2. Modbus Reads, Detection, and Resilience | 10/10          | Complete    | 2026-07-17 |
 | 3. Safe Write Parity                       | 0/TBD          | Not started | -          |
 | 4. Optional Read-Only Web Parity           | 0/TBD          | Not started | -          |
 | 5. Parity Closure and Release Assurance    | 0/TBD          | Not started | -          |
