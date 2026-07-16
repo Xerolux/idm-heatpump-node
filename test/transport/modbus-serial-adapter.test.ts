@@ -7,6 +7,7 @@ import { IdmModbusClient } from "../../src/client/idm-modbus-client.js";
 import {
   createModbusSerialTransport,
   type ModbusSerialClientBoundary,
+  type ModbusSerialTransportConfiguration,
 } from "../../src/transport/modbus-serial-adapter.js";
 import {
   IllegalAddressError,
@@ -57,7 +58,10 @@ class MockModbusSerialClient implements ModbusSerialClientBoundary {
     this.events.push({ kind: "set_timeout", timeoutMs });
   }
 
-  public async connectTCP(host: string, options: Readonly<{ readonly port: number }>): Promise<void> {
+  public async connectTCP(
+    host: string,
+    options: Readonly<{ readonly port: number }>,
+  ): Promise<void> {
     this.events.push({ kind: "connect", host, port: options.port });
     if (this.connectError !== undefined) {
       throw this.connectError;
@@ -103,7 +107,7 @@ class MockModbusSerialClient implements ModbusSerialClientBoundary {
   }
 }
 
-const configuration = Object.freeze({
+const configuration: ModbusSerialTransportConfiguration = Object.freeze({
   host: "example.invalid",
   port: 15_020,
   unitId: 7,
@@ -133,9 +137,7 @@ function createTransport(
 }
 
 function eventTimeouts(client: MockModbusSerialClient): readonly number[] {
-  return client.events.flatMap((event) =>
-    event.kind === "set_timeout" ? [event.timeoutMs] : [],
-  );
+  return client.events.flatMap((event) => (event.kind === "set_timeout" ? [event.timeoutMs] : []));
 }
 
 afterEach(() => {
@@ -233,9 +235,7 @@ describe("ModbusSerialTransport", () => {
     const transport = createTransport(client, { timeout: 10 });
     await transport.connect();
 
-    await expect(transport.read(inputRequest({ timeoutMs: 2_000 }))).resolves.toEqual([
-      0, 0x4228,
-    ]);
+    await expect(transport.read(inputRequest({ timeoutMs: 2_000 }))).resolves.toEqual([0, 0x4228]);
 
     expect(eventTimeouts(client)).toEqual([10_000, 2_000, 10_000]);
   });
@@ -276,9 +276,9 @@ describe("ModbusSerialTransport", () => {
     const transport = createTransport(client, { timeout: 10 });
     await transport.connect();
 
-    const error = await transport.read(inputRequest({ timeoutMs: 2_000 })).catch((caught: unknown) =>
-      caught,
-    );
+    const error = await transport
+      .read(inputRequest({ timeoutMs: 2_000 }))
+      .catch((caught: unknown) => caught);
 
     assertion(error);
     expect(eventTimeouts(client)).toEqual([10_000, 2_000, 10_000]);

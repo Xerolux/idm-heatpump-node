@@ -25,6 +25,7 @@ import {
   type DiagnosticEndpoint,
   type NormalizedTransportFailureKind as NormalizedTransportFailureKindValue,
 } from "../transport/errors.js";
+import { createModbusSerialTransport } from "../transport/modbus-serial-adapter.js";
 import {
   createModbusReadRequest,
   type ModbusReadRequest,
@@ -116,12 +117,8 @@ const reconnectFailureKinds: ReadonlySet<NormalizedTransportFailureKindValue> = 
   NormalizedTransportFailureKind.NO_RESPONSE,
 ]);
 
-function defaultTransportFactory(): never {
-  throw new Error("The default Modbus transport adapter is not configured");
-}
-
 const defaultDependencies: InternalClientDependencies = Object.freeze({
-  transportFactory: defaultTransportFactory,
+  transportFactory: createModbusSerialTransport,
   now: () => performance.now() / 1_000,
   sleep: async (seconds: number): Promise<void> => {
     await new Promise<void>((resolve) => {
