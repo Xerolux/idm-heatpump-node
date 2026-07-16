@@ -101,9 +101,7 @@ describe("adapter-neutral transport contract", () => {
   });
 
   it("implements the contract without exposing adapter response or client types", async () => {
-    const transport: ModbusTransport = new FakeModbusTransport([
-      { kind: "words", words: [1, 2] },
-    ]);
+    const transport: ModbusTransport = new FakeModbusTransport([{ kind: "words", words: [1, 2] }]);
 
     await transport.connect();
     await expect(transport.read(inputRequest())).resolves.toEqual([1, 2]);
@@ -180,9 +178,7 @@ describe("fake Modbus transport", () => {
     expect(transport.remainingResponses).toBe(1);
     expect(transport.events).toEqual([{ kind: "connect" }]);
 
-    const invalidWords = new FakeModbusTransport([
-      { kind: "words", words: [Number.NaN] },
-    ]);
+    const invalidWords = new FakeModbusTransport([{ kind: "words", words: [Number.NaN] }]);
     await expect(invalidWords.connect()).rejects.toThrow(RangeError);
     expect(invalidWords.remainingResponses).toBe(1);
   });
