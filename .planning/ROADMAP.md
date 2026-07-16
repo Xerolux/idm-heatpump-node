@@ -71,7 +71,7 @@ Plans:
 **Wave 2** _(blocked on Wave 1 completion)_
 
 - [x] 02-02-PLAN.md — Define the adapter-neutral transport contract, bounded parser, fake transport, and fake clock.
-- [ ] 02-04-PLAN.md — Implement exact public errors, logging aliases, immutable context values, and diagnostics factories.
+- [x] 02-04-PLAN.md — Implement exact public errors, logging aliases, immutable context values, and diagnostics factories.
 
 **Wave 3** _(blocked on Wave 2 completion)_
 
@@ -151,7 +151,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase                                      | Plans Complete | Status      | Completed  |
 | ------------------------------------------ | -------------- | ----------- | ---------- |
 | 1. Reproducible Semantic Contract          | 10/10          | Complete    | 2026-07-16 |
-| 2. Modbus Reads, Detection, and Resilience | 2/10           | In Progress |            |
+| 2. Modbus Reads, Detection, and Resilience | 3/10           | In Progress |            |
 | 3. Safe Write Parity                       | 0/TBD          | Not started | -          |
 | 4. Optional Read-Only Web Parity           | 0/TBD          | Not started | -          |
 | 5. Parity Closure and Release Assurance    | 0/TBD          | Not started | -          |

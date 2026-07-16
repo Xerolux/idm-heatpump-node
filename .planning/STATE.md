@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-07-16T20:06:11.668Z"
-last_activity: 2026-07-16 -- Completed Phase 02 Plan 01 public governance and runtime normalization
+stopped_at: Completed 02-04-PLAN.md; next first incomplete 02-03-PLAN.md
+last_updated: "2026-07-16T20:18:47.071Z"
+last_activity: 2026-07-16 -- Completed Phase 02 Plan 04 transport errors, logging, and diagnostics
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 20
-  completed_plans: 12
-  percent: 60
+  completed_plans: 13
+  percent: 65
 ---
 
 # Project State
@@ -28,29 +28,29 @@ See: .planning/PROJECT.md (updated 2026-07-14)
 Phase: 02 (modbus-reads-detection-and-resilience) — EXECUTING
 Plan: 3 of 10
 Status: Ready to execute
-Last activity: 2026-07-16 -- Completed Phase 02 Plan 02 transport contract and scenario boundary
+Last activity: 2026-07-16 -- Completed Phase 02 Plan 04 transport errors, logging, and diagnostics
 
-Milestone progress: [██████░░░░] 60% (12/20 milestone plans)
+Milestone progress: [███████░░░] 65% (13/20 milestone plans)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 12
-- Average duration: 82 min
-- Total execution time: 16h 19m
+- Total plans completed: 13
+- Average duration: 76 min
+- Total execution time: 16h 28m
 
 **By Phase:**
 
 | Phase | Plans | Total   | Avg/Plan |
 | ----- | ----- | ------- | -------- |
 | 01    | 10    | 15h 22m | 92 min   |
-| 02    | 2     | 57 min  | 29 min   |
+| 02    | 3     | 1h 6m   | 22 min   |
 
 **Recent Trend:**
 
-- Last 5 plans: 44 min, 11h 55m (interrupted), 22 min, 39 min, 18 min
-- Trend: Phase 2 now has closed governance plus deterministic transport and scenario boundaries
+- Last 5 plans: 11h 55m (interrupted), 22 min, 39 min, 18 min, 9 min
+- Trend: Phase 2 now also has safe failure classification, logging aliases, and immutable diagnostics
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |
@@ -65,6 +65,7 @@ _Updated after each plan completion_
 | Phase 01 P10 | 22 min | 2 tasks | 4 files |
 | Phase 02 P01 | 39 min | 2 tasks | 10 files |
 | Phase 02 P02 | 18 min | 2 tasks | 5 files |
+| Phase 02 P04 | 9 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,9 @@ Recent decisions affecting current work:
 - [Phase 02]: Normalize runtime errors to seven closed kinds and symmetrically redact configured endpoints with a bounded projection.
 - [Phase 02]: Use one frozen adapter-neutral read request with exact FC03/FC04 identity and reject address/count spans beyond the 16-bit Modbus space. — Validating protocol identity before transport execution keeps adapters interchangeable and prevents malformed requests from consuming deterministic evidence.
 - [Phase 02]: Keep Phase-2 runtime evidence in a separate exact-baseline schema with seven closed operations, synthetic example.invalid configuration, and literal <endpoint> diagnostic redaction. — This preserves the Phase-1 schema closure while preventing writes, web operations, private endpoints, alternate redaction markers, or mutable graphs from entering read parity evidence.
+- [Phase 02]: Represent the seven closed runtime outcomes as six normalized failure kinds plus the dedicated IllegalAddressError marker.
+- [Phase 02]: Create IllegalAddressError only from structured numeric Modbus Code 2; messages and numeric strings remain ordinary Modbus failures.
+- [Phase 02]: Preserve caller order and duplicates in public diagnostics factories; sorting belongs only to later internal-set snapshots.
 
 ### Pending Todos
 
@@ -131,6 +135,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-16T20:05:18.266Z
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-07-16T20:18:25.419Z
+Stopped at: Completed 02-04-PLAN.md; next first incomplete 02-03-PLAN.md
 Resume file: None
