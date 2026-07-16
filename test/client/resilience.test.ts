@@ -12,8 +12,9 @@ import {
   NormalizedTransportFailureKind,
   type RetryableTransportFailureKind,
 } from "../../src/transport/errors.js";
+import { createRegisterDef } from "../../src/registers/definitions.js";
 import type { ModbusReadRequest, ModbusTransport } from "../../src/transport/types.js";
-import { RegisterType } from "../../src/types.js";
+import { DataType, RegisterType } from "../../src/types.js";
 import { FakeClock } from "../support/fake-clock.js";
 import { FakeModbusTransport } from "../support/fake-modbus-transport.js";
 
@@ -407,5 +408,136 @@ describe("IdmModbusClient probes and error context", () => {
     await expect(probe).resolves.toEqual([13]);
     await expect(disconnect).resolves.toBeUndefined();
     expect(fakeEventKinds(second)).toEqual(["connect", "read", "close"]);
+  });
+});
+
+describe("IdmModbusClient batch failure state", () => {
+  it("propagates transport failures without register counters or unsupported state", async () => {
+    const clock = new FakeClock();
+    const transport = new FakeModbusTransport([
+      {
+        kind: "error",
+        error: failure(NormalizedTransportFailureKind.TIMEOUT),
+      },
+    ]);
+    const { client } = createSequenceClient([transport], clock, { maxRetries: 1 });
+    const register = createRegisterDef({
+      address: 2_000,
+      datatype: DataType.UCHAR,
+      name: "transport_failure_register",
+    });
+
+    await expect(client.readBatch([register])).rejects.toMatchObject({
+      kind: NormalizedTransportFailureKind.TIMEOUT,
+    });
+    expect(client.getUnsupportedRegisters()).toEqual([]);
+    expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual([]);
+  });
+
+  it("marks a generic device failure permanent on exactly the third individual failure", async () => {
+    const clock = new FakeClock();
+    const deviceFailure = (): ScriptedRead => ({
+      kind: "error",
+      error: failure(NormalizedTransportFailureKind.MODBUS),
+    });
+    const transport = new FakeModbusTransport([
+      deviceFailure(),
+      deviceFailure(),
+      deviceFailure(),
+      deviceFailure(),
+      deviceFailure(),
+      deviceFailure(),
+    ]);
+    const { client } = createSequenceClient([transport], clock, { maxRetries: 1 });
+    const register = createRegisterDef({
+      address: 2_100,
+      datatype: DataType.UCHAR,
+      name: "third_failure_register",
+    });
+
+    await expect(client.readBatch([register])).resolves.toEqual({});
+    await expect(client.readBatch([register])).resolves.toEqual({});
+    expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual([]);
+
+    await expect(client.readBatch([register])).resolves.toEqual({});
+    expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual([
+      "third_failure_register",
+    ]);
+
+    const readsBeforeSkip = fakeReadRequests(transport).length;
+    await expect(client.readBatch([register])).resolves.toEqual({});
+    expect(fakeReadRequests(transport)).toHaveLength(readsBeforeSkip);
+    await expect(client.readRegister(register)).rejects.toThrow("permanently failed");
+  });
+
+  it("clears only a register's transient count after an individual success", async () => {
+    const clock = new FakeClock();
+    const transport = new FakeModbusTransport([
+      {
+        kind: "error",
+        error: failure(NormalizedTransportFailureKind.MODBUS),
+      },
+      { kind: "words", words: [7] },
+      {
+        kind: "error",
+        error: failure(NormalizedTransportFailureKind.MODBUS),
+      },
+      {
+        kind: "error",
+        error: failure(NormalizedTransportFailureKind.MODBUS),
+      },
+    ]);
+    const { client } = createSequenceClient([transport], clock, { maxRetries: 1 });
+    const register = createRegisterDef({
+      address: 2_200,
+      datatype: DataType.UCHAR,
+      name: "success_reset_register",
+    });
+    client.markBatchUnsafe(register);
+
+    await expect(client.readBatch([register])).resolves.toEqual({});
+    await expect(client.readBatch([register])).resolves.toEqual({
+      success_reset_register: 7,
+    });
+    await expect(client.readBatch([register])).resolves.toEqual({});
+    await expect(client.readBatch([register])).resolves.toEqual({});
+
+    expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual([]);
+  });
+
+  it("keeps quarantine and error context while reset clears failure and unsupported state", async () => {
+    const clock = new FakeClock();
+    const transport = new FakeModbusTransport([
+      { kind: "error", error: new IllegalAddressError("reset unsupported") },
+    ]);
+    const { client } = createSequenceClient([transport], clock, { maxRetries: 1 });
+    const register = createRegisterDef({
+      address: 2_300,
+      datatype: DataType.UCHAR,
+      name: "reset_scope_register",
+    });
+    client.markBatchUnsafe(register, "zeta", "alpha");
+
+    await expect(client.readBatch([register])).resolves.toEqual({});
+    const context = client.getLastErrorContext();
+    expect(client.getUnsupportedRegisters()).toEqual(["reset_scope_register"]);
+    expect(client.getBatchUnsafeRegisters()).toEqual([
+      "alpha",
+      "reset_scope_register",
+      "zeta",
+    ]);
+    expect(Object.isFrozen(client.getUnsupportedRegisters())).toBe(true);
+    expect(Object.isFrozen(client.getBatchUnsafeRegisters())).toBe(true);
+
+    client.resetFailedRegisters();
+
+    expect(client.getUnsupportedRegisters()).toEqual([]);
+    expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual([]);
+    expect(client.getBatchUnsafeRegisters()).toEqual([
+      "alpha",
+      "reset_scope_register",
+      "zeta",
+    ]);
+    expect(client.getLastErrorContext()).toBe(context);
   });
 });
