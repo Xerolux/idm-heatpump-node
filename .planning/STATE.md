@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-07-PLAN.md
-last_updated: "2026-07-16T21:53:12.973Z"
-last_activity: 2026-07-16 -- Completed Phase 02 Plan 07 ordered detection, model-aware maps, diagnostics, and executable detection parity
+stopped_at: Completed 02-08-PLAN.md
+last_updated: "2026-07-16T22:14:11.024Z"
+last_activity: 2026-07-16 -- Completed Phase 02 Plan 08 hidden Modbus TCP adapter and internal default wiring
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 20
-  completed_plans: 17
-  percent: 85
+  completed_plans: 18
+  percent: 90
 ---
 
 # Project State
@@ -26,31 +26,31 @@ See: .planning/PROJECT.md (updated 2026-07-14)
 ## Current Position
 
 Phase: 02 (modbus-reads-detection-and-resilience) — EXECUTING
-Plan: 8 of 10
+Plan: 9 of 10
 Status: Ready to execute
-Last activity: 2026-07-16 -- Completed Phase 02 Plan 07 ordered detection, model-aware maps, diagnostics, and executable detection parity
+Last activity: 2026-07-16 -- Completed Phase 02 Plan 08 hidden Modbus TCP adapter and internal default wiring
 
-Milestone progress: [█████████░] 85% (17/20 milestone plans)
+Milestone progress: [█████████░] 90% (18/20 milestone plans)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 17
-- Average duration: 62 min
-- Total execution time: 17h 42m
+- Total plans completed: 18
+- Average duration: 60 min
+- Total execution time: 17h 56m
 
 **By Phase:**
 
 | Phase | Plans | Total   | Avg/Plan |
 | ----- | ----- | ------- | -------- |
 | 01    | 10    | 15h 22m | 92 min   |
-| 02    | 7     | 2h 20m  | 20 min   |
+| 02    | 8     | 2h 34m  | 19 min   |
 
 **Recent Trend:**
 
-- Last 5 plans: 9 min, 21 min, 14 min, 19 min, 20 min
-- Trend: Phase 2 now adds exact ordered detection, model-aware maps, and immutable diagnostics to the FIFO-owned read core
+- Last 5 plans: 21 min, 14 min, 19 min, 20 min, 14 min
+- Trend: Phase 2 now binds the audited real Modbus TCP provider behind the completed adapter-neutral read core
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |
@@ -70,6 +70,7 @@ _Updated after each plan completion_
 | Phase 02 P05 | 14 min | 2 tasks | 6 files |
 | Phase 02 P06 | 19 min | 3 tasks | 9 files |
 | Phase 02 P07 | 20 min | 2 tasks | 5 files |
+| Phase 02 P08 | 14 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,7 @@ Recent decisions affecting current work:
 - [Phase 02]: Treat only decoded circuit -1.0 or a missing or short response as unavailable. — An exact two-word response remains active even when invalid or outside the plausibility range, matching the pinned Python behavior.
 - [Phase 02]: Replace detected model and model-aware register map only after the full probe sequence completes. — Partial or failed detection must not leak half-applied public model state.
 - [Phase 02]: Sort client-owned diagnostic set snapshots only at the client boundary. — Public diagnostics factories remain order-preserving while internal set projections are deterministic and immutable.
+- [Phase 02]: Keep modbus-serial behind one internal retry-neutral adapter. — Public construction selects the provider without leaking dependency or injection types; only structured numeric Code 2 creates IllegalAddressError.
 
 ### Pending Todos
 
@@ -125,6 +127,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-16T21:53:12.958Z
-Stopped at: Completed 02-07-PLAN.md
+Last session: 2026-07-16T22:14:11.009Z
+Stopped at: Completed 02-08-PLAN.md
 Resume file: None
