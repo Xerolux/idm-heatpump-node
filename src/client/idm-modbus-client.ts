@@ -189,6 +189,21 @@ function timeoutMilliseconds(timeout: number | undefined): number | undefined {
   return milliseconds;
 }
 
+function mergeResultEntries(
+  target: Map<string, unknown>,
+  source: Readonly<Record<string, unknown>>,
+): void {
+  for (const [name, value] of Object.entries(source)) {
+    target.set(name, value);
+  }
+}
+
+function freezeResultEntries(
+  entries: ReadonlyMap<string, unknown>,
+): Readonly<Record<string, unknown>> {
+  return Object.freeze(Object.fromEntries(entries));
+}
+
 export function withInternalClientDependencies(
   options: IdmModbusClientOptions | undefined,
   dependencies: InternalClientDependencies,
@@ -551,16 +566,16 @@ export class IdmModbusClient {
     await this.#ensureConnectedLocked();
     const candidates = valid.filter((register) => !this.#batchUnsafeRegisters.has(register.name));
     const individual = valid.filter((register) => this.#batchUnsafeRegisters.has(register.name));
-    const results: Record<string, unknown> = {};
+    const results = new Map<string, unknown>();
 
     for (const group of groupRegisters(candidates, this.#maxGroupSize)) {
-      Object.assign(results, await this.#readGroupLocked(group));
+      mergeResultEntries(results, await this.#readGroupLocked(group));
     }
     for (const register of individual) {
-      Object.assign(results, await this.#readIndividualFallbackLocked([register]));
+      mergeResultEntries(results, await this.#readIndividualFallbackLocked([register]));
     }
 
-    return Object.freeze(results);
+    return freezeResultEntries(results);
   }
 
   async #readGroupLocked(
@@ -584,7 +599,7 @@ export class IdmModbusClient {
       throw error;
     }
 
-    const data: Record<string, unknown> = {};
+    const data = new Map<string, unknown>();
     const suspect: RegisterDef[] = [];
     for (const register of group) {
       const offset = register.address - start;
@@ -593,7 +608,7 @@ export class IdmModbusClient {
         if (this.#isValueSuspect(register, value)) {
           suspect.push(register);
         } else {
-          data[register.name] = value;
+          data.set(register.name, value);
         }
       } catch {
         // Match Python: one undecodable data point does not discard the rest.
@@ -604,15 +619,15 @@ export class IdmModbusClient {
       for (const register of suspect) {
         this.#batchUnsafeRegisters.add(register.name);
       }
-      Object.assign(data, await this.#readIndividualFallbackLocked(suspect));
+      mergeResultEntries(data, await this.#readIndividualFallbackLocked(suspect));
     }
-    return Object.freeze(data);
+    return freezeResultEntries(data);
   }
 
   async #readIndividualFallbackLocked(
     registers: readonly RegisterDef[],
   ): Promise<Readonly<Record<string, unknown>>> {
-    const data: Record<string, unknown> = {};
+    const data = new Map<string, unknown>();
     for (const register of registers) {
       let words: readonly number[];
       try {
@@ -645,13 +660,13 @@ export class IdmModbusClient {
         if (this.#isValueSuspect(register, value)) {
           continue;
         }
-        data[register.name] = value;
+        data.set(register.name, value);
         this.#registerFailures.delete(register.name);
       } catch {
         // Match Python: decode failures are omitted without failure counters.
       }
     }
-    return Object.freeze(data);
+    return freezeResultEntries(data);
   }
 
   #isGroupFallbackFailure(error: unknown): boolean {

@@ -218,6 +218,36 @@ describe("IdmModbusClient batch reads", () => {
     ]);
   });
 
+  it("preserves special register names as own enumerable batch result properties", async () => {
+    const nullWords = ModbusCodec.encodeFloat32(Number.NaN);
+    const transport = new FakeModbusTransport([
+      { kind: "words", words: [...nullWords, 2] },
+      { kind: "words", words: [3] },
+    ]);
+    const client = createClient(transport);
+    const proto = register("__proto__", 1_800, DataType.FLOAT);
+    const constructor = register("constructor", 1_802);
+    const prototype = register("prototype", 1_803);
+    client.markBatchUnsafe(prototype);
+
+    const result = await client.readBatch([proto, constructor, prototype]);
+
+    expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+    expect(Object.keys(result)).toEqual(["__proto__", "constructor", "prototype"]);
+    expect(result["__proto__"]).toBeNull();
+    expect(result.constructor).toBe(2);
+    expect(result.prototype).toBe(3);
+    for (const name of ["__proto__", "constructor", "prototype"]) {
+      expect(Object.hasOwn(result, name)).toBe(true);
+      expect(Object.getOwnPropertyDescriptor(result, name)?.enumerable).toBe(true);
+    }
+    expect(Object.isFrozen(result)).toBe(true);
+    expect(readRequests(transport).map(({ address, count }) => ({ address, count }))).toEqual([
+      { address: 1_800, count: 3 },
+      { address: 1_803, count: 1 },
+    ]);
+  });
+
   it("executes humidity 1392/2 and mode 1393/1 as separate exact requests", async () => {
     const humidityWords = ModbusCodec.encodeFloat32(54.75);
     const transport = new FakeModbusTransport([
