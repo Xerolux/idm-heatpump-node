@@ -6,6 +6,7 @@ import { IdmClientDiagnostics, ModbusErrorContext } from "../../src/client/diagn
 import {
   attachInternalModbusTransport,
   createInternalIdmModbusClient,
+  getInternalClientSnapshot,
   seedInternalReadState,
 } from "../../src/client/internal-create.js";
 import {
@@ -312,7 +313,35 @@ describe("IdmModbusClient diagnostics integration", () => {
     expect(client.getUnsupportedRegisters()).toEqual([]);
     expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual([]);
     expect(client.getBatchUnsafeRegisters()).toEqual(["batch-unsafe"]);
+    expect(getInternalClientSnapshot(client).transientFailures).toEqual({});
     expect(client.modelInfo).toBeNull();
     expect(client.modelName).toBe("Navigator 2.0");
+  });
+
+  it("reports disconnected and reconnected snapshots without clearing retained state", async () => {
+    const transport = new FakeModbusTransport([]);
+    const client = createInternalIdmModbusClient("example.invalid", undefined, {
+      transportFactory: () => transport,
+      now: () => 0,
+      sleep: async () => undefined,
+    });
+    client.markBatchUnsafe("retained");
+
+    expect(client.getDiagnostics()).toMatchObject({
+      modbusConnected: false,
+      batchUnsafeRegisters: ["retained"],
+    });
+
+    await client.connect();
+    expect(client.getDiagnostics()).toMatchObject({
+      modbusConnected: true,
+      batchUnsafeRegisters: ["retained"],
+    });
+
+    await client.disconnect();
+    expect(client.getDiagnostics()).toMatchObject({
+      modbusConnected: false,
+      batchUnsafeRegisters: ["retained"],
+    });
   });
 });
