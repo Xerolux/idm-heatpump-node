@@ -4,12 +4,11 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { IdmModbusClient } from "../../src/client/index.js";
-import { createInternalIdmModbusClient } from "../../src/client/internal-create.js";
-import type {
-  ModbusReadRequest,
-  ModbusTransport,
-  ModbusTransportFactoryConfiguration,
-} from "../../src/transport/types.js";
+import {
+  createInternalIdmModbusClient,
+  type InternalTransportFactoryConfiguration,
+} from "../../src/client/internal-create.js";
+import type { ModbusReadRequest, ModbusTransport } from "../../src/transport/types.js";
 import { RegisterType } from "../../src/types.js";
 
 interface ActivityTracker {
@@ -52,7 +51,8 @@ class LifecycleTransport implements ModbusTransport {
     this.#connected = false;
   }
 
-  public async read(_request: ModbusReadRequest): Promise<readonly number[]> {
+  public async read(request: ModbusReadRequest): Promise<readonly number[]> {
+    void request;
     throw new Error("LifecycleTransport does not provide reads");
   }
 
@@ -73,9 +73,7 @@ function createTracker(): ActivityTracker {
 }
 
 function createClient(
-  transportFactory: (
-    configuration: ModbusTransportFactoryConfiguration,
-  ) => ModbusTransport,
+  transportFactory: (configuration: InternalTransportFactoryConfiguration) => ModbusTransport,
   options: ConstructorParameters<typeof IdmModbusClient>[1] = {},
 ): IdmModbusClient {
   return createInternalIdmModbusClient("example.invalid", options, {
@@ -88,7 +86,7 @@ function createClient(
 describe("IdmModbusClient constructor and lifecycle", () => {
   it("keeps the exact mapped defaults and internalizes adapter retries at zero", async () => {
     const tracker = createTracker();
-    const configurations: ModbusTransportFactoryConfiguration[] = [];
+    const configurations: InternalTransportFactoryConfiguration[] = [];
     const client = createClient((configuration) => {
       configurations.push(configuration);
       return new LifecycleTransport(1, tracker);
@@ -117,7 +115,7 @@ describe("IdmModbusClient constructor and lifecycle", () => {
 
   it("accepts the five mapped camelCase options and preserves Python's timeout number domain", async () => {
     for (const timeout of [-1, -0, 0, Number.NaN, Number.POSITIVE_INFINITY]) {
-      const configurations: ModbusTransportFactoryConfiguration[] = [];
+      const configurations: InternalTransportFactoryConfiguration[] = [];
       const client = createClient(
         (configuration) => {
           configurations.push(configuration);
@@ -138,7 +136,6 @@ describe("IdmModbusClient constructor and lifecycle", () => {
       expect(configurations[0]).toMatchObject({
         port: 15_020,
         unitId: 247,
-        maxRetries: undefined,
         adapterRetries: 0,
       });
       expect(Object.is(configurations[0]?.timeout, timeout)).toBe(true);
@@ -146,10 +143,7 @@ describe("IdmModbusClient constructor and lifecycle", () => {
   });
 
   it("rejects invalid mapped configuration before creating a transport", () => {
-    const invalidCases: readonly [
-      string,
-      ConstructorParameters<typeof IdmModbusClient>[1],
-    ][] = [
+    const invalidCases: readonly [string, ConstructorParameters<typeof IdmModbusClient>[1]][] = [
       ["", {}],
       ["example.invalid", { port: 0 }],
       ["example.invalid", { port: 65_536 }],
@@ -202,13 +196,7 @@ describe("IdmModbusClient constructor and lifecycle", () => {
     await client.forceReconnect();
     expect(creations).toBe(3);
     expect(client.isConnected).toBe(true);
-    expect(tracker.events).toEqual([
-      "1:connect",
-      "1:close",
-      "2:connect",
-      "2:close",
-      "3:connect",
-    ]);
+    expect(tracker.events).toEqual(["1:connect", "1:close", "2:connect", "2:close", "3:connect"]);
   });
 
   it("discards a failed connection and releases the FIFO for the next operation", async () => {
@@ -292,7 +280,7 @@ describe("internal dependency seam and public closure", () => {
       maxGroupSize: 40,
     });
 
-    if (false) {
+    const assertClosedConstructorType = (): void => {
       // @ts-expect-error transportFactory is an internal direct-path concern.
       new IdmModbusClient("example.invalid", { transportFactory: () => undefined });
       // @ts-expect-error clock is an internal direct-path concern.
@@ -303,7 +291,8 @@ describe("internal dependency seam and public closure", () => {
       new IdmModbusClient("example.invalid", { pymodbusRetries: 1 });
       // @ts-expect-error no third constructor argument is public.
       new IdmModbusClient("example.invalid", {}, Symbol("internal"));
-    }
+    };
+    void assertClosedConstructorType;
 
     expect(client.isConnected).toBe(false);
     expect(RegisterType.INPUT).toBe("input");
