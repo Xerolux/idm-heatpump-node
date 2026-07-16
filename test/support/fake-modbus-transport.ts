@@ -10,6 +10,8 @@ export type FakeModbusResponse =
   | Readonly<{ readonly error: unknown; readonly kind: "error" }>;
 
 export interface FakeModbusTransportOptions {
+  readonly allowMismatchedResponseCount?: boolean;
+  readonly initiallyConnected?: boolean;
   readonly pauseReads?: boolean;
 }
 
@@ -34,6 +36,7 @@ function cloneResponse(response: FakeModbusResponse): FakeModbusResponse {
 export class FakeModbusTransport implements ModbusTransport {
   readonly #responses: FakeModbusResponse[];
   readonly #events: FakeModbusTransportEvent[] = [];
+  readonly #allowMismatchedResponseCount: boolean;
   readonly #pauseReads: boolean;
   readonly #pendingReleases: (() => void)[] = [];
   readonly #pendingWaiters: PendingWaiter[] = [];
@@ -46,7 +49,9 @@ export class FakeModbusTransport implements ModbusTransport {
     options: FakeModbusTransportOptions = {},
   ) {
     this.#responses = responses.map((response) => cloneResponse(response));
+    this.#allowMismatchedResponseCount = options.allowMismatchedResponseCount ?? false;
     this.#pauseReads = options.pauseReads ?? false;
+    this.#connected = options.initiallyConnected ?? false;
   }
 
   public get connected(): boolean {
@@ -104,7 +109,10 @@ export class FakeModbusTransport implements ModbusTransport {
       throw new Error("Fake Modbus response script is exhausted");
     }
     if (response.kind === "words") {
-      validateModbusWords(response.words, ownedRequest.count);
+      validateModbusWords(
+        response.words,
+        this.#allowMismatchedResponseCount ? undefined : ownedRequest.count,
+      );
     }
 
     this.#responses.shift();
@@ -122,7 +130,10 @@ export class FakeModbusTransport implements ModbusTransport {
       if (response.kind === "error") {
         throw response.error;
       }
-      return validateModbusWords(response.words, ownedRequest.count);
+      return validateModbusWords(
+        response.words,
+        this.#allowMismatchedResponseCount ? undefined : ownedRequest.count,
+      );
     } finally {
       this.#activeRequests -= 1;
     }

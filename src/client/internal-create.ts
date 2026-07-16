@@ -1,12 +1,31 @@
 import {
+  attachInternalModbusTransport,
+  getInternalClientSnapshot,
   IdmModbusClient,
+  readInternalModbusRegisters,
+  seedInternalReadState,
   type IdmModbusClientOptions,
   type InternalClientDependencies,
+  type InternalClientSnapshot,
+  type InternalReadRegistersOptions,
+  type InternalReadStateSeed,
   type InternalTransportFactoryConfiguration,
   withInternalClientDependencies,
 } from "./idm-modbus-client.js";
 
-export type { InternalClientDependencies, InternalTransportFactoryConfiguration };
+export {
+  attachInternalModbusTransport,
+  getInternalClientSnapshot,
+  readInternalModbusRegisters,
+  seedInternalReadState,
+};
+export type {
+  InternalClientDependencies,
+  InternalClientSnapshot,
+  InternalReadRegistersOptions,
+  InternalReadStateSeed,
+  InternalTransportFactoryConfiguration,
+};
 
 export function createInternalIdmModbusClient(
   host: string,
