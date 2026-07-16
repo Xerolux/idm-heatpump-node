@@ -5,6 +5,8 @@ import {
   DEFAULT_SLAVE_ID,
   DEFAULT_TIMEOUT,
   MAX_RETRIES,
+  MODEL_DETECTION_MAX_RETRIES,
+  MODEL_DETECTION_TIMEOUT,
   MODEL_NAVIGATOR_20,
   MODEL_UNKNOWN,
   RETRY_BACKOFF_BASE,
@@ -12,7 +14,7 @@ import {
 import { decodeValue, encodeValue } from "../codec.js";
 import { compareUnicodeCodePoints } from "../contracts/canonical-order.js";
 import type { RegisterDef } from "../registers/definitions.js";
-import { getRegister } from "../registers/registry.js";
+import { buildRegisterMap, getRegister } from "../registers/registry.js";
 import {
   createNormalizedTransportFailure,
   IllegalAddressError,
@@ -35,6 +37,7 @@ import type {
   IdmClientDiagnostics as IdmClientDiagnosticsValue,
   ModbusErrorContext as ModbusErrorContextValue,
 } from "./diagnostics.js";
+import { detectModel, type DetectModelOptions } from "./detection.js";
 import { FifoGate } from "./fifo-gate.js";
 import { groupRegisters } from "./read-groups.js";
 
@@ -221,6 +224,7 @@ export class IdmModbusClient {
   readonly #endpoint: DiagnosticEndpoint;
   #transport: ModbusTransport | null = null;
   #modelInfo: IdmModelInfo | null = null;
+  #registerMap: ReadonlyMap<string, RegisterDef> | null = null;
   #connectionSuspect = false;
   #lastErrorContext: ModbusErrorContextValue | null = null;
   readonly #permanentlyFailedRegisters = new Set<string>();
@@ -361,7 +365,8 @@ export class IdmModbusClient {
 
   public async readValue(key: string): Promise<unknown> {
     return this.#gate.runExclusive(async () => {
-      const register = getRegister(key, { modelInfo: this.#modelInfo });
+      const register =
+        this.#registerMap?.get(key) ?? getRegister(key, { modelInfo: this.#modelInfo });
       return this.#readRegisterLocked(register);
     });
   }
@@ -378,6 +383,24 @@ export class IdmModbusClient {
     options: ProbeRegisterOptions = {},
   ): Promise<readonly number[] | null> {
     return this.#gate.runExclusive(async () => this.#probeRegisterLocked(address, count, options));
+  }
+
+  public async detectModel(options: DetectModelOptions = {}): Promise<IdmModelInfo> {
+    return this.#gate.runExclusive(async () => {
+      await this.#ensureConnectedLocked();
+      const info = await detectModel(
+        async (address, count) =>
+          this.#probeRegisterLocked(address, count, {
+            maxRetries: MODEL_DETECTION_MAX_RETRIES,
+            timeout: MODEL_DETECTION_TIMEOUT,
+          }),
+        options,
+      );
+      const registerMap = buildRegisterMap({ modelInfo: info });
+      this.#modelInfo = info;
+      this.#registerMap = registerMap;
+      return info;
+    });
   }
 
   public readonly [INTERNAL_TEST_CONTROL] = Object.freeze({

@@ -183,9 +183,7 @@ describe("ordered IDM model detection", () => {
     expect(map.has("pv_production")).toBe(true);
     expect(map.has("cascade_req_heating_temp")).toBe(true);
     expect(
-      [...map].some(
-        ([name, register]) => name === "humidity_sensor" && register.address === 1_046,
-      ),
+      [...map].some(([name, register]) => name === "humidity_sensor" && register.address === 1_046),
     ).toBe(false);
     expect([...map.keys()].some((name) => /navigator.?1/iu.test(name))).toBe(false);
     expect(readRequests(transport.events)).toEqual([
@@ -297,8 +295,9 @@ describe("ordered IDM model detection", () => {
     await expect(
       disabledFirmware.client.detectModel({ readFirmware: false }),
     ).resolves.toMatchObject({ firmwareVersion: null });
-    expect(readRequests(disabledFirmware.transport.events).some(({ address }) => address === 4_120))
-      .toBe(false);
+    expect(
+      readRequests(disabledFirmware.transport.events).some(({ address }) => address === 4_120),
+    ).toBe(false);
     disabledFirmware.transport.assertResponsesConsumed();
   });
 });
