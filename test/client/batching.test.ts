@@ -133,12 +133,7 @@ describe("groupRegisters", () => {
 
   it("splits when the complete group span exceeds maxGroupSize", () => {
     expect(
-      names(
-        groupRegisters(
-          [register("a", 1_000), register("b", 1_001), register("c", 1_002)],
-          2,
-        ),
-      ),
+      names(groupRegisters([register("a", 1_000), register("b", 1_001), register("c", 1_002)], 2)),
     ).toEqual([["a", "b"], ["c"]]);
   });
 
@@ -146,10 +141,7 @@ describe("groupRegisters", () => {
     expect(
       names(
         groupRegisters(
-          [
-            register("humidity_sensor", 1_392, DataType.FLOAT),
-            register("hc_a_mode", 1_393),
-          ],
+          [register("humidity_sensor", 1_392, DataType.FLOAT), register("hc_a_mode", 1_393)],
           40,
         ),
       ),
@@ -252,11 +244,13 @@ describe("IdmModbusClient batch reads", () => {
       humidity_sensor: 54.75,
       hc_a_mode: 2,
     });
-    expect(readRequests(transport).map(({ functionCode, address, count }) => ({
-      functionCode,
-      address,
-      count,
-    }))).toEqual([
+    expect(
+      readRequests(transport).map(({ functionCode, address, count }) => ({
+        functionCode,
+        address,
+        count,
+      })),
+    ).toEqual([
       { functionCode: 4, address: 1_392, count: 2 },
       { functionCode: 4, address: 1_393, count: 1 },
     ]);
@@ -320,9 +314,7 @@ describe("IdmModbusClient batch reads", () => {
       supported_register: 7,
     });
     expect(client.getUnsupportedRegisters()).toEqual(["unsupported_register"]);
-    expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual([
-      "unsupported_register",
-    ]);
+    expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual(["unsupported_register"]);
   });
 
   it("quarantines a suspect enum value and exposes only the validated individual reread", async () => {
@@ -371,9 +363,7 @@ describe("IdmModbusClient batch reads", () => {
 
   it("accepts null, boolean, and declared sentinels without quarantine", async () => {
     const nanWords = ModbusCodec.encodeFloat32(Number.NaN);
-    const transport = new FakeModbusTransport([
-      { kind: "words", words: [...nanWords, 1, 255] },
-    ]);
+    const transport = new FakeModbusTransport([{ kind: "words", words: [...nanWords, 1, 255] }]);
     const client = createClient(transport);
     const unavailableFloat = createRegisterDef({
       address: 1_600,

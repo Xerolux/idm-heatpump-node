@@ -460,9 +460,7 @@ describe("IdmModbusClient batch failure state", () => {
     expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual([]);
 
     await expect(client.readBatch([register])).resolves.toEqual({});
-    expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual([
-      "third_failure_register",
-    ]);
+    expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual(["third_failure_register"]);
 
     const readsBeforeSkip = fakeReadRequests(transport).length;
     await expect(client.readBatch([register])).resolves.toEqual({});
@@ -521,11 +519,7 @@ describe("IdmModbusClient batch failure state", () => {
     await expect(client.readBatch([register])).resolves.toEqual({});
     const context = client.getLastErrorContext();
     expect(client.getUnsupportedRegisters()).toEqual(["reset_scope_register"]);
-    expect(client.getBatchUnsafeRegisters()).toEqual([
-      "alpha",
-      "reset_scope_register",
-      "zeta",
-    ]);
+    expect(client.getBatchUnsafeRegisters()).toEqual(["alpha", "reset_scope_register", "zeta"]);
     expect(Object.isFrozen(client.getUnsupportedRegisters())).toBe(true);
     expect(Object.isFrozen(client.getBatchUnsafeRegisters())).toBe(true);
 
@@ -533,11 +527,7 @@ describe("IdmModbusClient batch failure state", () => {
 
     expect(client.getUnsupportedRegisters()).toEqual([]);
     expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual([]);
-    expect(client.getBatchUnsafeRegisters()).toEqual([
-      "alpha",
-      "reset_scope_register",
-      "zeta",
-    ]);
+    expect(client.getBatchUnsafeRegisters()).toEqual(["alpha", "reset_scope_register", "zeta"]);
     expect(client.getLastErrorContext()).toBe(context);
   });
 });

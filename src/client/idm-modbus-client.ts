@@ -36,8 +36,10 @@ import type {
   ModbusErrorContext as ModbusErrorContextValue,
 } from "./diagnostics.js";
 import { FifoGate } from "./fifo-gate.js";
+import { groupRegisters } from "./read-groups.js";
 
 const DEFAULT_MAX_GROUP_SIZE = 40;
+const PERMANENT_FAILURE_THRESHOLD = 3;
 const INTERNAL_DEPENDENCIES = Symbol("IdmModbusClient.internalDependencies");
 
 export interface IdmModbusClientOptions {
@@ -170,7 +172,9 @@ export class IdmModbusClient {
   #connectionSuspect = false;
   #lastErrorContext: ModbusErrorContextValue | null = null;
   readonly #permanentlyFailedRegisters = new Set<string>();
+  readonly #unsupportedRegisters = new Set<string>();
   readonly #batchUnsafeRegisters = new Set<string>();
+  readonly #registerFailures = new Map<string, number>();
 
   public constructor(host: string, options: IdmModbusClientOptions = {}) {
     if (typeof host !== "string" || host.length === 0) {
@@ -204,7 +208,6 @@ export class IdmModbusClient {
     this.#maxGroupSize = maxGroupSize;
     this.#dependencies = internalOptions[INTERNAL_DEPENDENCIES] ?? defaultDependencies;
     this.#endpoint = Object.freeze({ host: this.#host, port: this.#port });
-    void this.#maxGroupSize;
   }
 
   public get host(): string {
@@ -264,6 +267,26 @@ export class IdmModbusClient {
     });
   }
 
+  public getUnsupportedRegisters(): readonly string[] {
+    return Object.freeze([...this.#unsupportedRegisters].sort(compareUnicodeCodePoints));
+  }
+
+  public getBatchUnsafeRegisters(): readonly string[] {
+    return Object.freeze([...this.#batchUnsafeRegisters].sort(compareUnicodeCodePoints));
+  }
+
+  public markBatchUnsafe(...registers: readonly (RegisterDef | string)[]): void {
+    for (const register of registers) {
+      this.#batchUnsafeRegisters.add(typeof register === "string" ? register : register.name);
+    }
+  }
+
+  public resetFailedRegisters(): void {
+    this.#permanentlyFailedRegisters.clear();
+    this.#unsupportedRegisters.clear();
+    this.#registerFailures.clear();
+  }
+
   public async connect(): Promise<void> {
     await this.#gate.runExclusive(async () => this.#connectLocked());
   }
@@ -289,6 +312,12 @@ export class IdmModbusClient {
       const register = getRegister(key, { modelInfo: this.#modelInfo });
       return this.#readRegisterLocked(register);
     });
+  }
+
+  public async readBatch(
+    registers: readonly RegisterDef[],
+  ): Promise<Readonly<Record<string, unknown>>> {
+    return this.#gate.runExclusive(async () => this.#readBatchLocked(registers));
   }
 
   public async probeRegister(
@@ -339,16 +368,162 @@ export class IdmModbusClient {
     }
 
     await this.#ensureConnectedLocked();
-    const holding = register.registerType === RegisterType.HOLDING;
-    const request = createModbusReadRequest({
-      unitId: this.#slaveId,
-      registerType: register.registerType,
-      functionCode: holding ? 3 : 4,
-      address: register.address,
-      count: register.size,
-    });
-    const words = await this.#retryReadLocked(request, this.#maxRetries);
+    const words = await this.#readWordsLocked(
+      register.registerType,
+      register.address,
+      register.size,
+    );
     return this.decodeValue(words, register);
+  }
+
+  async #readBatchLocked(
+    registers: readonly RegisterDef[],
+  ): Promise<Readonly<Record<string, unknown>>> {
+    if (registers.length === 0) {
+      return Object.freeze({});
+    }
+
+    const valid = registers.filter(
+      (register) => !register.writeOnly && !this.#permanentlyFailedRegisters.has(register.name),
+    );
+    if (valid.length === 0) {
+      return Object.freeze({});
+    }
+
+    await this.#ensureConnectedLocked();
+    const candidates = valid.filter((register) => !this.#batchUnsafeRegisters.has(register.name));
+    const individual = valid.filter((register) => this.#batchUnsafeRegisters.has(register.name));
+    const results: Record<string, unknown> = {};
+
+    for (const group of groupRegisters(candidates, this.#maxGroupSize)) {
+      Object.assign(results, await this.#readGroupLocked(group));
+    }
+    for (const register of individual) {
+      Object.assign(results, await this.#readIndividualFallbackLocked([register]));
+    }
+
+    return Object.freeze(results);
+  }
+
+  async #readGroupLocked(
+    group: readonly RegisterDef[],
+  ): Promise<Readonly<Record<string, unknown>>> {
+    const first = group[0];
+    const last = group[group.length - 1];
+    if (first === undefined || last === undefined) {
+      return Object.freeze({});
+    }
+
+    const start = first.address;
+    const count = last.address + last.size - start;
+    let words: readonly number[];
+    try {
+      words = await this.#readWordsLocked(first.registerType, start, count);
+    } catch (error) {
+      if (this.#isGroupFallbackFailure(error)) {
+        return this.#readIndividualFallbackLocked(group);
+      }
+      throw error;
+    }
+
+    const data: Record<string, unknown> = {};
+    const suspect: RegisterDef[] = [];
+    for (const register of group) {
+      const offset = register.address - start;
+      try {
+        const value = this.decodeValue(words.slice(offset, offset + register.size), register);
+        if (this.#isValueSuspect(register, value)) {
+          suspect.push(register);
+        } else {
+          data[register.name] = value;
+        }
+      } catch {
+        // Match Python: one undecodable data point does not discard the rest.
+      }
+    }
+
+    if (suspect.length > 0) {
+      for (const register of suspect) {
+        this.#batchUnsafeRegisters.add(register.name);
+      }
+      Object.assign(data, await this.#readIndividualFallbackLocked(suspect));
+    }
+    return Object.freeze(data);
+  }
+
+  async #readIndividualFallbackLocked(
+    registers: readonly RegisterDef[],
+  ): Promise<Readonly<Record<string, unknown>>> {
+    const data: Record<string, unknown> = {};
+    for (const register of registers) {
+      let words: readonly number[];
+      try {
+        words = await this.#readWordsLocked(register.registerType, register.address, register.size);
+      } catch (error) {
+        if (error instanceof IllegalAddressError) {
+          this.#permanentlyFailedRegisters.add(register.name);
+          this.#unsupportedRegisters.add(register.name);
+          continue;
+        }
+        if (error instanceof NormalizedTransportFailure) {
+          if (
+            error.kind !== NormalizedTransportFailureKind.MODBUS &&
+            error.kind !== NormalizedTransportFailureKind.INVALID_RESPONSE
+          ) {
+            throw error;
+          }
+          const failures = (this.#registerFailures.get(register.name) ?? 0) + 1;
+          this.#registerFailures.set(register.name, failures);
+          if (failures >= PERMANENT_FAILURE_THRESHOLD) {
+            this.#permanentlyFailedRegisters.add(register.name);
+          }
+          continue;
+        }
+        throw error;
+      }
+
+      try {
+        const value = this.decodeValue(words, register);
+        if (this.#isValueSuspect(register, value)) {
+          continue;
+        }
+        data[register.name] = value;
+        this.#registerFailures.delete(register.name);
+      } catch {
+        // Match Python: decode failures are omitted without failure counters.
+      }
+    }
+    return Object.freeze(data);
+  }
+
+  #isGroupFallbackFailure(error: unknown): boolean {
+    return (
+      error instanceof IllegalAddressError ||
+      (error instanceof NormalizedTransportFailure &&
+        (error.kind === NormalizedTransportFailureKind.MODBUS ||
+          error.kind === NormalizedTransportFailureKind.INVALID_RESPONSE))
+    );
+  }
+
+  #isValueSuspect(register: RegisterDef, value: unknown): boolean {
+    if (value === null || typeof value === "boolean") {
+      return false;
+    }
+    if (register.sentinelValues.includes(value as number | string)) {
+      return false;
+    }
+    if (register.enumOptions !== null) {
+      return typeof value !== "number" || !Object.hasOwn(register.enumOptions, value);
+    }
+    if (typeof value === "number") {
+      if (register.minVal !== null && value < register.minVal) {
+        return true;
+      }
+      if (register.maxVal !== null && value > register.maxVal) {
+        return true;
+      }
+    }
+    return false;
   }
 
   async #ensureConnectedLocked(): Promise<ModbusTransport> {
@@ -412,6 +587,22 @@ export class IdmModbusClient {
       }
       throw error;
     }
+  }
+
+  async #readWordsLocked(
+    registerType: RegisterType,
+    address: number,
+    count: number,
+  ): Promise<readonly number[]> {
+    const holding = registerType === RegisterType.HOLDING;
+    const request = createModbusReadRequest({
+      unitId: this.#slaveId,
+      registerType,
+      functionCode: holding ? 3 : 4,
+      address,
+      count,
+    });
+    return this.#retryReadLocked(request, this.#maxRetries);
   }
 
   async #retryReadLocked(request: ModbusReadRequest, retries: number): Promise<readonly number[]> {
