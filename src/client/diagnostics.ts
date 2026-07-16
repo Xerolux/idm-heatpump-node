@@ -56,9 +56,7 @@ export interface IdmClientDiagnostics {
 
 export const IdmClientDiagnostics = Object.freeze({
   create(input: IdmClientDiagnosticsInput): IdmClientDiagnostics {
-    const permanentlyFailedRegisters = Object.freeze([
-      ...(input.permanentlyFailedRegisters ?? []),
-    ]);
+    const permanentlyFailedRegisters = Object.freeze([...(input.permanentlyFailedRegisters ?? [])]);
     const batchUnsafeRegisters = Object.freeze([...(input.batchUnsafeRegisters ?? [])]);
 
     return Object.freeze({

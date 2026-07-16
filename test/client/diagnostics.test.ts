@@ -2,10 +2,7 @@ import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-import {
-  IdmClientDiagnostics,
-  ModbusErrorContext,
-} from "../../src/client/diagnostics.js";
+import { IdmClientDiagnostics, ModbusErrorContext } from "../../src/client/diagnostics.js";
 import { NormalizedTransportFailureKind } from "../../src/transport/errors.js";
 
 interface ConstructorParameterFact {
@@ -59,8 +56,8 @@ describe("ModbusErrorContext factory", () => {
     };
 
     const context = ModbusErrorContext.create(hostileInput);
-    const fixtureKeys = classFact("ModbusErrorContext").constructor.parameters.map(
-      ({ name }) => snakeToCamel(name),
+    const fixtureKeys = classFact("ModbusErrorContext").constructor.parameters.map(({ name }) =>
+      snakeToCamel(name),
     );
 
     expect(Object.keys(context)).toEqual(fixtureKeys);
@@ -94,9 +91,7 @@ describe("ModbusErrorContext factory", () => {
   it("publishes only a frozen same-name create namespace", () => {
     expect(Object.keys(ModbusErrorContext)).toEqual(["create"]);
     expect(Object.isFrozen(ModbusErrorContext)).toBe(true);
-    expect(
-      classFact("ModbusErrorContext").members.map(({ name }) => snakeToCamel(name)),
-    ).toEqual([
+    expect(classFact("ModbusErrorContext").members.map(({ name }) => snakeToCamel(name))).toEqual([
       "address",
       "attempt",
       "count",
@@ -114,8 +109,8 @@ describe("IdmClientDiagnostics factory", () => {
       navigatorType: "Navigator 2.0",
       modbusConnected: false,
     });
-    const fixtureKeys = classFact("IdmClientDiagnostics").constructor.parameters.map(
-      ({ name }) => snakeToCamel(name),
+    const fixtureKeys = classFact("IdmClientDiagnostics").constructor.parameters.map(({ name }) =>
+      snakeToCamel(name),
     );
 
     expect(Object.keys(diagnostics)).toEqual(fixtureKeys);
@@ -163,9 +158,9 @@ describe("IdmClientDiagnostics factory", () => {
     expect(() =>
       (diagnostics.permanentlyFailedRegisters as unknown as string[]).push("hostile"),
     ).toThrow(TypeError);
-    expect(() =>
-      (diagnostics.batchUnsafeRegisters as unknown as string[]).sort(),
-    ).toThrow(TypeError);
+    expect(() => (diagnostics.batchUnsafeRegisters as unknown as string[]).sort()).toThrow(
+      TypeError,
+    );
     expect(Reflect.set(diagnostics, "connectionSuspect", false)).toBe(false);
   });
 

@@ -31,10 +31,7 @@ function replaceEvery(value: string, token: string, replacement: string): string
   return value.split(token).join(replacement);
 }
 
-export function redactDiagnosticMessage(
-  message: string,
-  endpoint?: DiagnosticEndpoint,
-): string {
+export function redactDiagnosticMessage(message: string, endpoint?: DiagnosticEndpoint): string {
   let redacted = message;
   if (endpoint !== undefined) {
     if (endpoint.host.length === 0) {

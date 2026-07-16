@@ -8,10 +8,7 @@ import {
   NormalizedTransportFailureKind,
   redactDiagnosticMessage,
 } from "../../src/transport/errors.js";
-import {
-  quietPymodbusLogging,
-  registerPymodbusLoggingHook,
-} from "../../src/transport/logging.js";
+import { quietPymodbusLogging, registerPymodbusLoggingHook } from "../../src/transport/logging.js";
 
 const ENDPOINT = Object.freeze({ host: "example.invalid", port: 502 });
 
@@ -62,11 +59,7 @@ describe("normalized transport failures", () => {
   });
 
   it("uses numeric Modbus code 2 as the sole raw illegal-address classifier", () => {
-    const illegal = createModbusFailure(
-      2,
-      "Illegal Data Address at example.invalid:502",
-      ENDPOINT,
-    );
+    const illegal = createModbusFailure(2, "Illegal Data Address at example.invalid:502", ENDPOINT);
 
     expect(illegal).toBeInstanceOf(IllegalAddressError);
     expect(illegal).toMatchObject({
@@ -111,9 +104,7 @@ describe("normalized transport failures", () => {
       ),
     ).toBe("<endpoint>|<endpoint>|<endpoint>|tail");
     expect(redactDiagnosticMessage("x".repeat(1_024), ENDPOINT)).toBe("x".repeat(1_024));
-    expect(() => redactDiagnosticMessage("x".repeat(1_025), ENDPOINT)).toThrowError(
-      /1024/,
-    );
+    expect(() => redactDiagnosticMessage("x".repeat(1_025), ENDPOINT)).toThrowError(/1024/);
   });
 });
 

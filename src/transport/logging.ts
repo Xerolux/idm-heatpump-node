@@ -21,8 +21,7 @@ function parsePythonLoggingLevel(level: string | number): number {
     return level;
   }
 
-  const numeric =
-    PYTHON_LOGGING_LEVELS[level.toUpperCase() as keyof typeof PYTHON_LOGGING_LEVELS];
+  const numeric = PYTHON_LOGGING_LEVELS[level.toUpperCase() as keyof typeof PYTHON_LOGGING_LEVELS];
   if (numeric === undefined) {
     throw new RangeError(`Unknown log level: ${level}`);
   }
