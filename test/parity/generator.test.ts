@@ -622,6 +622,7 @@ describe("verified Python contract generator", () => {
         "retry_socket_reconnect",
         "retry_no_response_reconnect",
         "retry_modbus_same_connection",
+        "retry_modbus_three_attempt_backoff",
         "invalid_short_response",
         "batch_device_error_fallback",
         "batch_transport_error_propagates",

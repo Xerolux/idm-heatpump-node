@@ -1216,6 +1216,103 @@
       ]
     },
     {
+      "clock": [
+        0.5,
+        1.5
+      ],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": [
+        0,
+        16786
+      ],
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 1000,
+          "attempt": 2,
+          "count": 2,
+          "errorType": "modbus",
+          "message": "Modbus Error: second rejection at <endpoint>",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "retry_modbus_three_attempt_backoff",
+      "operation": {
+        "address": 1000,
+        "count": 2,
+        "kind": "probe",
+        "maxRetries": 3,
+        "registerType": "input",
+        "timeout": 10
+      },
+      "transport_responses": [
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "first rejection at <endpoint>"
+        },
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "second rejection at <endpoint>"
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16786
+          ]
+        }
+      ]
+    },
+    {
       "clock": [],
       "configuration": {
         "host": "example.invalid",

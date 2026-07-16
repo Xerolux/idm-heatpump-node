@@ -262,8 +262,11 @@ describe("fake monotonic clock", () => {
 
     expect(clock.now()).toBe(11.75);
     expect(clock.delays).toEqual([0.5]);
+    expect(clock.observations).toEqual([10.5]);
     expect(Object.isFrozen(clock.delays)).toBe(true);
+    expect(Object.isFrozen(clock.observations)).toBe(true);
     expect(() => (clock.delays as unknown as number[]).push(1)).toThrow(TypeError);
+    expect(() => (clock.observations as unknown as number[]).push(1)).toThrow(TypeError);
   });
 
   it("rejects invalid clock starts, delays, and advances", async () => {
@@ -278,6 +281,7 @@ describe("fake monotonic clock", () => {
     }
     expect(clock.now()).toBe(0);
     expect(clock.delays).toEqual([]);
+    expect(clock.observations).toEqual([]);
   });
 });
 
@@ -979,7 +983,7 @@ async function executeGeneratedScenario(
   return Object.freeze({
     result,
     requests: transport.events,
-    clock: clock.delays,
+    clock: clock.observations,
     state: Object.freeze({
       batchUnsafeRegisters: client.getBatchUnsafeRegisters(),
       connected: client.isConnected,
@@ -1003,7 +1007,7 @@ describe("generated non-detection transport scenarios", () => {
   );
 
   it("executes every owned scenario through the real client and consumes each script", async () => {
-    expect(scenarios).toHaveLength(29);
+    expect(scenarios).toHaveLength(30);
     for (const scenario of scenarios) {
       const actual = await executeGeneratedScenario(scenario);
       expect(actual.result, `${scenario.name} result`).toEqual(scenario.expected_result);

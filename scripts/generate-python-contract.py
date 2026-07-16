@@ -1907,6 +1907,38 @@ def _transport_fixture(
     scenarios.append(
         _run_runtime_scenario(
             client_module,
+            name="retry_modbus_three_attempt_backoff",
+            operation={
+                "kind": "probe",
+                "address": 1000,
+                "count": 2,
+                "registerType": "input",
+                "maxRetries": 3,
+                "timeout": 10,
+            },
+            scripts=[
+                _runtime_error(
+                    "other_modbus_exception",
+                    "first rejection at example.invalid:502",
+                ),
+                _runtime_error(
+                    "other_modbus_exception",
+                    "second rejection at example.invalid:502",
+                ),
+                _runtime_words(codec.encode_float32(18.25)),
+            ],
+            execute=raw_read(
+                1000,
+                2,
+                client_module.RegisterType.INPUT,
+                max_retries=3,
+            ),
+            configuration={"maxRetries": 3},
+        )
+    )
+    scenarios.append(
+        _run_runtime_scenario(
+            client_module,
             name="invalid_short_response",
             operation={
                 "kind": "probe",

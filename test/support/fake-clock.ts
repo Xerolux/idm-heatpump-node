@@ -7,6 +7,7 @@ function requireMonotonicSeconds(value: number, field: string): void {
 export class FakeClock {
   #now: number;
   readonly #delays: number[] = [];
+  readonly #observations: number[] = [];
 
   public constructor(initial = 0) {
     requireMonotonicSeconds(initial, "initial");
@@ -21,10 +22,15 @@ export class FakeClock {
     return Object.freeze([...this.#delays]);
   }
 
+  public get observations(): readonly number[] {
+    return Object.freeze([...this.#observations]);
+  }
+
   public async sleep(seconds: number): Promise<void> {
     requireMonotonicSeconds(seconds, "seconds");
     this.#delays.push(seconds);
     this.#now += seconds;
+    this.#observations.push(this.#now);
   }
 
   public advance(seconds: number): void {
