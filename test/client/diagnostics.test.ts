@@ -3,7 +3,16 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import { IdmClientDiagnostics, ModbusErrorContext } from "../../src/client/diagnostics.js";
-import { NormalizedTransportFailureKind } from "../../src/transport/errors.js";
+import {
+  attachInternalModbusTransport,
+  createInternalIdmModbusClient,
+  seedInternalReadState,
+} from "../../src/client/internal-create.js";
+import {
+  NormalizedTransportFailure,
+  NormalizedTransportFailureKind,
+} from "../../src/transport/errors.js";
+import { FakeModbusTransport } from "../support/fake-modbus-transport.js";
 
 interface ConstructorParameterFact {
   readonly name: string;
@@ -202,5 +211,120 @@ describe("IdmClientDiagnostics factory", () => {
   it("publishes only a frozen same-name create namespace", () => {
     expect(Object.keys(IdmClientDiagnostics)).toEqual(["create"]);
     expect(Object.isFrozen(IdmClientDiagnostics)).toBe(true);
+  });
+});
+
+describe("IdmModbusClient diagnostics integration", () => {
+  it("sorts owned internal-set snapshots while preserving factory ordering responsibility", () => {
+    const client = createInternalIdmModbusClient(
+      "example.invalid",
+      undefined,
+      {
+        transportFactory: () => new FakeModbusTransport([]),
+        now: () => 0,
+        sleep: async () => undefined,
+      },
+    );
+    seedInternalReadState(client, {
+      permanentlyFailedRegisters: ["zeta", "alpha", "middle"],
+      unsupportedRegisters: ["zeta", "alpha"],
+      batchUnsafeRegisters: ["zeta", "alpha", "middle"],
+    });
+
+    const diagnostics = client.getDiagnostics();
+
+    expect(diagnostics).toMatchObject({
+      navigatorType: "Navigator 2.0",
+      modbusConnected: false,
+      firmware: null,
+      lastError: null,
+      permanentlyFailedRegisters: ["alpha", "middle", "zeta"],
+      connectionSuspect: false,
+      batchUnsafeRegisters: ["alpha", "middle", "zeta"],
+    });
+    expect(client.getUnsupportedRegisters()).toEqual(["alpha", "zeta"]);
+    expect(client.getBatchUnsafeRegisters()).toEqual(["alpha", "middle", "zeta"]);
+    expect(Object.isFrozen(client.getUnsupportedRegisters())).toBe(true);
+    expect(Object.isFrozen(client.getBatchUnsafeRegisters())).toBe(true);
+    expect("getPermanentlyFailedRegisters" in client).toBe(false);
+  });
+
+  it("retains an immutable latest context after recovery until explicitly cleared", async () => {
+    const transport = new FakeModbusTransport(
+      [
+        {
+          kind: "error",
+          error: new NormalizedTransportFailure(
+            NormalizedTransportFailureKind.TIMEOUT,
+            "example.invalid:502 timed out",
+          ),
+        },
+        { kind: "words", words: [7] },
+      ],
+      { initiallyConnected: true },
+    );
+    const client = createInternalIdmModbusClient(
+      "example.invalid",
+      { maxRetries: 1 },
+      {
+        transportFactory: () => transport,
+        now: () => 0,
+        sleep: async () => undefined,
+      },
+    );
+    attachInternalModbusTransport(client, transport);
+
+    await expect(
+      client.probeRegister(1_000, 1, { maxRetries: 1 }),
+    ).resolves.toBeNull();
+    const failedContext = client.getLastErrorContext();
+    expect(failedContext).toMatchObject({
+      address: 1_000,
+      count: 1,
+      attempt: 1,
+      message: "<endpoint> timed out",
+    });
+    expect(Object.isFrozen(failedContext)).toBe(true);
+
+    await expect(
+      client.probeRegister(1_001, 1, { maxRetries: 1 }),
+    ).resolves.toEqual([7]);
+    expect(client.getLastErrorContext()).toBe(failedContext);
+    expect(client.getDiagnostics()).toMatchObject({
+      modbusConnected: true,
+      connectionSuspect: false,
+      lastError: "<endpoint> timed out",
+    });
+
+    client.clearLastErrorContext();
+    expect(client.getLastErrorContext()).toBeNull();
+    expect(client.getDiagnostics().lastError).toBeNull();
+    transport.assertResponsesConsumed();
+  });
+
+  it("resets only permanent, unsupported, and transient read-failure state", () => {
+    const client = createInternalIdmModbusClient(
+      "example.invalid",
+      undefined,
+      {
+        transportFactory: () => new FakeModbusTransport([]),
+        now: () => 0,
+        sleep: async () => undefined,
+      },
+    );
+    seedInternalReadState(client, {
+      permanentlyFailedRegisters: ["permanent"],
+      unsupportedRegisters: ["unsupported"],
+      batchUnsafeRegisters: ["batch-unsafe"],
+      transientFailures: { transient: 2 },
+    });
+
+    client.resetFailedRegisters();
+
+    expect(client.getUnsupportedRegisters()).toEqual([]);
+    expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual([]);
+    expect(client.getBatchUnsafeRegisters()).toEqual(["batch-unsafe"]);
+    expect(client.modelInfo).toBeNull();
+    expect(client.modelName).toBe("Navigator 2.0");
   });
 });

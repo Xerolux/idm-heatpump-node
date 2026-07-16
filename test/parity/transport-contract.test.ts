@@ -1007,3 +1007,23 @@ describe("generated non-detection transport scenarios", () => {
     );
   });
 });
+
+describe("generated detection transport scenarios", () => {
+  const fixture = parseTransportScenarioContract(
+    JSON.parse(readFileSync(GENERATED_TRANSPORT_FIXTURE, "utf8")),
+  );
+  const scenarios = fixture.scenarios.filter(
+    ({ operation }) => operation.kind === TransportOperationKind.DETECT_MODEL,
+  );
+
+  it("executes every Python-generated detection scenario through the real client", async () => {
+    expect(scenarios).toHaveLength(5);
+    for (const scenario of scenarios) {
+      const actual = await executeGeneratedScenario(scenario);
+      expect(actual.result, `${scenario.name} result`).toEqual(scenario.expected_result);
+      expect(actual.requests, `${scenario.name} request trace`).toEqual(scenario.expected_requests);
+      expect(actual.clock, `${scenario.name} clock`).toEqual(scenario.clock);
+      expect(actual.state, `${scenario.name} final state`).toEqual(scenario.expected_state);
+    }
+  });
+});
