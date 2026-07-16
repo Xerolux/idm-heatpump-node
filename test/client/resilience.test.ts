@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { IdmModbusClient } from "../../src/client/index.js";
+import type { IdmModbusClient } from "../../src/client/index.js";
 import {
   createInternalIdmModbusClient,
   type InternalClientDependencies,
@@ -126,11 +126,9 @@ describe("IdmModbusClient retry and reconnect behavior", () => {
       const first = new FakeModbusTransport([{ kind: "error", error: failure(kind) }]);
       const second = new FakeModbusTransport([{ kind: "error", error: failure(kind) }]);
       const third = new FakeModbusTransport([{ kind: "words", words: [7] }]);
-      const { client, factoryCalls } = createSequenceClient(
-        [first, second, third],
-        clock,
-        { maxRetries: 3 },
-      );
+      const { client, factoryCalls } = createSequenceClient([first, second, third], clock, {
+        maxRetries: 3,
+      });
 
       await expect(client.probeRegister(1_000)).resolves.toEqual([7]);
 
@@ -289,9 +287,9 @@ describe("IdmModbusClient probes and error context", () => {
     const transport = new FakeModbusTransport([{ kind: "words", words: [0, 16_968] }]);
     const { client } = createSequenceClient([transport], clock, { maxRetries: 8 });
 
-    await expect(
-      client.probeRegister(4_108, 2, { maxRetries: 1, timeout: 2 }),
-    ).resolves.toEqual([0, 16_968]);
+    await expect(client.probeRegister(4_108, 2, { maxRetries: 1, timeout: 2 })).resolves.toEqual([
+      0, 16_968,
+    ]);
 
     expect(fakeReadRequests(transport)).toEqual([
       {
@@ -313,20 +311,24 @@ describe("IdmModbusClient probes and error context", () => {
   it("throws configuration and programming failures instead of swallowing them", async () => {
     const clock = new FakeClock();
     let creations = 0;
-    const client = createInternalIdmModbusClient("example.invalid", {}, {
-      transportFactory: () => {
-        creations += 1;
-        throw new TypeError("programming failure");
+    const client = createInternalIdmModbusClient(
+      "example.invalid",
+      {},
+      {
+        transportFactory: () => {
+          creations += 1;
+          throw new TypeError("programming failure");
+        },
+        now: () => clock.now(),
+        sleep: (seconds) => clock.sleep(seconds),
       },
-      now: () => clock.now(),
-      sleep: (seconds) => clock.sleep(seconds),
-    });
+    );
 
     await expect(client.probeRegister(-1)).rejects.toBeInstanceOf(RangeError);
     await expect(client.probeRegister(0, 0)).rejects.toBeInstanceOf(RangeError);
-    await expect(
-      client.probeRegister(0, 1, { maxRetries: 0 }),
-    ).rejects.toBeInstanceOf(RangeError);
+    await expect(client.probeRegister(0, 1, { maxRetries: Number.NaN })).rejects.toBeInstanceOf(
+      RangeError,
+    );
     await expect(client.probeRegister(0)).rejects.toThrow("programming failure");
     expect(creations).toBe(1);
   });
@@ -381,13 +383,18 @@ describe("IdmModbusClient probes and error context", () => {
       releaseSleep = resolve;
     });
     const clock = new FakeClock();
-    const { client } = createSequenceClient([first, second], clock, { maxRetries: 2 }, {
-      sleep: async (seconds) => {
-        expect(seconds).toBe(0.5);
-        markSleepStarted();
-        await sleepBlocker;
+    const { client } = createSequenceClient(
+      [first, second],
+      clock,
+      { maxRetries: 2 },
+      {
+        sleep: async (seconds) => {
+          expect(seconds).toBe(0.5);
+          markSleepStarted();
+          await sleepBlocker;
+        },
       },
-    });
+    );
 
     const probe = client.probeRegister(1_007);
     await sleepStarted;

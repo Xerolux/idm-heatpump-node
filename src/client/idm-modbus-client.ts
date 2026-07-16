@@ -1,3 +1,5 @@
+import { performance } from "node:perf_hooks";
+
 import {
   DEFAULT_PORT,
   DEFAULT_SLAVE_ID,
@@ -5,10 +7,31 @@ import {
   MAX_RETRIES,
   MODEL_NAVIGATOR_20,
   MODEL_UNKNOWN,
+  RETRY_BACKOFF_BASE,
 } from "../constants.js";
-import { performance } from "node:perf_hooks";
-import type { ModbusTransport } from "../transport/types.js";
-import type { IdmModelInfo } from "../types.js";
+import { compareUnicodeCodePoints } from "../contracts/canonical-order.js";
+import {
+  createNormalizedTransportFailure,
+  IllegalAddressError,
+  isKnownTransportFailure,
+  NormalizedTransportFailure,
+  NormalizedTransportFailureKind,
+  redactDiagnosticMessage,
+  type DiagnosticEndpoint,
+  type NormalizedTransportFailureKind as NormalizedTransportFailureKindValue,
+} from "../transport/errors.js";
+import {
+  createModbusReadRequest,
+  type ModbusReadRequest,
+  type ModbusTransport,
+  validateModbusWords,
+} from "../transport/types.js";
+import { RegisterType, type IdmModelInfo } from "../types.js";
+import { IdmClientDiagnostics, ModbusErrorContext } from "./diagnostics.js";
+import type {
+  IdmClientDiagnostics as IdmClientDiagnosticsValue,
+  ModbusErrorContext as ModbusErrorContextValue,
+} from "./diagnostics.js";
 import { FifoGate } from "./fifo-gate.js";
 
 const DEFAULT_MAX_GROUP_SIZE = 40;
@@ -20,6 +43,11 @@ export interface IdmModbusClientOptions {
   readonly timeout?: number;
   readonly maxRetries?: number;
   readonly maxGroupSize?: number;
+}
+
+export interface ProbeRegisterOptions {
+  readonly maxRetries?: number;
+  readonly timeout?: number;
 }
 
 export interface InternalTransportFactoryConfiguration {
@@ -43,6 +71,12 @@ interface InternalIdmModbusClientOptions extends IdmModbusClientOptions {
 }
 
 const allowedOptionKeys = new Set(["port", "slaveId", "timeout", "maxRetries", "maxGroupSize"]);
+const reconnectFailureKinds: ReadonlySet<NormalizedTransportFailureKindValue> = new Set([
+  NormalizedTransportFailureKind.TIMEOUT,
+  NormalizedTransportFailureKind.DISCONNECTED,
+  NormalizedTransportFailureKind.SOCKET,
+  NormalizedTransportFailureKind.NO_RESPONSE,
+]);
 
 function defaultTransportFactory(): never {
   throw new Error("The default Modbus transport adapter is not configured");
@@ -80,6 +114,30 @@ function requireClosedOptions(options: IdmModbusClientOptions): void {
   }
 }
 
+function normalizeRetryCount(value: number | undefined, fallback: number): number {
+  if (value === undefined) {
+    return fallback;
+  }
+  if (!Number.isFinite(value)) {
+    throw new RangeError("maxRetries override must be finite");
+  }
+  return Math.max(1, Math.trunc(value));
+}
+
+function timeoutMilliseconds(timeout: number | undefined): number | undefined {
+  if (timeout === undefined) {
+    return undefined;
+  }
+  if (!Number.isFinite(timeout) || timeout <= 0) {
+    throw new RangeError("timeout override must be finite and positive");
+  }
+  const milliseconds = timeout * 1_000;
+  if (!Number.isInteger(milliseconds)) {
+    throw new RangeError("timeout override must resolve to whole milliseconds");
+  }
+  return milliseconds;
+}
+
 export function withInternalClientDependencies(
   options: IdmModbusClientOptions | undefined,
   dependencies: InternalClientDependencies,
@@ -103,9 +161,13 @@ export class IdmModbusClient {
   readonly #maxRetries: number;
   readonly #maxGroupSize: number;
   readonly #dependencies: InternalClientDependencies;
+  readonly #endpoint: DiagnosticEndpoint;
   #transport: ModbusTransport | null = null;
   #modelInfo: IdmModelInfo | null = null;
   #connectionSuspect = false;
+  #lastErrorContext: ModbusErrorContextValue | null = null;
+  readonly #permanentlyFailedRegisters = new Set<string>();
+  readonly #batchUnsafeRegisters = new Set<string>();
 
   public constructor(host: string, options: IdmModbusClientOptions = {}) {
     if (typeof host !== "string" || host.length === 0) {
@@ -138,9 +200,8 @@ export class IdmModbusClient {
     this.#maxRetries = maxRetries;
     this.#maxGroupSize = maxGroupSize;
     this.#dependencies = internalOptions[INTERNAL_DEPENDENCIES] ?? defaultDependencies;
-    void this.#maxRetries;
+    this.#endpoint = Object.freeze({ host: this.#host, port: this.#port });
     void this.#maxGroupSize;
-    void this.#connectionSuspect;
   }
 
   public get host(): string {
@@ -166,6 +227,32 @@ export class IdmModbusClient {
     return this.#modelInfo.modelName;
   }
 
+  public getLastErrorContext(): ModbusErrorContextValue | null {
+    return this.#lastErrorContext;
+  }
+
+  public clearLastErrorContext(): void {
+    this.#lastErrorContext = null;
+  }
+
+  public getDiagnostics(): IdmClientDiagnosticsValue {
+    const firmware =
+      this.#modelInfo?.firmwareVersion === null || this.#modelInfo?.firmwareVersion === undefined
+        ? null
+        : String(this.#modelInfo.firmwareVersion);
+    return IdmClientDiagnostics.create({
+      navigatorType: this.modelName,
+      modbusConnected: this.isConnected,
+      firmware,
+      lastError: this.#lastErrorContext?.message ?? null,
+      permanentlyFailedRegisters: [...this.#permanentlyFailedRegisters].sort(
+        compareUnicodeCodePoints,
+      ),
+      connectionSuspect: this.#connectionSuspect,
+      batchUnsafeRegisters: [...this.#batchUnsafeRegisters].sort(compareUnicodeCodePoints),
+    });
+  }
+
   public async connect(): Promise<void> {
     await this.#gate.runExclusive(async () => this.#connectLocked());
   }
@@ -180,6 +267,14 @@ export class IdmModbusClient {
       this.#connectionSuspect = false;
       await this.#connectLocked();
     });
+  }
+
+  public async probeRegister(
+    address: number,
+    count = 1,
+    options: ProbeRegisterOptions = {},
+  ): Promise<readonly number[] | null> {
+    return this.#gate.runExclusive(async () => this.#probeRegisterLocked(address, count, options));
   }
 
   async #connectLocked(): Promise<void> {
@@ -211,6 +306,29 @@ export class IdmModbusClient {
     await this.#closeTransportLocked();
   }
 
+  async #ensureConnectedLocked(): Promise<ModbusTransport> {
+    if (this.#transport?.connected === true && !this.#connectionSuspect) {
+      return this.#transport;
+    }
+    if (this.#connectionSuspect) {
+      await this.#closeTransportLocked();
+      this.#connectionSuspect = false;
+    }
+    await this.#connectLocked();
+    return this.#requireTransportLocked();
+  }
+
+  #requireTransportLocked(): ModbusTransport {
+    if (this.#transport === null || !this.#transport.connected) {
+      throw createNormalizedTransportFailure(
+        NormalizedTransportFailureKind.DISCONNECTED,
+        `Not connected to ${this.#host}:${String(this.#port)}`,
+        this.#endpoint,
+      );
+    }
+    return this.#transport;
+  }
+
   async #closeTransportLocked(): Promise<void> {
     const transport = this.#transport;
     if (transport === null) {
@@ -220,5 +338,107 @@ export class IdmModbusClient {
     if (this.#transport === transport) {
       this.#transport = null;
     }
+  }
+
+  async #probeRegisterLocked(
+    address: number,
+    count: number,
+    options: ProbeRegisterOptions,
+  ): Promise<readonly number[] | null> {
+    const retries = normalizeRetryCount(options.maxRetries, this.#maxRetries);
+    const timeoutMs = timeoutMilliseconds(options.timeout);
+    const requestBase = {
+      unitId: this.#slaveId,
+      registerType: RegisterType.INPUT,
+      functionCode: 4,
+      address,
+      count,
+    } as const;
+    const request = createModbusReadRequest(
+      timeoutMs === undefined ? requestBase : { ...requestBase, timeoutMs },
+    );
+
+    try {
+      await this.#ensureConnectedLocked();
+      return await this.#retryReadLocked(request, retries);
+    } catch (error) {
+      if (isKnownTransportFailure(error)) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  async #retryReadLocked(request: ModbusReadRequest, retries: number): Promise<readonly number[]> {
+    for (let attemptIndex = 0; attemptIndex < retries; attemptIndex += 1) {
+      try {
+        const words = await this.#requireTransportLocked().read(request);
+        let validated: readonly number[];
+        try {
+          validated = validateModbusWords(words, request.count);
+        } catch {
+          throw createNormalizedTransportFailure(
+            NormalizedTransportFailureKind.INVALID_RESPONSE,
+            `Invalid Modbus response reading address ${String(request.address)}: expected ${String(request.count)} 16-bit words`,
+          );
+        }
+        this.#connectionSuspect = false;
+        return validated;
+      } catch (error) {
+        const attempt = attemptIndex + 1;
+        if (error instanceof IllegalAddressError) {
+          this.#recordErrorContext(request, error, attempt);
+          throw error;
+        }
+        if (!(error instanceof NormalizedTransportFailure)) {
+          throw error;
+        }
+
+        this.#recordErrorContext(request, error, attempt);
+        const reconnect = reconnectFailureKinds.has(error.kind);
+        if (reconnect) {
+          this.#connectionSuspect = true;
+        }
+        if (attempt === retries) {
+          throw error;
+        }
+        if (reconnect) {
+          await this.#tryReconnectLocked();
+        }
+        await this.#dependencies.sleep(RETRY_BACKOFF_BASE * 2 ** attemptIndex);
+      }
+    }
+    throw new Error("Unreachable retry state");
+  }
+
+  async #tryReconnectLocked(): Promise<void> {
+    await this.#closeTransportLocked();
+    try {
+      await this.#connectLocked();
+    } catch (error) {
+      if (error instanceof NormalizedTransportFailure && reconnectFailureKinds.has(error.kind)) {
+        return;
+      }
+      throw error;
+    }
+  }
+
+  #recordErrorContext(
+    request: ModbusReadRequest,
+    error: IllegalAddressError | NormalizedTransportFailure,
+    attempt: number,
+  ): void {
+    this.#lastErrorContext = ModbusErrorContext.create({
+      operation: "read",
+      address: request.address,
+      count: request.count,
+      registerType: request.registerType,
+      errorType:
+        error instanceof IllegalAddressError
+          ? NormalizedTransportFailureKind.ILLEGAL_ADDRESS
+          : error.kind,
+      message: redactDiagnosticMessage(error.message, this.#endpoint),
+      attempt,
+    });
   }
 }
