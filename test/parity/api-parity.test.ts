@@ -25,6 +25,7 @@ const GENERATOR_INPUTS = [
   GENERATOR,
   "scripts/evidence-path.mjs",
   "contracts/api-mapping.json",
+  "contracts/typescript-extensions.json",
   "test/fixtures/public-api.json",
   "test/fixtures/public-classes.json",
   "test/semantic/constants-and-types.test.ts",
@@ -250,6 +251,7 @@ function prepareReleaseMapping(project: string, contractTest: string): void {
         (row as { status: string }).status = "not_applicable";
         (row as { not_applicable_rationale?: string }).not_applicable_rationale =
           "Test-only reviewed release fixture for standalone evidence validation.";
+        delete (row as unknown as Record<string, unknown>).partial_class;
       }
     }
     const complete = requireDefined(
@@ -379,7 +381,13 @@ describe("API mapping inventory", () => {
     );
 
     for (const row of apiMapping.mappings) {
-      expect(row.status, row.python_symbol).toBe(row.owner_phase === 1 ? "complete" : "planned");
+      const expectedStatus =
+        row.owner_phase === 1
+          ? "complete"
+          : row.python_symbol === "IdmModbusClient"
+            ? "partial"
+            : "planned";
+      expect(row.status, row.python_symbol).toBe(expectedStatus);
       expect(row.typescript_symbol, row.python_symbol).toMatch(/^[A-Za-z][A-Za-z0-9_]*$/);
       expect([1, 2, 3, 4], row.python_symbol).toContain(row.owner_phase);
       expect(row.evidence_category, row.python_symbol).toMatch(/^[a-z][a-z0-9_]*$/);
@@ -482,14 +490,14 @@ describe("Phase-1 class representation mapping", () => {
     }
   });
 
-  it("later-owned runtime classes remain planned and absent from both package entry points", () => {
+  it("later-owned runtime classes remain planned or partial and absent from package entry points", () => {
     const rootSource = readFileSync(resolve(ROOT, "src/index.ts"), "utf8");
     const webSource = readFileSync(resolve(ROOT, "src/web/index.ts"), "utf8");
     const laterRows = apiMapping.mappings.filter(({ owner_phase }) => owner_phase > 1);
 
     expect(laterRows.length).toBeGreaterThan(0);
     for (const row of laterRows) {
-      expect(row.status, row.python_symbol).toBe("planned");
+      expect(["planned", "partial"], row.python_symbol).toContain(row.status);
       expect(rootSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
       expect(webSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
     }
@@ -529,7 +537,7 @@ describe("checked mapping export closure", () => {
       expect(rootExports, symbol).not.toHaveProperty(symbol);
       expect(rootSource, symbol).not.toContain(symbol);
     }
-    for (const row of apiMapping.mappings.filter(({ status }) => status === "planned")) {
+    for (const row of apiMapping.mappings.filter(({ status }) => status !== "complete")) {
       expect(rootExports, row.typescript_symbol).not.toHaveProperty(row.typescript_symbol);
       expect(webExports, row.typescript_symbol).not.toHaveProperty(row.typescript_symbol);
       expect(rootSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
@@ -680,7 +688,13 @@ describe("generated API and baseline documentation", () => {
     const partialProject = createGeneratorProject();
     writeExtensionAuthority(partialProject, {
       ...MODBUS_TRANSPORT_EXTENSION,
-      extensions: [{ ...MODBUS_TRANSPORT_EXTENSION.extensions[0]!, status: "complete" }],
+      extensions: [
+        {
+          ...requireDefined(MODBUS_TRANSPORT_EXTENSION.extensions[0], "ModbusTransport extension"),
+          status: "complete",
+          contract_test: "test/semantic/constants-and-types.test.ts",
+        },
+      ],
     });
     preparePartialIdmModbusClient(partialProject);
     mutateProjectJson<{ parity_status: string }>(
@@ -917,6 +931,7 @@ describe("generated API and baseline documentation", () => {
     expect(source).not.toMatch(/node:child_process|spawn|execFile|\bfetch\s*\(|https?:\/\//u);
     expect(source).not.toMatch(/process\.cwd|--root|--output/u);
     expect(source).toContain('"contracts/api-mapping.json"');
+    expect(source).toContain('"contracts/typescript-extensions.json"');
     expect(source).toContain('"docs/API-PARITY.md"');
     expect(source).toContain('"docs/BASELINE.md"');
   });

@@ -18,6 +18,7 @@ import { isEvidenceTestPath, validateEvidencePath } from "./evidence-path.mjs";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PATHS = Object.freeze({
   mapping: resolve(ROOT, "contracts/api-mapping.json"),
+  extensions: resolve(ROOT, "contracts/typescript-extensions.json"),
   publicApi: resolve(ROOT, "test/fixtures/public-api.json"),
   publicClasses: resolve(ROOT, "test/fixtures/public-classes.json"),
   manifest: resolve(ROOT, "UPSTREAM-PARITY.json"),
@@ -55,6 +56,7 @@ const ALLOWED_REPRESENTATIONS = new Set([
   "readonly_object_factory",
 ]);
 const ALLOWED_CONSTRUCTORS = new Set(["class", "factory", "not_constructible", "value"]);
+const ALLOWED_EXTENSION_STATUSES = new Set(["planned", "complete"]);
 const NODE_DECISION_KEYS = new Set([
   "alias_of",
   "contract_test",
@@ -532,6 +534,98 @@ function validateRepresentation(row, classFact) {
   }
 }
 
+function validatePartialClass(row, classFact) {
+  if (row.status !== "partial") {
+    if (row.partial_class !== undefined) {
+      fail(
+        "mapping_partial_class_invalid",
+        `Partial class authority is only valid for partial mappings: ${row.python_symbol}`,
+      );
+    }
+    return;
+  }
+  if (row.kind !== "class" || classFact === undefined) {
+    fail(
+      "mapping_partial_class_invalid",
+      `Partial mapping must reference a pinned class: ${row.python_symbol}`,
+    );
+  }
+  assertExactKeys(
+    row.partial_class,
+    ["implemented_members", "omitted_members"],
+    [],
+    "mapping_partial_class_invalid",
+    `${row.python_symbol}.partial_class`,
+  );
+  const implemented = row.partial_class.implemented_members;
+  const omitted = row.partial_class.omitted_members;
+  if (!Array.isArray(implemented) || !Array.isArray(omitted)) {
+    fail(
+      "mapping_partial_class_invalid",
+      `Partial member partitions must be arrays for ${row.python_symbol}`,
+    );
+  }
+  const validateMembers = (members, label) => {
+    for (const member of members) {
+      if (typeof member !== "string" || !CAMEL_IDENTIFIER.test(member)) {
+        fail(
+          "mapping_partial_class_invalid",
+          `${row.python_symbol}.${label} has an invalid member`,
+        );
+      }
+    }
+    if (new Set(members).size !== members.length) {
+      fail(
+        "mapping_partial_class_invalid",
+        `${row.python_symbol}.${label} contains duplicate members`,
+      );
+    }
+  };
+  validateMembers(implemented, "implemented_members");
+  validateMembers(omitted, "omitted_members");
+
+  const expectedMembers = classFact.members.map(({ name }) => memberCounterpart(row, name));
+  const expectedSet = new Set(expectedMembers);
+  const implementedSet = new Set(implemented);
+  const omittedSet = new Set(omitted);
+  for (const member of implementedSet) {
+    if (!expectedSet.has(member) || omittedSet.has(member)) {
+      fail(
+        "mapping_partial_class_invalid",
+        `Implemented member partition is invalid for ${row.python_symbol}.${member}`,
+      );
+    }
+  }
+  for (const member of omittedSet) {
+    if (!expectedSet.has(member)) {
+      fail(
+        "mapping_partial_class_invalid",
+        `Omitted member partition is invalid for ${row.python_symbol}.${member}`,
+      );
+    }
+  }
+  if (
+    implementedSet.size + omittedSet.size !== expectedSet.size ||
+    expectedMembers.some((member) => !implementedSet.has(member) && !omittedSet.has(member))
+  ) {
+    fail(
+      "mapping_partial_class_invalid",
+      `Partial member partition does not cover ${row.python_symbol}`,
+    );
+  }
+  const implementedOrder = expectedMembers.filter((member) => implementedSet.has(member));
+  const omittedOrder = expectedMembers.filter((member) => omittedSet.has(member));
+  if (
+    canonical(implemented) !== canonical(implementedOrder) ||
+    canonical(omitted) !== canonical(omittedOrder)
+  ) {
+    fail(
+      "mapping_partial_class_invalid",
+      `Partial member order must follow pinned class order for ${row.python_symbol}`,
+    );
+  }
+}
+
 function validateMapping(value, expectedBaseline, publicApi, publicClasses, releaseMode) {
   assertExactKeys(
     value,
@@ -568,7 +662,7 @@ function validateMapping(value, expectedBaseline, publicApi, publicClasses, rele
     assertExactKeys(
       row,
       requiredFields,
-      ["not_applicable_rationale"],
+      ["not_applicable_rationale", "partial_class"],
       "mapping_schema_invalid",
       `mapping row ${index}`,
     );
@@ -694,6 +788,7 @@ function validateMapping(value, expectedBaseline, publicApi, publicClasses, rele
     }
     const classFact = publicClasses.byPublicName.get(row.python_symbol);
     validateRepresentation(row, classFact);
+    validatePartialClass(row, classFact);
     const aliasTarget = publicApi.aliasesByName.get(row.python_symbol);
     if (aliasTarget !== undefined) {
       if (
@@ -729,6 +824,116 @@ function validateMapping(value, expectedBaseline, publicApi, publicClasses, rele
   return value;
 }
 
+function validateExtensions(value, mapping, releaseMode) {
+  assertExactKeys(
+    value,
+    ["extensions", "schema_version"],
+    [],
+    "extension_schema_invalid",
+    "typescript-extensions.json",
+  );
+  if (value.schema_version !== 1 || !Array.isArray(value.extensions)) {
+    fail("extension_schema_invalid", "Unsupported TypeScript extension schema");
+  }
+  const pythonCounterparts = new Set(
+    mapping.mappings.map(({ export_path, typescript_symbol }) => {
+      return `${export_path}:${typescript_symbol}`;
+    }),
+  );
+  const extensionCounterparts = new Set();
+  for (const [index, extension] of value.extensions.entries()) {
+    const label = `extension row ${index}`;
+    assertExactKeys(
+      extension,
+      [
+        "contract_test",
+        "export_path",
+        "kind",
+        "no_python_counterpart",
+        "owner_phase",
+        "rationale",
+        "status",
+        "typescript_symbol",
+      ],
+      [],
+      "extension_schema_invalid",
+      label,
+    );
+    boundedString(
+      extension.typescript_symbol,
+      `${label}.typescript_symbol`,
+      "extension_schema_invalid",
+      128,
+    );
+    if (!IDENTIFIER.test(extension.typescript_symbol)) {
+      fail("extension_schema_invalid", `${label} has an invalid TypeScript symbol`);
+    }
+    if (!new Set([".", "./web"]).has(extension.export_path)) {
+      fail("extension_schema_invalid", `${label} has an invalid export path`);
+    }
+    if (extension.kind !== "type") {
+      fail("extension_schema_invalid", `${label} must be an explicit type-only extension`);
+    }
+    if (
+      !Number.isInteger(extension.owner_phase) ||
+      extension.owner_phase < 1 ||
+      extension.owner_phase > 4
+    ) {
+      fail("extension_schema_invalid", `${label} has an invalid owner`);
+    }
+    if (!ALLOWED_EXTENSION_STATUSES.has(extension.status)) {
+      fail("extension_schema_invalid", `${label} has an invalid status`);
+    }
+    boundedString(extension.rationale, `${label}.rationale`, "extension_schema_invalid", 512);
+    if (extension.rationale.length < 20) {
+      fail("extension_schema_invalid", `${label} requires a reviewed rationale`);
+    }
+    boundedString(
+      extension.contract_test,
+      `${label}.contract_test`,
+      "extension_schema_invalid",
+      256,
+    );
+    if (!isEvidenceTestPath(extension.contract_test)) {
+      fail("extension_schema_invalid", `${label} has an invalid contract test path`);
+    }
+    if (extension.no_python_counterpart !== true) {
+      fail("extension_schema_invalid", `${label} must declare no_python_counterpart: true`);
+    }
+    const counterpart = `${extension.export_path}:${extension.typescript_symbol}`;
+    if (pythonCounterparts.has(counterpart)) {
+      fail(
+        "extension_python_inventory_collision",
+        `Extension collides with Python mapping ${counterpart}`,
+      );
+    }
+    if (extensionCounterparts.has(counterpart)) {
+      fail(
+        "extension_duplicate_typescript_symbol",
+        `Duplicate TypeScript extension ${counterpart}`,
+      );
+    }
+    extensionCounterparts.add(counterpart);
+    if (releaseMode && extension.status !== "complete") {
+      fail(
+        "extension_release_status_incomplete",
+        `Release-blocking extension status for ${extension.typescript_symbol}`,
+      );
+    }
+    if (extension.status === "complete") {
+      try {
+        validateEvidencePath(ROOT, extension.contract_test);
+      } catch (error) {
+        fail(
+          "extension_complete_evidence_invalid",
+          `Complete extension evidence is invalid for ${extension.typescript_symbol}: ${String(error)}`,
+        );
+      }
+    }
+  }
+  return value;
+}
+
 function markdown(value) {
   return String(value).replaceAll("|", "\\|").replaceAll("\n", " ");
 }
@@ -737,13 +942,14 @@ function code(value) {
   return `\`${markdown(value)}\``;
 }
 
-function renderApiDocument(mapping, publicApi, publicClasses, manifest) {
+function renderApiDocument(mapping, extensions, publicApi, publicClasses, manifest) {
   const lines = [
     "<!-- GENERATED FILE — DO NOT EDIT. Run `node scripts/generate-api-parity.mjs` to regenerate. -->",
     "",
     "# Public API parity",
     "",
-    "This matrix is generated from `contracts/api-mapping.json` and the pinned Python-only public inventories.",
+    "The Python matrix is generated from `contracts/api-mapping.json` and the pinned Python-only public inventories.",
+    "Additive Node-only types are governed separately by `contracts/typescript-extensions.json` and never alter Python coverage.",
     "It documents development intent; only `complete` rows with passing evidence may be exported or released.",
     "",
     "## Pinned baseline",
@@ -767,6 +973,40 @@ function renderApiDocument(mapping, publicApi, publicClasses, manifest) {
       row.normalizations.length === 0 ? "—" : row.normalizations.map(code).join(", ");
     lines.push(
       `| ${code(row.python_symbol)} | ${code(row.typescript_symbol)} | ${code(row.export_path)} | ${row.owner_phase} | ${code(row.status)} | ${code(row.representation.form)} | ${normalizations} | ${code(row.evidence_category)}: ${code(row.contract_test)} |`,
+    );
+  }
+  lines.push(
+    "",
+    "## TypeScript-only extensions",
+    "",
+    "These explicitly additive symbols have no Python counterpart and do not count toward the 89-row Python inventory.",
+    "",
+    "| TypeScript symbol | Export path | Owner | Status | Kind | Rationale | Contract evidence |",
+    "| --- | --- | ---: | --- | --- | --- | --- |",
+  );
+  for (const extension of extensions.extensions) {
+    lines.push(
+      `| ${code(extension.typescript_symbol)} | ${code(extension.export_path)} | ${extension.owner_phase} | ${code(extension.status)} | ${code(extension.kind)} | ${markdown(extension.rationale)} | ${code(extension.contract_test)} |`,
+    );
+  }
+  const partialRows = mapping.mappings.filter(({ status }) => status === "partial");
+  lines.push(
+    "",
+    "## Partial class lifecycle",
+    "",
+    "Partial classes are private-development authorities only. Their implemented and omitted member lists are an exact disjoint partition of the pinned Python class fixture, and release mode rejects them.",
+  );
+  if (partialRows.length === 0) {
+    lines.push("", "No partial classes are currently declared.");
+  }
+  for (const row of partialRows) {
+    lines.push(
+      "",
+      `### ${row.typescript_symbol}`,
+      "",
+      `- Partition: ${row.partial_class.implemented_members.length} implemented, ${row.partial_class.omitted_members.length} omitted`,
+      `- Implemented: ${row.partial_class.implemented_members.map(code).join(", ")}`,
+      `- Omitted: ${row.partial_class.omitted_members.map(code).join(", ")}`,
     );
   }
   lines.push(
@@ -812,7 +1052,7 @@ function renderApiDocument(mapping, publicApi, publicClasses, manifest) {
     "",
     "## Release rule",
     "",
-    "`--release` rejects every `planned` or `partial` row, every unjustified `not_applicable` row, and every `complete` row whose contract test is absent.",
+    "`--release` rejects every `planned` or `partial` Python row, every unjustified `not_applicable` row, every incomplete TypeScript-only extension, and every `complete` authority whose contract test is absent.",
     "",
   );
   return lines.join("\n");
@@ -937,11 +1177,16 @@ function main() {
     publicClasses,
     options.release,
   );
+  const extensions = validateExtensions(
+    readJson(PATHS.extensions, "typescript-extensions.json"),
+    mapping,
+    options.release,
+  );
   if (options.release && manifest.parity_status !== "complete") {
     fail("baseline_release_status_incomplete", "Baseline manifest is not complete");
   }
   const documents = [
-    [PATHS.apiDocument, renderApiDocument(mapping, publicApi, publicClasses, manifest)],
+    [PATHS.apiDocument, renderApiDocument(mapping, extensions, publicApi, publicClasses, manifest)],
     [PATHS.baselineDocument, renderBaselineDocument(manifest)],
   ];
   if (options.check) {

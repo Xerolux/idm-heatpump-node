@@ -176,6 +176,29 @@ Für ein npm-Release sind ausschließlich `complete` und fachlich berechtigte,
 explizit geprüfte `not_applicable`-Einträge zulässig. Ein abweichender Status
 blockiert den Release.
 
+### Additive TypeScript-Oberfläche und phasenübergreifende Klassen
+
+Die Python-Inventur bleibt exakt bei 89 geordneten Einträgen. Öffentliche
+TypeScript-Typen ohne Python-Gegenstück werden ausschließlich in
+`contracts/typescript-extensions.json` geführt. Jeder Eintrag benötigt Besitzer,
+Status, Exportpfad, Typart, Begründung, Testnachweis und
+`no_python_counterpart: true`. Ein synthetischer Python-Mapping-Eintrag ist
+verboten. Für Releases müssen auch alle additiven Einträge `complete` sein.
+
+Eine Python-Klasse, deren Mitglieder über mehrere Implementierungsphasen
+verteilt sind, darf während der privaten Entwicklung den Status `partial`
+tragen. Dann müssen `implemented_members` und `omitted_members` eine
+duplikatfreie, disjunkte und vollständige Partition der nach TypeScript
+normalisierten Mitglieder aus `test/fixtures/public-classes.json` bilden.
+Fehlende, erfundene oder überlappende Mitglieder sind harte Fehler. Es werden
+keine werfenden Platzhalter für noch nicht implementierte Methoden exportiert.
+`partial` bleibt immer release-blockierend.
+
+Die zusammengesetzten Anforderungen werden klauselscharf abgeschlossen:
+Phase 2 besitzt `TRN-03R` und `ERR-01R` für Reads und deren Fehlerpfade; Phase 3
+besitzt `TRN-03W` und `ERR-01W` für Writes. Die Oberanforderungen `TRN-03` und
+`ERR-01` gelten erst als vollständig, wenn beide Teilklauseln nachgewiesen sind.
+
 ## Koordinierte Releases
 
 Ein Node-Repository allein kann eine Änderung des Python-Projekts nicht

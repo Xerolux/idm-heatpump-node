@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "extensions": [
+    {
+      "typescript_symbol": "ModbusTransport",
+      "export_path": ".",
+      "kind": "type",
+      "owner_phase": 2,
+      "status": "planned",
+      "rationale": "Node transport abstraction required for deterministic runtime parity without exposing the concrete adapter.",
+      "contract_test": "test/parity/transport-contract.test.ts",
+      "no_python_counterpart": true
+    }
+  ]
+}

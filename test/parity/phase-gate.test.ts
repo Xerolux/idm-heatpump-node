@@ -331,7 +331,12 @@ describe("npm parity entry points and private package boundary", () => {
         `| \`${row.python_symbol}\` | \`${row.typescript_symbol}\` | \`.\` | 1 | \`complete\` |`,
       );
     }
-    expect(mapping.mappings.filter(({ status }) => status === "planned")).toHaveLength(36);
+    expect(mapping.mappings.filter(({ status }) => status === "planned")).toHaveLength(35);
+    expect(
+      mapping.mappings.filter(
+        ({ python_symbol, status }) => python_symbol === "IdmModbusClient" && status === "partial",
+      ),
+    ).toHaveLength(1);
   });
 
   it("wires all npm parity commands to fixed repository scripts", () => {
@@ -537,6 +542,7 @@ describe("Phase 1 truthful documentation and closure", () => {
     const workflow = readFileSync(resolve(root, ".github/workflows/ci.yml"), "utf8");
     const completeRows = mapping.mappings.filter(({ status }) => status === "complete");
     const plannedRows = mapping.mappings.filter(({ status }) => status === "planned");
+    const partialRows = mapping.mappings.filter(({ status }) => status === "partial");
 
     expect(packageJson.private).toBe(true);
     expect(packageJson.files).toEqual(["dist"]);
@@ -554,8 +560,11 @@ describe("Phase 1 truthful documentation and closure", () => {
         ({ export_path, owner_phase }) => export_path === "." && owner_phase === 1,
       ),
     ).toBe(true);
-    expect(plannedRows).toHaveLength(36);
+    expect(plannedRows).toHaveLength(35);
     expect(plannedRows.every(({ owner_phase }) => owner_phase >= 2)).toBe(true);
+    expect(partialRows).toEqual([
+      expect.objectContaining({ export_path: ".", owner_phase: 2, status: "partial" }),
+    ]);
     expect(webSource).toMatch(/export \{\};/u);
     expect(webSource).not.toMatch(/export\s+(?:const|class|function|type)\b/u);
     expect(workflow).toContain("run: npm run check");

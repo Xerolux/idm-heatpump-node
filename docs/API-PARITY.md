@@ -2,7 +2,8 @@
 
 # Public API parity
 
-This matrix is generated from `contracts/api-mapping.json` and the pinned Python-only public inventories.
+The Python matrix is generated from `contracts/api-mapping.json` and the pinned Python-only public inventories.
+Additive Node-only types are governed separately by `contracts/typescript-extensions.json` and never alter Python coverage.
 It documents development intent; only `complete` rows with passing evidence may be exported or released.
 
 ## Pinned baseline
@@ -66,7 +67,7 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `IdmNavigator10WebClient` | `IdmNavigator10WebClient` | `./web` | 4 | `planned` | `class` | `none_to_null`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_client`: `test/parity/web-contract.test.ts` |
 | `IdmNavigator20WebClient` | `IdmNavigator20WebClient` | `./web` | 4 | `planned` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_client`: `test/parity/web-contract.test.ts` |
 | `IdmModelInfo` | `IdmModelInfo` | `.` | 1 | `complete` | `readonly_object_factory` | `list_to_readonly_array`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `set_to_immutable_set_like`, `snake_case_to_camelCase` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
-| `IdmModbusClient` | `IdmModbusClient` | `.` | 2 | `planned` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `set_to_immutable_set_like`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `transport_client`: `test/parity/transport-contract.test.ts` |
+| `IdmModbusClient` | `IdmModbusClient` | `.` | 2 | `partial` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `set_to_immutable_set_like`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `transport_client`: `test/parity/transport-contract.test.ts` |
 | `IllegalAddressError` | `IllegalAddressError` | `.` | 2 | `planned` | `error_class` | `python_exception_to_error_class` | `transport_errors`: `test/parity/transport-contract.test.ts` |
 | `ModbusCodec` | `ModbusCodec` | `.` | 1 | `complete` | `class` | `snake_case_to_camelCase` | `codec`: `test/codec.test.ts` |
 | `IdmWebAuthenticationError` | `IdmWebAuthenticationError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
@@ -109,6 +110,24 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `get_zone_module_registers` | `getZoneModuleRegisters` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `quiet_pymodbus_logging` | `quietPymodbusLogging` | `.` | 2 | `planned` | `function` | `snake_case_to_camelCase` | `transport_logging`: `test/parity/transport-contract.test.ts` |
 | `web_pin_configured` | `webPinConfigured` | `./web` | 4 | `planned` | `function` | `snake_case_to_camelCase` | `web_configuration`: `test/parity/web-contract.test.ts` |
+
+## TypeScript-only extensions
+
+These explicitly additive symbols have no Python counterpart and do not count toward the 89-row Python inventory.
+
+| TypeScript symbol | Export path | Owner | Status | Kind | Rationale | Contract evidence |
+| --- | --- | ---: | --- | --- | --- | --- |
+| `ModbusTransport` | `.` | 2 | `planned` | `type` | Node transport abstraction required for deterministic runtime parity without exposing the concrete adapter. | `test/parity/transport-contract.test.ts` |
+
+## Partial class lifecycle
+
+Partial classes are private-development authorities only. Their implemented and omitted member lists are an exact disjoint partition of the pinned Python class fixture, and release mode rejects them.
+
+### IdmModbusClient
+
+- Partition: 21 implemented, 8 omitted
+- Implemented: `clearLastErrorContext`, `connect`, `decodeValue`, `detectModel`, `disconnect`, `forceReconnect`, `getBatchUnsafeRegisters`, `getDiagnostics`, `getLastErrorContext`, `getUnsupportedRegisters`, `host`, `isConnected`, `markBatchUnsafe`, `modelInfo`, `modelName`, `port`, `probeRegister`, `readBatch`, `readRegister`, `readValue`, `resetFailedRegisters`
+- Omitted: `encodeValue`, `getActiveCyclicWrites`, `getExpiredCyclicWrites`, `resetCyclicWriteState`, `resetWriteThrottle`, `setValue`, `simulateWrite`, `writeRegister`
 
 ## Phase 1 class/member contract
 
@@ -297,4 +316,4 @@ The TypeScript naming and representation decisions below are derived only from m
 
 ## Release rule
 
-`--release` rejects every `planned` or `partial` row, every unjustified `not_applicable` row, and every `complete` row whose contract test is absent.
+`--release` rejects every `planned` or `partial` Python row, every unjustified `not_applicable` row, every incomplete TypeScript-only extension, and every `complete` authority whose contract test is absent.

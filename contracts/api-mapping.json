@@ -790,7 +790,7 @@
       "export_path": ".",
       "kind": "class",
       "owner_phase": 2,
-      "status": "planned",
+      "status": "partial",
       "evidence_category": "transport_client",
       "contract_test": "test/parity/transport-contract.test.ts",
       "normalizations": [
@@ -806,6 +806,41 @@
         "constructor": "class",
         "member_naming": "snake_case_to_camelCase",
         "validation": "python_fixture"
+      },
+      "partial_class": {
+        "implemented_members": [
+          "clearLastErrorContext",
+          "connect",
+          "decodeValue",
+          "detectModel",
+          "disconnect",
+          "forceReconnect",
+          "getBatchUnsafeRegisters",
+          "getDiagnostics",
+          "getLastErrorContext",
+          "getUnsupportedRegisters",
+          "host",
+          "isConnected",
+          "markBatchUnsafe",
+          "modelInfo",
+          "modelName",
+          "port",
+          "probeRegister",
+          "readBatch",
+          "readRegister",
+          "readValue",
+          "resetFailedRegisters"
+        ],
+        "omitted_members": [
+          "encodeValue",
+          "getActiveCyclicWrites",
+          "getExpiredCyclicWrites",
+          "resetCyclicWriteState",
+          "resetWriteThrottle",
+          "setValue",
+          "simulateWrite",
+          "writeRegister"
+        ]
       }
     },
     {

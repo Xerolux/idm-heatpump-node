@@ -28,6 +28,7 @@ const PYTHON_GENERATOR_PATH = resolve(ROOT, "scripts/generate-python-contract.py
 const API_GENERATOR_PATH = resolve(ROOT, "scripts/generate-api-parity.mjs");
 const EVIDENCE_VALIDATOR_PATH = resolve(ROOT, "scripts/evidence-path.mjs");
 const MAPPING_PATH = resolve(ROOT, "contracts/api-mapping.json");
+const EXTENSIONS_PATH = resolve(ROOT, "contracts/typescript-extensions.json");
 
 const EXPECTED_MANIFEST_FIELDS = Object.freeze([
   "schema_version",
@@ -470,6 +471,7 @@ function prepareShadowRoot(stageRoot) {
   copyFileSync(API_GENERATOR_PATH, resolve(stageRoot, "scripts/generate-api-parity.mjs"));
   copyFileSync(EVIDENCE_VALIDATOR_PATH, resolve(stageRoot, "scripts/evidence-path.mjs"));
   copyFileSync(MAPPING_PATH, resolve(stageRoot, "contracts/api-mapping.json"));
+  copyFileSync(EXTENSIONS_PATH, resolve(stageRoot, "contracts/typescript-extensions.json"));
   copyFileSync(MANIFEST_PATH, resolve(stageRoot, "UPSTREAM-PARITY.json"));
 
   let mapping;
@@ -481,9 +483,21 @@ function prepareShadowRoot(stageRoot) {
   if (!isRecord(mapping) || !Array.isArray(mapping.mappings)) {
     fail("evidence_invalid", "API mapping has no evidence rows");
   }
+  let extensions;
+  try {
+    extensions = JSON.parse(readFileSync(EXTENSIONS_PATH, "utf8"));
+  } catch (error) {
+    fail(
+      "evidence_invalid",
+      `TypeScript extensions cannot be parsed for evidence staging: ${String(error)}`,
+    );
+  }
+  if (!isRecord(extensions) || !Array.isArray(extensions.extensions)) {
+    fail("evidence_invalid", "TypeScript extensions have no evidence rows");
+  }
 
   const stagedEvidence = new Set();
-  for (const row of mapping.mappings) {
+  for (const row of [...mapping.mappings, ...extensions.extensions]) {
     if (!isRecord(row) || row.status !== "complete") {
       continue;
     }

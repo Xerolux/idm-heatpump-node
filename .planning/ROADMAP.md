@@ -68,33 +68,33 @@ Plans:
 
 - [ ] 02-01-PLAN.md — Establish additive/partial API governance and closed runtime error normalization.
 
-**Wave 2** *(blocked on Wave 1 completion)*
+**Wave 2** _(blocked on Wave 1 completion)_
 
 - [ ] 02-02-PLAN.md — Define the adapter-neutral transport contract, bounded parser, fake transport, and fake clock.
 - [ ] 02-04-PLAN.md — Implement exact public errors, logging aliases, immutable context values, and diagnostics factories.
 
-**Wave 3** *(blocked on Wave 2 completion)*
+**Wave 3** _(blocked on Wave 2 completion)_
 
 - [ ] 02-03-PLAN.md — Generate the seventh Python fixture and orchestrate all nine generated artifacts transactionally.
 - [ ] 02-05-PLAN.md — Implement the internal-injection lifecycle, FIFO serialization, retries, reconnects, probes, and error context.
 
-**Wave 4** *(blocked on Wave 3 completion)*
+**Wave 4** _(blocked on Wave 3 completion)_
 
 - [ ] 02-06-PLAN.md — Implement exact single reads, grouping, batch fallback, failure tracking, quarantine, and read scenario execution.
 
-**Wave 5** *(blocked on Wave 4 completion)*
+**Wave 5** _(blocked on Wave 4 completion)_
 
 - [ ] 02-07-PLAN.md — Implement ordered model/capability detection, model-aware maps, state queries, and diagnostic scenarios.
 
-**Wave 6** *(blocked on Wave 5 completion)*
+**Wave 6** _(blocked on Wave 5 completion)_
 
 - [ ] 02-08-PLAN.md — Add the audited hidden `modbus-serial` adapter and bind it as the public constructor default.
 
-**Wave 7** *(blocked on Wave 6 completion)*
+**Wave 7** _(blocked on Wave 6 completion)_
 
 - [ ] 02-09-PLAN.md — Promote the exact mapped partial client and additive transport type through machine-checked root exports.
 
-**Wave 8** *(blocked on Wave 7 completion)*
+**Wave 8** _(blocked on Wave 7 completion)_
 
 - [ ] 02-10-PLAN.md — Close package smoke, documentation, parity, privacy, and clause-aware Phase-2 gates.
 
