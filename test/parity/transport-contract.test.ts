@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -264,6 +267,11 @@ const TRANSPORT_OPERATION_KINDS = [
   "reset_failed_registers",
 ] as const;
 
+const GENERATED_TRANSPORT_FIXTURE = resolve(
+  import.meta.dirname,
+  "../fixtures/transport-behavior.json",
+);
+
 function validTransportScenario(): Record<string, unknown> {
   return {
     baseline: {
@@ -358,6 +366,18 @@ function expectTransportScenarioError(callback: () => unknown): void {
 }
 
 describe("separate transport scenario schema parser", () => {
+  it("parses the generated seven-fixture transport inventory with unique scenarios", () => {
+    const parsed = parseTransportScenarioContract(
+      JSON.parse(readFileSync(GENERATED_TRANSPORT_FIXTURE, "utf8")),
+    );
+
+    expect(parsed.operation_kinds).toEqual(TRANSPORT_OPERATION_KINDS);
+    expect(parsed.scenarios.length).toBeGreaterThanOrEqual(30);
+    expect(parsed.scenarios.map(({ name }) => name)).toEqual([
+      ...new Set(parsed.scenarios.map(({ name }) => name)),
+    ]);
+  });
+
   it("parses exact provenance, closed operations, and semantic request order", () => {
     const raw = validTransportScenario();
     const parsed = parseTransportScenarioContract(raw);

@@ -31,6 +31,7 @@ const FIXTURE_NAMES = [
   "register-schema.json",
   "behavior-contract.json",
   "web-contract.json",
+  "transport-behavior.json",
 ] as const;
 
 const temporaryDirectories: string[] = [];
@@ -85,6 +86,20 @@ interface FixtureRoot {
   readonly [key: string]: unknown;
 }
 
+interface TransportScenarioFixture extends FixtureRoot {
+  readonly operation_kinds: readonly string[];
+  readonly scenarios: readonly {
+    readonly name: string;
+    readonly configuration: Readonly<Record<string, unknown>>;
+    readonly transport_responses: readonly Record<string, unknown>[];
+    readonly clock: readonly number[];
+    readonly operation: Readonly<Record<string, unknown>>;
+    readonly expected_result: unknown;
+    readonly expected_requests: readonly Record<string, unknown>[];
+    readonly expected_state: Readonly<Record<string, unknown>>;
+  }[];
+}
+
 function readJson<T>(path: string): T {
   return JSON.parse(readFileSync(path, "utf8")) as T;
 }
@@ -116,6 +131,26 @@ function collectObjectKeys(value: unknown, keys = new Set<string>()): Set<string
     }
   }
   return keys;
+}
+
+function collectErrorProjections(
+  value: unknown,
+  projections: { readonly errorType: string; readonly message: string }[] = [],
+): readonly { readonly errorType: string; readonly message: string }[] {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      collectErrorProjections(item, projections);
+    }
+  } else if (typeof value === "object" && value !== null) {
+    const record = value as Record<string, unknown>;
+    if (typeof record.errorType === "string" && typeof record.message === "string") {
+      projections.push({ errorType: record.errorType, message: record.message });
+    }
+    for (const item of Object.values(record)) {
+      collectErrorProjections(item, projections);
+    }
+  }
+  return projections;
 }
 
 function createExactCheckout(): DisposableCheckout {
@@ -498,7 +533,7 @@ describe("verified Python contract generator", () => {
     const behavior = fixtures["behavior-contract.json"] as FixtureRoot & {
       readonly scenarios: readonly Record<string, unknown>[];
     };
-    const scenarioFields = [
+    const transportScenarioFields = [
       "name",
       "configuration",
       "transport_responses",
@@ -525,6 +560,149 @@ describe("verified Python contract generator", () => {
       deferred_to_phase: 4,
       evidence_kind: "deferred_marker",
     });
+
+    const transport = fixtures["transport-behavior.json"] as TransportScenarioFixture;
+    expect(transport.operation_kinds).toEqual([
+      "lifecycle",
+      "read_register",
+      "read_batch",
+      "probe",
+      "detect_model",
+      "diagnostics",
+      "reset_failed_registers",
+    ]);
+    expect(transport.scenarios.length).toBeGreaterThanOrEqual(30);
+    const transportNames = transport.scenarios.map(({ name }) => name);
+    expect(transportNames).toEqual([...new Set(transportNames)]);
+    expect(transportNames).toEqual(
+      expect.arrayContaining([
+        "lifecycle_connect_disconnect_force_reconnect",
+        "serialization_parallel_reads",
+        "read_input_fc04",
+        "read_holding_fc03",
+        "batch_adjacent",
+        "batch_gap_split",
+        "batch_register_type_split",
+        "batch_max_span_split",
+        "overlap_humidity_and_mode_1393",
+        "overlap_heating_curve_and_limit_1442",
+        "overlap_cooling_setpoint_and_limit_1484",
+        "retry_timeout_reconnect",
+        "retry_disconnected_reconnect",
+        "retry_socket_reconnect",
+        "retry_no_response_reconnect",
+        "retry_modbus_same_connection",
+        "invalid_short_response",
+        "batch_device_error_fallback",
+        "batch_transport_error_propagates",
+        "unsupported_illegal_address",
+        "permanent_after_third_modbus_failure",
+        "successful_individual_read_clears_failure",
+        "batch_suspect_quarantine_and_reread",
+        "invalid_individual_value_omitted",
+        "consumer_quarantine_order",
+        "detect_unknown",
+        "detect_navigator_20",
+        "detect_navigator_pro",
+        "detect_navigator_10_full",
+        "detect_unavailable_slots_and_cascade_sentinel",
+        "diagnostics_redacted_error",
+        "reset_failed_register_state",
+      ]),
+    );
+
+    const scenarioFields = [
+      "name",
+      "configuration",
+      "transport_responses",
+      "clock",
+      "operation",
+      "expected_result",
+      "expected_requests",
+      "expected_state",
+    ].sort();
+    for (const scenario of transport.scenarios) {
+      expect(Object.keys(scenario).sort()).toEqual(transportScenarioFields);
+      expect(scenario.configuration).toMatchObject({ host: "example.invalid" });
+    }
+
+    const closedErrors = new Set([
+      "timeout",
+      "disconnected",
+      "socket",
+      "no_response",
+      "modbus",
+      "illegal_address",
+      "invalid_response",
+    ]);
+    const projections = collectErrorProjections(transport);
+    expect(new Set(projections.map(({ errorType }) => errorType))).toEqual(closedErrors);
+    for (const projection of projections) {
+      expect(closedErrors.has(projection.errorType)).toBe(true);
+      expect(projection.message.length).toBeLessThanOrEqual(1_024);
+      expect(projection.message).not.toContain("example.invalid");
+      expect(projection.message).not.toContain("127.0.0.1");
+      expect(projection.message.match(/<[^>]+>/gu) ?? []).toEqual(
+        expect.arrayContaining([]),
+      );
+      expect(
+        (projection.message.match(/<[^>]+>/gu) ?? []).every(
+          (placeholder) => placeholder === "<endpoint>",
+        ),
+      ).toBe(true);
+    }
+
+    const overlap = Object.fromEntries(
+      transport.scenarios
+        .filter(({ name }) => name.startsWith("overlap_"))
+        .map(({ name, expected_requests }) => [name, expected_requests]),
+    );
+    expect(overlap).toMatchObject({
+      overlap_humidity_and_mode_1393: [
+        {
+          kind: "read",
+          request: { address: 1392, count: 2, functionCode: 4, registerType: "input" },
+        },
+        {
+          kind: "read",
+          request: { address: 1393, count: 1, functionCode: 4, registerType: "input" },
+        },
+      ],
+      overlap_heating_curve_and_limit_1442: [
+        {
+          kind: "read",
+          request: { address: 1441, count: 2, functionCode: 4, registerType: "input" },
+        },
+        {
+          kind: "read",
+          request: { address: 1442, count: 1, functionCode: 4, registerType: "input" },
+        },
+      ],
+      overlap_cooling_setpoint_and_limit_1484: [
+        {
+          kind: "read",
+          request: { address: 1483, count: 2, functionCode: 4, registerType: "input" },
+        },
+        {
+          kind: "read",
+          request: { address: 1484, count: 1, functionCode: 4, registerType: "input" },
+        },
+      ],
+    });
+
+    const serialized = transport.scenarios.find(
+      ({ name }) => name === "serialization_parallel_reads",
+    );
+    expect(serialized?.expected_state).toMatchObject({ maxActiveRequests: 1 });
+
+    const transportText = readFileSync(
+      fixturePath(checkout, "transport-behavior.json"),
+      "utf8",
+    );
+    expect(transportText.endsWith("\n")).toBe(true);
+    expect(transportText).not.toMatch(
+      /Navigator 1\.[07]|(?:10|127|169\.254|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}|pin|serial(?:_number)?|device[_ -]?id|raw[_ -]?capture/iu,
+    );
   }, 120_000);
 
   it("is deterministic and keeps check mode byte- and mtime-non-mutating", () => {
