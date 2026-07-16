@@ -72,6 +72,11 @@ interface MappingRepresentation {
   readonly validation: "python_fixture" | "constant_fixture" | "function_fixture";
 }
 
+interface PartialClassAuthority {
+  readonly implemented_members: readonly string[];
+  readonly omitted_members: readonly string[];
+}
+
 interface ApiMappingRow {
   readonly python_symbol: string;
   readonly typescript_symbol: string;
@@ -84,6 +89,7 @@ interface ApiMappingRow {
   readonly normalizations: readonly string[];
   readonly representation: MappingRepresentation;
   readonly not_applicable_rationale?: string;
+  readonly partial_class?: PartialClassAuthority;
 }
 
 interface ApiMapping {
@@ -98,6 +104,72 @@ interface ApiMapping {
   readonly mappings: readonly ApiMappingRow[];
   readonly schema_version: number;
 }
+
+interface TypeScriptExtensionRow {
+  readonly typescript_symbol: string;
+  readonly export_path: "." | "./web";
+  readonly kind: "type";
+  readonly owner_phase: 1 | 2 | 3 | 4;
+  readonly status: "planned" | "complete";
+  readonly rationale: string;
+  readonly contract_test: string;
+  readonly no_python_counterpart: true;
+}
+
+interface TypeScriptExtensions {
+  readonly schema_version: number;
+  readonly extensions: readonly TypeScriptExtensionRow[];
+}
+
+const MODBUS_TRANSPORT_EXTENSION: TypeScriptExtensions = {
+  schema_version: 1,
+  extensions: [
+    {
+      typescript_symbol: "ModbusTransport",
+      export_path: ".",
+      kind: "type",
+      owner_phase: 2,
+      status: "planned",
+      rationale:
+        "Node transport abstraction required for deterministic runtime parity without exposing the concrete adapter.",
+      contract_test: "test/parity/transport-contract.test.ts",
+      no_python_counterpart: true,
+    },
+  ],
+};
+const IDM_MODBUS_IMPLEMENTED_MEMBERS = [
+  "clearLastErrorContext",
+  "connect",
+  "decodeValue",
+  "detectModel",
+  "disconnect",
+  "forceReconnect",
+  "getBatchUnsafeRegisters",
+  "getDiagnostics",
+  "getLastErrorContext",
+  "getUnsupportedRegisters",
+  "host",
+  "isConnected",
+  "markBatchUnsafe",
+  "modelInfo",
+  "modelName",
+  "port",
+  "probeRegister",
+  "readBatch",
+  "readRegister",
+  "readValue",
+  "resetFailedRegisters",
+] as const;
+const IDM_MODBUS_OMITTED_MEMBERS = [
+  "encodeValue",
+  "getActiveCyclicWrites",
+  "getExpiredCyclicWrites",
+  "resetCyclicWriteState",
+  "resetWriteThrottle",
+  "setValue",
+  "simulateWrite",
+  "writeRegister",
+] as const;
 
 function readJson<T>(relativePath: string): T {
   return JSON.parse(readFileSync(resolve(ROOT, relativePath), "utf8")) as T;
@@ -208,6 +280,29 @@ function mutateProjectJson<T>(
   const value = JSON.parse(readFileSync(path, "utf8")) as T;
   mutate(value);
   writeFileSync(path, `${JSON.stringify(value, undefined, 2)}\n`);
+}
+
+function writeExtensionAuthority(
+  project: string,
+  extensions: TypeScriptExtensions = MODBUS_TRANSPORT_EXTENSION,
+): void {
+  const path = resolve(project, "contracts/typescript-extensions.json");
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, `${JSON.stringify(extensions, undefined, 2)}\n`);
+}
+
+function preparePartialIdmModbusClient(project: string): void {
+  mutateProjectJson<ApiMapping>(project, "contracts/api-mapping.json", (mapping) => {
+    const client = requireDefined(
+      mapping.mappings.find(({ python_symbol }) => python_symbol === "IdmModbusClient"),
+      "IdmModbusClient mapping row",
+    );
+    (client as { status: string }).status = "partial";
+    (client as { partial_class?: PartialClassAuthority }).partial_class = {
+      implemented_members: [...IDM_MODBUS_IMPLEMENTED_MEMBERS],
+      omitted_members: [...IDM_MODBUS_OMITTED_MEMBERS],
+    };
+  });
 }
 
 afterEach(() => {
@@ -444,6 +539,169 @@ describe("checked mapping export closure", () => {
 });
 
 describe("generated API and baseline documentation", () => {
+  it("keeps the exact 89-row Python inventory separate from additive extension and partial authorities", () => {
+    const project = createGeneratorProject();
+    writeExtensionAuthority(project);
+    preparePartialIdmModbusClient(project);
+
+    requireSuccess(runGenerator(project), "partial and extension development generation");
+
+    const mapping = JSON.parse(
+      readFileSync(resolve(project, "contracts/api-mapping.json"), "utf8"),
+    ) as ApiMapping;
+    const apiDocument = readFileSync(resolve(project, "docs/API-PARITY.md"), "utf8");
+
+    expect(mapping.mappings).toHaveLength(89);
+    expect(mapping.mappings.map(({ python_symbol }) => python_symbol)).toEqual(
+      publicApi.symbols.map(({ name }) => name),
+    );
+    expect(apiDocument).toContain("## TypeScript-only extensions");
+    expect(apiDocument).toContain("`ModbusTransport`");
+    expect(apiDocument).toContain("no Python counterpart");
+    expect(apiDocument).toContain("## Partial class lifecycle");
+    expect(apiDocument).toContain("`IdmModbusClient`");
+    expect(apiDocument).toContain("21 implemented, 8 omitted");
+  });
+
+  it("rejects unknown, missing, duplicate, fabricated, and invalid-evidence extensions", () => {
+    const cases: readonly {
+      readonly code: string;
+      readonly mutate: (extensions: TypeScriptExtensions) => void;
+    }[] = [
+      {
+        code: "extension_schema_invalid",
+        mutate(extensions) {
+          (
+            extensions.extensions[0] as TypeScriptExtensionRow & { unexpected?: boolean }
+          ).unexpected = true;
+        },
+      },
+      {
+        code: "extension_schema_invalid",
+        mutate(extensions) {
+          delete (extensions.extensions[0] as unknown as Record<string, unknown>).rationale;
+        },
+      },
+      {
+        code: "extension_duplicate_typescript_symbol",
+        mutate(extensions) {
+          (extensions.extensions as TypeScriptExtensionRow[]).push({
+            ...requireDefined(extensions.extensions[0], "first extension row"),
+          });
+        },
+      },
+      {
+        code: "extension_python_inventory_collision",
+        mutate(extensions) {
+          (extensions.extensions[0] as { typescript_symbol: string }).typescript_symbol =
+            "IdmModbusClient";
+        },
+      },
+      {
+        code: "extension_schema_invalid",
+        mutate(extensions) {
+          (extensions.extensions[0] as { no_python_counterpart: boolean }).no_python_counterpart =
+            false;
+        },
+      },
+      {
+        code: "extension_schema_invalid",
+        mutate(extensions) {
+          (extensions.extensions[0] as { contract_test: string }).contract_test =
+            "../outside.test.ts";
+        },
+      },
+    ];
+
+    for (const testCase of cases) {
+      const project = createGeneratorProject();
+      const extensions = structuredClone(MODBUS_TRANSPORT_EXTENSION);
+      testCase.mutate(extensions);
+      writeExtensionAuthority(project, extensions);
+      const result = runGenerator(project);
+      expect(result.status, testCase.code).not.toBe(0);
+      expect(result.stderr, testCase.code).toContain(testCase.code);
+    }
+  });
+
+  it("rejects partial class gaps, overlap, duplicates, and fabricated members", () => {
+    const cases: readonly {
+      readonly mutate: (partial: {
+        implemented_members: string[];
+        omitted_members: string[];
+      }) => void;
+    }[] = [
+      {
+        mutate(partial) {
+          partial.implemented_members.pop();
+        },
+      },
+      {
+        mutate(partial) {
+          partial.omitted_members.push(requireDefined(partial.implemented_members[0], "member"));
+        },
+      },
+      {
+        mutate(partial) {
+          partial.implemented_members.push(
+            requireDefined(partial.implemented_members[0], "member"),
+          );
+        },
+      },
+      {
+        mutate(partial) {
+          partial.implemented_members[0] = "fabricatedMember";
+        },
+      },
+    ];
+
+    for (const testCase of cases) {
+      const project = createGeneratorProject();
+      writeExtensionAuthority(project);
+      preparePartialIdmModbusClient(project);
+      mutateProjectJson<ApiMapping>(project, "contracts/api-mapping.json", (mapping) => {
+        const client = requireDefined(
+          mapping.mappings.find(({ python_symbol }) => python_symbol === "IdmModbusClient"),
+          "IdmModbusClient mapping row",
+        );
+        const partial = requireDefined(client.partial_class, "partial class authority") as {
+          implemented_members: string[];
+          omitted_members: string[];
+        };
+        testCase.mutate(partial);
+      });
+      const result = runGenerator(project);
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain("mapping_partial_class_invalid");
+    }
+  });
+
+  it("release mode rejects every partial mapping and incomplete extension", () => {
+    const partialProject = createGeneratorProject();
+    writeExtensionAuthority(partialProject, {
+      ...MODBUS_TRANSPORT_EXTENSION,
+      extensions: [{ ...MODBUS_TRANSPORT_EXTENSION.extensions[0]!, status: "complete" }],
+    });
+    preparePartialIdmModbusClient(partialProject);
+    mutateProjectJson<{ parity_status: string }>(
+      partialProject,
+      "UPSTREAM-PARITY.json",
+      (manifest) => {
+        manifest.parity_status = "complete";
+      },
+    );
+    const partialResult = runGenerator(partialProject, ["--release"]);
+    expect(partialResult.status).not.toBe(0);
+    expect(partialResult.stderr).toContain("mapping_release_status_incomplete");
+
+    const extensionProject = createGeneratorProject();
+    writeExtensionAuthority(extensionProject);
+    prepareReleaseMapping(extensionProject, "test/semantic/constants-and-types.test.ts");
+    const extensionResult = runGenerator(extensionProject, ["--release"]);
+    expect(extensionResult.status).not.toBe(0);
+    expect(extensionResult.stderr).toContain("extension_release_status_incomplete");
+  });
+
   it("release mode rejects escaped, directory, symlink, empty, and oversized evidence", () => {
     const cases: readonly {
       readonly path: string;
