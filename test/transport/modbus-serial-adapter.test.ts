@@ -4,7 +4,11 @@ import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { IdmModbusClient } from "../../src/client/idm-modbus-client.js";
-import { createInternalIdmModbusClient } from "../../src/client/internal-create.js";
+import {
+  createInternalIdmModbusClient,
+  getInternalClientSnapshot,
+  readInternalModbusRegisters,
+} from "../../src/client/internal-create.js";
 import {
   createModbusSerialTransport,
   type ModbusSerialClientBoundary,
@@ -265,7 +269,7 @@ describe("ModbusSerialTransport", () => {
     },
     {
       name: "invalid response",
-      outcome: { kind: "result", result: { data: [1] } },
+      outcome: { kind: "result", result: { data: [1, 1.5] } },
       assertion: (error: unknown): void => {
         expect(error).toBeInstanceOf(NormalizedTransportFailure);
         expect(error).toMatchObject({ kind: NormalizedTransportFailureKind.INVALID_RESPONSE });
@@ -308,9 +312,19 @@ describe("ModbusSerialTransport", () => {
   it.each([
     { data: [1], label: "short" },
     { data: [1, 2, 3], label: "long" },
+  ])("preserves a $label word array for the client-owned count validation", async ({ data }) => {
+    const client = new MockModbusSerialClient();
+    client.queueInput({ kind: "result", result: { data } });
+    const transport = createTransport(client);
+    await transport.connect();
+
+    await expect(transport.read(inputRequest())).resolves.toEqual(data);
+  });
+
+  it.each([
     { data: [1, 1.5], label: "fractional" },
     { data: [1, 65_536], label: "out-of-range" },
-  ])("rejects a $label response before words leave the adapter", async ({ data }) => {
+  ])("rejects $label words before they leave the adapter", async ({ data }) => {
     const client = new MockModbusSerialClient();
     client.queueInput({ kind: "result", result: { data } });
     const transport = createTransport(client);
@@ -319,6 +333,69 @@ describe("ModbusSerialTransport", () => {
     await expect(transport.read(inputRequest())).rejects.toMatchObject({
       kind: NormalizedTransportFailureKind.INVALID_RESPONSE,
     });
+  });
+
+  it("matches the pinned invalid-short-response result and error context through the real adapter", async () => {
+    const fixturePath = fileURLToPath(
+      new URL("../fixtures/transport-behavior.json", import.meta.url),
+    );
+    const fixture = JSON.parse(await readFile(fixturePath, "utf8")) as {
+      readonly scenarios: readonly {
+        readonly name: string;
+        readonly expected_result: unknown;
+        readonly expected_state: Readonly<Record<string, unknown>>;
+      }[];
+    };
+    const pinned = fixture.scenarios.find(({ name }) => name === "invalid_short_response");
+    if (pinned === undefined) {
+      throw new Error("Pinned invalid_short_response scenario is missing");
+    }
+
+    const boundary = new MockModbusSerialClient();
+    boundary.queueInput({ kind: "result", result: { data: [1] } });
+    const client = createInternalIdmModbusClient(
+      "example.invalid",
+      { maxRetries: 1 },
+      {
+        transportFactory: (runtimeConfiguration) =>
+          createModbusSerialTransport(runtimeConfiguration, () => boundary),
+        now: () => 0,
+        sleep: async () => undefined,
+      },
+    );
+
+    let result: unknown;
+    try {
+      result = await readInternalModbusRegisters(client, {
+        address: 1_000,
+        count: 2,
+        maxRetries: 1,
+        registerType: RegisterType.INPUT,
+      });
+    } catch (error) {
+      if (!(error instanceof NormalizedTransportFailure)) {
+        throw error;
+      }
+      result = { error: { errorType: error.kind, message: error.message } };
+    }
+    const snapshot = getInternalClientSnapshot(client);
+    const actualState = {
+      batchUnsafeRegisters: client.getBatchUnsafeRegisters(),
+      connected: client.isConnected,
+      connectionSuspect: client.getDiagnostics().connectionSuspect,
+      lastError: client.getLastErrorContext(),
+      maxActiveRequests: 1,
+      modelName: client.modelName,
+      permanentlyFailedRegisters: client.getDiagnostics().permanentlyFailedRegisters,
+      transientFailures: snapshot.transientFailures,
+      unsupportedRegisters: client.getUnsupportedRegisters(),
+    };
+
+    expect(result).toEqual(pinned.expected_result);
+    expect(actualState).toEqual(pinned.expected_state);
+    expect(boundary.events.filter((event) => event.kind === "read_input")).toEqual([
+      { kind: "read_input", address: 1_000, count: 2 },
+    ]);
   });
 
   it("normalizes and redacts connection failures without retaining a raw cause", async () => {

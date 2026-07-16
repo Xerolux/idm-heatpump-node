@@ -121,7 +121,7 @@ function extractWords(
     throw invalidResponse(request, endpoint);
   }
   try {
-    return validateModbusWords(record.data, request.count);
+    return validateModbusWords(record.data);
   } catch {
     throw invalidResponse(request, endpoint);
   }
