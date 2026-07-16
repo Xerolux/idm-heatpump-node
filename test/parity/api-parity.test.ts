@@ -528,8 +528,7 @@ describe("API mapping inventory", () => {
       apiMapping.mappings
         .filter(
           ({ owner_phase, python_symbol }) =>
-            owner_phase === 1 ||
-            (owner_phase === 2 && python_symbol !== "IdmModbusClient"),
+            owner_phase === 1 || (owner_phase === 2 && python_symbol !== "IdmModbusClient"),
         )
         .map(({ python_symbol }) => python_symbol),
     );
@@ -700,8 +699,7 @@ describe("checked mapping export closure", () => {
       .filter(
         ({ export_path, status, python_symbol }) =>
           export_path === "." &&
-          (status === "complete" ||
-            (python_symbol === "IdmModbusClient" && status === "partial")),
+          (status === "complete" || (python_symbol === "IdmModbusClient" && status === "partial")),
       )
       .map(({ typescript_symbol }) => typescript_symbol)
       .sort();
@@ -770,12 +768,8 @@ describe("checked mapping export closure", () => {
       'export { IdmClientDiagnostics, ModbusErrorContext } from "./client/index.js";',
     );
     expect(rootSource).toContain('export { IllegalAddressError } from "./transport/errors.js";');
-    expect(rootSource).toContain(
-      'export { quietPymodbusLogging } from "./transport/logging.js";',
-    );
-    expect(rootSource).toContain(
-      'export type { ModbusTransport } from "./transport/types.js";',
-    );
+    expect(rootSource).toContain('export { quietPymodbusLogging } from "./transport/logging.js";');
+    expect(rootSource).toContain('export type { ModbusTransport } from "./transport/types.js";');
     for (const symbol of forbidden) {
       expect(rootSource, symbol).not.toContain(symbol);
       expect(clientSource, symbol).not.toContain(symbol);
@@ -800,13 +794,13 @@ describe("checked mapping export closure", () => {
       .filter(
         ({ export_path, status, python_symbol }) =>
           export_path === "." &&
-          (status === "complete" ||
-            (python_symbol === "IdmModbusClient" && status === "partial")),
+          (status === "complete" || (python_symbol === "IdmModbusClient" && status === "partial")),
       )
       .map(({ typescript_symbol }) => typescript_symbol)
       .sort();
-    const esm = (await import(`${pathToFileURL(resolve(ROOT, "dist/index.js")).href}?api-parity`)) as
-      | Record<string, unknown>;
+    const esm = (await import(
+      `${pathToFileURL(resolve(ROOT, "dist/index.js")).href}?api-parity`
+    )) as Record<string, unknown>;
     const cjs = createRequire(import.meta.url)(resolve(ROOT, "dist/index.cjs")) as Record<
       string,
       unknown
@@ -842,7 +836,9 @@ describe("checked mapping export closure", () => {
 
     for (const declaration of declarations) {
       expect(declaration).toContain("declare class IdmModbusClient");
-      expect(declaration).toMatch(/constructor\(host: string, options\?: IdmModbusClientOptions\)/u);
+      expect(declaration).toMatch(
+        /constructor\(host: string, options\?: IdmModbusClientOptions\)/u,
+      );
       expect(declaration).toContain("interface ModbusTransport");
       expect(declaration).toMatch(/export[^;]*\bModbusTransport\b/u);
       for (const member of IDM_MODBUS_IMPLEMENTED_MEMBERS) {
@@ -852,7 +848,7 @@ describe("checked mapping export closure", () => {
         expect(declaration, member).not.toMatch(new RegExp(`\\b${member}\\b`, "u"));
       }
       for (const symbol of forbidden) {
-        expect(declaration, symbol).not.toContain(symbol);
+        expect(declaration, symbol).not.toMatch(new RegExp(`\\b${symbol}\\b`, "u"));
       }
     }
   });

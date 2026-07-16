@@ -254,7 +254,7 @@ describe("IdmModbusClient constructor and lifecycle", () => {
 });
 
 describe("internal dependency seam and public closure", () => {
-  it("keeps dependencies and internal creation out of both package barrels", async () => {
+  it("exports the client while keeping dependencies and internal creation private", async () => {
     const clientBarrelPath = fileURLToPath(new URL("../../src/client/index.ts", import.meta.url));
     const rootBarrelPath = fileURLToPath(new URL("../../src/index.ts", import.meta.url));
     const [clientBarrel, rootBarrel] = await Promise.all([
@@ -266,8 +266,9 @@ describe("internal dependency seam and public closure", () => {
     expect(clientBarrel).not.toMatch(
       /InternalClientDependencies|createInternalIdmModbusClient|transportFactory|clock|sleep|token|pymodbusRetries/u,
     );
+    expect(rootBarrel).toContain("IdmModbusClient");
     expect(rootBarrel).not.toMatch(
-      /IdmModbusClient|InternalClientDependencies|createInternalIdmModbusClient|transportFactory|clock|sleep|token|pymodbusRetries/u,
+      /InternalClientDependencies|createInternalIdmModbusClient|transportFactory|clock|sleep|token|pymodbusRetries/u,
     );
   });
 

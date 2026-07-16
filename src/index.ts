@@ -1,3 +1,8 @@
+export { IdmClientDiagnostics, ModbusErrorContext } from "./client/index.js";
+export { IdmModbusClient } from "./client/index.js";
+export { IllegalAddressError } from "./transport/errors.js";
+export { quietPymodbusLogging } from "./transport/logging.js";
+export type { ModbusTransport } from "./transport/types.js";
 export {
   ACTIVE_HC_MODE_OPTIONS,
   BIVALENCE_STATE_OPTIONS,

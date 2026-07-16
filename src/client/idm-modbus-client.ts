@@ -45,7 +45,6 @@ import { groupRegisters } from "./read-groups.js";
 const DEFAULT_MAX_GROUP_SIZE = 40;
 const PERMANENT_FAILURE_THRESHOLD = 3;
 const INTERNAL_DEPENDENCIES = Symbol("IdmModbusClient.internalDependencies");
-const INTERNAL_TEST_CONTROL = Symbol("IdmModbusClient.internalTestControl");
 
 export interface IdmModbusClientOptions {
   readonly port?: number;
@@ -103,6 +102,23 @@ export interface InternalReadRegistersOptions {
   readonly maxRetries: number;
   readonly registerType: RegisterType;
   readonly timeout?: number;
+}
+
+interface InternalTestControl {
+  readonly attachTransport: (transport: ModbusTransport) => void;
+  readonly readRegisters: (options: InternalReadRegistersOptions) => Promise<readonly number[]>;
+  readonly seedReadState: (seed: InternalReadStateSeed) => void;
+  readonly snapshot: () => InternalClientSnapshot;
+}
+
+const internalTestControls = new WeakMap<IdmModbusClient, InternalTestControl>();
+
+function requireInternalTestControl(client: IdmModbusClient): InternalTestControl {
+  const control = internalTestControls.get(client);
+  if (control === undefined) {
+    throw new TypeError("IdmModbusClient internal test control is unavailable");
+  }
+  return control;
 }
 
 interface InternalIdmModbusClientOptions extends IdmModbusClientOptions {
@@ -191,22 +207,22 @@ export function attachInternalModbusTransport(
   client: IdmModbusClient,
   transport: ModbusTransport,
 ): void {
-  client[INTERNAL_TEST_CONTROL].attachTransport(transport);
+  requireInternalTestControl(client).attachTransport(transport);
 }
 
 export function seedInternalReadState(client: IdmModbusClient, seed: InternalReadStateSeed): void {
-  client[INTERNAL_TEST_CONTROL].seedReadState(seed);
+  requireInternalTestControl(client).seedReadState(seed);
 }
 
 export function getInternalClientSnapshot(client: IdmModbusClient): InternalClientSnapshot {
-  return client[INTERNAL_TEST_CONTROL].snapshot();
+  return requireInternalTestControl(client).snapshot();
 }
 
 export async function readInternalModbusRegisters(
   client: IdmModbusClient,
   options: InternalReadRegistersOptions,
 ): Promise<readonly number[]> {
-  return client[INTERNAL_TEST_CONTROL].readRegisters(options);
+  return requireInternalTestControl(client).readRegisters(options);
 }
 
 export class IdmModbusClient {
@@ -261,6 +277,76 @@ export class IdmModbusClient {
     this.#maxGroupSize = maxGroupSize;
     this.#dependencies = internalOptions[INTERNAL_DEPENDENCIES] ?? defaultDependencies;
     this.#endpoint = Object.freeze({ host: this.#host, port: this.#port });
+    internalTestControls.set(
+      this,
+      Object.freeze({
+        attachTransport: (transport: ModbusTransport): void => {
+          this.#transport = transport;
+        },
+        readRegisters: async (
+          readOptions: InternalReadRegistersOptions,
+        ): Promise<readonly number[]> => {
+          return this.#gate.runExclusive(async () => {
+            await this.#ensureConnectedLocked();
+            const timeoutMs =
+              readOptions.timeout === undefined || readOptions.timeout === this.#timeout
+                ? undefined
+                : timeoutMilliseconds(readOptions.timeout);
+            const holding = readOptions.registerType === RegisterType.HOLDING;
+            const requestBase = {
+              unitId: this.#slaveId,
+              registerType: readOptions.registerType,
+              functionCode: holding ? (3 as const) : (4 as const),
+              address: readOptions.address,
+              count: readOptions.count,
+            };
+            const request = createModbusReadRequest(
+              timeoutMs === undefined ? requestBase : { ...requestBase, timeoutMs },
+            );
+            return this.#retryReadLocked(
+              request,
+              normalizeRetryCount(readOptions.maxRetries, this.#maxRetries),
+            );
+          });
+        },
+        seedReadState: (seed: InternalReadStateSeed): void => {
+          for (const register of seed.batchUnsafeRegisters ?? []) {
+            this.#batchUnsafeRegisters.add(register);
+          }
+          for (const register of seed.permanentlyFailedRegisters ?? []) {
+            this.#permanentlyFailedRegisters.add(register);
+          }
+          for (const register of seed.unsupportedRegisters ?? []) {
+            this.#unsupportedRegisters.add(register);
+          }
+          for (const [register, failures] of Object.entries(seed.transientFailures ?? {})) {
+            requireIntegerAtLeast(failures, 1, `transient failure count for ${register}`);
+            this.#registerFailures.set(register, failures);
+          }
+        },
+        snapshot: (): InternalClientSnapshot => {
+          const transientFailures: Record<string, number> = {};
+          for (const [register, failures] of [...this.#registerFailures].sort(([left], [right]) =>
+            compareUnicodeCodePoints(left, right),
+          )) {
+            transientFailures[register] = failures;
+          }
+          return Object.freeze({
+            configuration: Object.freeze({
+              adapterRetries: 0,
+              host: this.#host,
+              maxGroupSize: this.#maxGroupSize,
+              maxRetries: this.#maxRetries,
+              modelName: this.modelName,
+              port: this.#port,
+              slaveId: this.#slaveId,
+              timeout: this.#timeout,
+            }),
+            transientFailures: Object.freeze(transientFailures),
+          });
+        },
+      }),
+    );
   }
 
   public get host(): string {
@@ -399,72 +485,6 @@ export class IdmModbusClient {
       return info;
     });
   }
-
-  public readonly [INTERNAL_TEST_CONTROL] = Object.freeze({
-    attachTransport: (transport: ModbusTransport): void => {
-      this.#transport = transport;
-    },
-    readRegisters: async (options: InternalReadRegistersOptions): Promise<readonly number[]> => {
-      return this.#gate.runExclusive(async () => {
-        await this.#ensureConnectedLocked();
-        const timeoutMs =
-          options.timeout === undefined || options.timeout === this.#timeout
-            ? undefined
-            : timeoutMilliseconds(options.timeout);
-        const holding = options.registerType === RegisterType.HOLDING;
-        const requestBase = {
-          unitId: this.#slaveId,
-          registerType: options.registerType,
-          functionCode: holding ? (3 as const) : (4 as const),
-          address: options.address,
-          count: options.count,
-        };
-        const request = createModbusReadRequest(
-          timeoutMs === undefined ? requestBase : { ...requestBase, timeoutMs },
-        );
-        return this.#retryReadLocked(
-          request,
-          normalizeRetryCount(options.maxRetries, this.#maxRetries),
-        );
-      });
-    },
-    seedReadState: (seed: InternalReadStateSeed): void => {
-      for (const register of seed.batchUnsafeRegisters ?? []) {
-        this.#batchUnsafeRegisters.add(register);
-      }
-      for (const register of seed.permanentlyFailedRegisters ?? []) {
-        this.#permanentlyFailedRegisters.add(register);
-      }
-      for (const register of seed.unsupportedRegisters ?? []) {
-        this.#unsupportedRegisters.add(register);
-      }
-      for (const [register, failures] of Object.entries(seed.transientFailures ?? {})) {
-        requireIntegerAtLeast(failures, 1, `transient failure count for ${register}`);
-        this.#registerFailures.set(register, failures);
-      }
-    },
-    snapshot: (): InternalClientSnapshot => {
-      const transientFailures: Record<string, number> = {};
-      for (const [register, failures] of [...this.#registerFailures].sort(([left], [right]) =>
-        compareUnicodeCodePoints(left, right),
-      )) {
-        transientFailures[register] = failures;
-      }
-      return Object.freeze({
-        configuration: Object.freeze({
-          adapterRetries: 0,
-          host: this.#host,
-          maxGroupSize: this.#maxGroupSize,
-          maxRetries: this.#maxRetries,
-          modelName: this.modelName,
-          port: this.#port,
-          slaveId: this.#slaveId,
-          timeout: this.#timeout,
-        }),
-        transientFailures: Object.freeze(transientFailures),
-      });
-    },
-  });
 
   async #connectLocked(): Promise<void> {
     if (this.#transport?.connected === true) {
