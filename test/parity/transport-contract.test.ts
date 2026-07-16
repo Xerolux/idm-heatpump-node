@@ -16,6 +16,7 @@ import {
   TransportScenarioContractError,
   parseTransportScenarioContract,
 } from "../../src/contracts/transport-scenario.js";
+import { compareUnicodeCodePoints } from "../../src/contracts/canonical-order.js";
 import { parseScenarioContract } from "../../src/contracts/scenario.js";
 import { createRegisterDef, type RegisterDef } from "../../src/registers/definitions.js";
 import { buildRegisterMap } from "../../src/registers/registry.js";
@@ -942,7 +943,28 @@ async function executeGeneratedScenario(
         });
         break;
       case TransportOperationKind.DETECT_MODEL:
-        throw new Error("Detection scenarios belong to Plan 02-07");
+        {
+          const info = await client.detectModel({
+            readFirmware: scenario.operation.includeFirmware,
+          });
+          const registerMap = buildRegisterMap({ modelInfo: info });
+          result = Object.freeze({
+            activeHeatingCircuits: info.activeHeatingCircuits,
+            features: Object.freeze([...info.features].sort(compareUnicodeCodePoints)),
+            firmwareVersion: info.firmwareVersion,
+            hasCascade: info.hasCascade,
+            hasIsc: info.hasIsc,
+            hasPv: info.hasPv,
+            hasSolar: info.hasSolar,
+            modelName: info.modelName,
+            registerMap: Object.freeze({
+              count: registerMap.size,
+              keys: Object.freeze([...registerMap.keys()].sort(compareUnicodeCodePoints)),
+            }),
+            zoneModules: info.zoneModules,
+          });
+        }
+        break;
       default: {
         const exhaustive: never = scenario.operation;
         throw new Error(`Unknown transport operation: ${String(exhaustive)}`);

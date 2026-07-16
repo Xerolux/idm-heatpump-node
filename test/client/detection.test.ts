@@ -174,6 +174,11 @@ describe("ordered IDM model detection", () => {
     ]);
     expect(client.modelInfo).toBe(info);
     expect(client.modelName).toBe(MODEL_NAVIGATOR_10);
+    expect(client.getDiagnostics()).toMatchObject({
+      navigatorType: MODEL_NAVIGATOR_10,
+      modbusConnected: true,
+      firmware: "7.45",
+    });
     expect(map.size).toBe(203);
     expect(map.has("power_limit_hp")).toBe(true);
     expect(map.has("hc_a_flow_temp")).toBe(true);

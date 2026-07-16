@@ -216,15 +216,11 @@ describe("IdmClientDiagnostics factory", () => {
 
 describe("IdmModbusClient diagnostics integration", () => {
   it("sorts owned internal-set snapshots while preserving factory ordering responsibility", () => {
-    const client = createInternalIdmModbusClient(
-      "example.invalid",
-      undefined,
-      {
-        transportFactory: () => new FakeModbusTransport([]),
-        now: () => 0,
-        sleep: async () => undefined,
-      },
-    );
+    const client = createInternalIdmModbusClient("example.invalid", undefined, {
+      transportFactory: () => new FakeModbusTransport([]),
+      now: () => 0,
+      sleep: async () => undefined,
+    });
     seedInternalReadState(client, {
       permanentlyFailedRegisters: ["zeta", "alpha", "middle"],
       unsupportedRegisters: ["zeta", "alpha"],
@@ -274,9 +270,7 @@ describe("IdmModbusClient diagnostics integration", () => {
     );
     attachInternalModbusTransport(client, transport);
 
-    await expect(
-      client.probeRegister(1_000, 1, { maxRetries: 1 }),
-    ).resolves.toBeNull();
+    await expect(client.probeRegister(1_000, 1, { maxRetries: 1 })).resolves.toBeNull();
     const failedContext = client.getLastErrorContext();
     expect(failedContext).toMatchObject({
       address: 1_000,
@@ -286,9 +280,7 @@ describe("IdmModbusClient diagnostics integration", () => {
     });
     expect(Object.isFrozen(failedContext)).toBe(true);
 
-    await expect(
-      client.probeRegister(1_001, 1, { maxRetries: 1 }),
-    ).resolves.toEqual([7]);
+    await expect(client.probeRegister(1_001, 1, { maxRetries: 1 })).resolves.toEqual([7]);
     expect(client.getLastErrorContext()).toBe(failedContext);
     expect(client.getDiagnostics()).toMatchObject({
       modbusConnected: true,
@@ -303,15 +295,11 @@ describe("IdmModbusClient diagnostics integration", () => {
   });
 
   it("resets only permanent, unsupported, and transient read-failure state", () => {
-    const client = createInternalIdmModbusClient(
-      "example.invalid",
-      undefined,
-      {
-        transportFactory: () => new FakeModbusTransport([]),
-        now: () => 0,
-        sleep: async () => undefined,
-      },
-    );
+    const client = createInternalIdmModbusClient("example.invalid", undefined, {
+      transportFactory: () => new FakeModbusTransport([]),
+      now: () => 0,
+      sleep: async () => undefined,
+    });
     seedInternalReadState(client, {
       permanentlyFailedRegisters: ["permanent"],
       unsupportedRegisters: ["unsupported"],
