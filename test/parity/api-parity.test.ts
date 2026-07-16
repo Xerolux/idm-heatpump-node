@@ -33,6 +33,9 @@ const GENERATOR_INPUTS = [
   "test/codec.test.ts",
   "test/registers/builders.test.ts",
   "test/registers/register-def.test.ts",
+  "test/client/diagnostics.test.ts",
+  "test/client/errors.test.ts",
+  "test/parity/transport-contract.test.ts",
   "UPSTREAM-PARITY.json",
 ] as const;
 const temporaryDirectories: string[] = [];
@@ -249,7 +252,7 @@ const MODBUS_TRANSPORT_EXTENSION: TypeScriptExtensions = {
       export_path: ".",
       kind: "type",
       owner_phase: 2,
-      status: "planned",
+      status: "complete",
       rationale:
         "Node transport abstraction required for deterministic runtime parity without exposing the concrete adapter.",
       contract_test: "test/parity/transport-contract.test.ts",
@@ -263,6 +266,7 @@ const IDM_MODBUS_IMPLEMENTED_MEMBERS = [
   "decodeValue",
   "detectModel",
   "disconnect",
+  "encodeValue",
   "forceReconnect",
   "getBatchUnsafeRegisters",
   "getDiagnostics",
@@ -281,7 +285,6 @@ const IDM_MODBUS_IMPLEMENTED_MEMBERS = [
   "resetFailedRegisters",
 ] as const;
 const IDM_MODBUS_OMITTED_MEMBERS = [
-  "encodeValue",
   "getActiveCyclicWrites",
   "getExpiredCyclicWrites",
   "resetCyclicWriteState",
@@ -498,7 +501,7 @@ describe("API mapping inventory", () => {
     }
   });
 
-  it("mapping promotion completes exactly the fully evidenced Phase-1 semantic surface", () => {
+  it("mapping promotion completes the exact fully evidenced Phase-1 and Phase-2 surface", () => {
     const allowedNormalizations = new Set([
       "diagnostic_message_redaction",
       "enum_to_const_union",
@@ -518,20 +521,24 @@ describe("API mapping inventory", () => {
     const counterpartKeys = new Set<string>();
     const completedRows = apiMapping.mappings.filter(({ status }) => status === "complete");
 
-    expect(completedRows).toHaveLength(53);
+    expect(completedRows).toHaveLength(57);
     expect(completedRows.map(({ python_symbol }) => python_symbol)).toEqual(
       apiMapping.mappings
-        .filter(({ owner_phase }) => owner_phase === 1)
+        .filter(
+          ({ owner_phase, python_symbol }) =>
+            owner_phase === 1 ||
+            (owner_phase === 2 && python_symbol !== "IdmModbusClient"),
+        )
         .map(({ python_symbol }) => python_symbol),
     );
 
     for (const row of apiMapping.mappings) {
       const expectedStatus =
-        row.owner_phase === 1
-          ? "complete"
-          : row.python_symbol === "IdmModbusClient"
+        row.owner_phase <= 2
+          ? row.python_symbol === "IdmModbusClient"
             ? "partial"
-            : "planned";
+            : "complete"
+          : "planned";
       expect(row.status, row.python_symbol).toBe(expectedStatus);
       expect(row.typescript_symbol, row.python_symbol).toMatch(/^[A-Za-z][A-Za-z0-9_]*$/);
       expect([1, 2, 3, 4], row.python_symbol).toContain(row.owner_phase);
@@ -559,6 +566,42 @@ describe("API mapping inventory", () => {
       }
       expect(row.not_applicable_rationale, row.python_symbol).toBeUndefined();
     }
+  });
+
+  it("uses exact focused evidence for every completed Phase-2 Python row", () => {
+    const phaseTwo = Object.fromEntries(
+      apiMapping.mappings
+        .filter(({ owner_phase }) => owner_phase === 2)
+        .map((row) => [row.python_symbol, row]),
+    );
+
+    expect(Object.keys(phaseTwo)).toEqual([
+      "IdmClientDiagnostics",
+      "IdmModbusClient",
+      "IllegalAddressError",
+      "ModbusErrorContext",
+      "quiet_pymodbus_logging",
+    ]);
+    expect(phaseTwo.IdmClientDiagnostics).toMatchObject({
+      status: "complete",
+      contract_test: "test/client/diagnostics.test.ts",
+    });
+    expect(phaseTwo.IllegalAddressError).toMatchObject({
+      status: "complete",
+      contract_test: "test/client/errors.test.ts",
+    });
+    expect(phaseTwo.ModbusErrorContext).toMatchObject({
+      status: "complete",
+      contract_test: "test/client/diagnostics.test.ts",
+    });
+    expect(phaseTwo.quiet_pymodbus_logging).toMatchObject({
+      status: "complete",
+      contract_test: "test/client/errors.test.ts",
+    });
+    expect(phaseTwo.IdmModbusClient).toMatchObject({
+      status: "partial",
+      contract_test: "test/parity/transport-contract.test.ts",
+    });
   });
 });
 
@@ -635,14 +678,14 @@ describe("Phase-1 class representation mapping", () => {
     }
   });
 
-  it("later-owned runtime classes remain planned or partial and absent from package entry points", () => {
+  it("later-owned runtime classes remain planned and absent from package entry points", () => {
     const rootSource = readFileSync(resolve(ROOT, "src/index.ts"), "utf8");
     const webSource = readFileSync(resolve(ROOT, "src/web/index.ts"), "utf8");
-    const laterRows = apiMapping.mappings.filter(({ owner_phase }) => owner_phase > 1);
+    const laterRows = apiMapping.mappings.filter(({ owner_phase }) => owner_phase > 2);
 
     expect(laterRows.length).toBeGreaterThan(0);
     for (const row of laterRows) {
-      expect(["planned", "partial"], row.python_symbol).toContain(row.status);
+      expect(row.status, row.python_symbol).toBe("planned");
       expect(rootSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
       expect(webSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
     }
@@ -650,9 +693,9 @@ describe("Phase-1 class representation mapping", () => {
 });
 
 describe("checked mapping export closure", () => {
-  it("exports exactly the complete Phase-1 root runtime symbols from the checked mapping", () => {
+  it("keeps the existing Phase-1 runtime surface before final Phase-2 promotion", () => {
     const expectedRuntimeSymbols = apiMapping.mappings
-      .filter(({ export_path, status }) => export_path === "." && status === "complete")
+      .filter(({ export_path, owner_phase }) => export_path === "." && owner_phase === 1)
       .map(({ typescript_symbol }) => typescript_symbol)
       .sort();
 
@@ -682,7 +725,10 @@ describe("checked mapping export closure", () => {
       expect(rootExports, symbol).not.toHaveProperty(symbol);
       expect(rootSource, symbol).not.toContain(symbol);
     }
-    for (const row of apiMapping.mappings.filter(({ status }) => status !== "complete")) {
+    for (const row of apiMapping.mappings.filter(
+      ({ owner_phase, python_symbol }) =>
+        owner_phase > 1 && python_symbol !== "IdmModbusClient",
+    )) {
       expect(rootExports, row.typescript_symbol).not.toHaveProperty(row.typescript_symbol);
       expect(webExports, row.typescript_symbol).not.toHaveProperty(row.typescript_symbol);
       expect(rootSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
@@ -713,7 +759,7 @@ describe("generated API and baseline documentation", () => {
     expect(apiDocument).toContain("no Python counterpart");
     expect(apiDocument).toContain("## Partial class lifecycle");
     expect(apiDocument).toContain("`IdmModbusClient`");
-    expect(apiDocument).toContain("21 implemented, 8 omitted");
+    expect(apiDocument).toContain("22 implemented, 7 omitted");
   });
 
   it("rejects unknown, missing, duplicate, fabricated, and invalid-evidence extensions", () => {
@@ -854,7 +900,15 @@ describe("generated API and baseline documentation", () => {
     expect(partialResult.stderr).toContain("mapping_release_status_incomplete");
 
     const extensionProject = createGeneratorProject();
-    writeExtensionAuthority(extensionProject);
+    writeExtensionAuthority(extensionProject, {
+      ...MODBUS_TRANSPORT_EXTENSION,
+      extensions: [
+        {
+          ...requireDefined(MODBUS_TRANSPORT_EXTENSION.extensions[0], "ModbusTransport extension"),
+          status: "planned",
+        },
+      ],
+    });
     prepareReleaseMapping(extensionProject, "test/semantic/constants-and-types.test.ts");
     const extensionResult = runGenerator(extensionProject, ["--release"]);
     expect(extensionResult.status).not.toBe(0);
