@@ -18,7 +18,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { getRegister } from "../../src/index.js";
+import { getRegister, IdmModbusClient } from "../../src/index.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const orchestrator = resolve(root, "scripts/check-parity.mjs");
@@ -579,20 +579,37 @@ describe("GitHub Actions workflow contract", () => {
 });
 
 describe("Phase 2 truthful documentation and closure", () => {
-  it("README documents the private Phase 1 scope and planned runtime work", () => {
+  it("README documents the exact private Phase 2 read, detection, and resilience scope", () => {
     const readme = readFileSync(resolve(root, "README.md"), "utf8");
 
-    expect(readme).toContain("Phase 1");
+    expect(readme).toMatch(/Phase 2[\s\S]*(?:implementiert|abgeschlossen)/u);
     expect(readme).toContain("private: true");
     expect(readme).toContain("0.7.6");
     expect(readme).toContain(pinnedTag);
     expect(readme).toContain(pinnedCommit);
     expect(readme).toContain("npm run parity:check");
     expect(readme).toContain("npm run parity:generate");
-    expect(readme).toMatch(/53[\s\S]*53[\s\S]*RegisterDef/u);
-    for (const plannedArea of ["Transport", "Erkennung", "Writes", "Web", "Release"]) {
-      expect(readme, plannedArea).toContain(plannedArea);
+    for (const implementedArea of [
+      "Modbus TCP",
+      "FC03",
+      "FC04",
+      "Batching",
+      "Erkennung",
+      "Retry",
+      "Reconnect",
+      "Diagnostik",
+    ]) {
+      expect(readme, implementedArea).toContain(implementedArea);
     }
+    for (const pendingArea of ["Writes", "Web-Supplement", "Veröffentlichung", "Gesamtparität"]) {
+      expect(readme, pendingArea).toContain(pendingArea);
+    }
+    expect(readme).toMatch(/Navigator 1\.0\/1\.7[\s\S]*(?:nicht unterstützt|ausgeschlossen)/u);
+    expect(readme).toContain("keine integrierte TLS-Verschlüsselung");
+    expect(readme).toContain("keine Modbus-Authentifizierung");
+    expect(readme).toContain("vertrauenswürdigen lokalen Netzwerk");
+    expect(readme).toContain("Keine Node-Hardwarevalidierung durchgeführt.");
+    expect(readme).not.toMatch(/noch keinen Modbus-Transport|Phase 2[^\n]*(?:geplant|Transport)/u);
     expect(readme).toMatch(/nicht (?:auf npm )?veröffentlicht/u);
   });
 
@@ -610,7 +627,7 @@ describe("Phase 2 truthful documentation and closure", () => {
     }
   });
 
-  it("CHANGELOG records exact baseline, private status, and no Node hardware validation", () => {
+  it("CHANGELOG records exact Phase 2 evidence, pending scope, and no Node hardware validation", () => {
     const changelogPath = resolve(root, "CHANGELOG.md");
     expect(existsSync(changelogPath)).toBe(true);
     const changelog = readFileSync(changelogPath, "utf8");
@@ -620,13 +637,63 @@ describe("Phase 2 truthful documentation and closure", () => {
     expect(changelog).toContain(pinnedTag);
     expect(changelog).toContain(pinnedCommit);
     expect(changelog).toContain("private: true");
-    expect(changelog).toContain("No Node hardware validation performed.");
-    expect(changelog).toMatch(/Konstanten|constants/u);
-    expect(changelog).toMatch(/Klassen|classes/u);
-    expect(changelog).toMatch(/Codec/u);
-    expect(changelog).toMatch(/Register/u);
-    expect(changelog).toMatch(/Contract/u);
-    expect(changelog).toMatch(/Phase[n]? 2[\s\S]*Phase 5/u);
+    expect(changelog).toContain("Keine Node-Hardwarevalidierung durchgeführt.");
+    expect(changelog).toContain("ModbusTransport");
+    expect(changelog).toMatch(/FC03[\s\S]*FC04/u);
+    expect(changelog).toMatch(/Batch|Fallback|Quarantäne/u);
+    expect(changelog).toMatch(/Modell|Erkennung/u);
+    expect(changelog).toMatch(/Retry|Reconnect/u);
+    expect(changelog).toMatch(/Diagnostik/u);
+    expect(changelog).toMatch(/Writes[\s\S]*Web-Supplement[\s\S]*Veröffentlichung/u);
+    expect(changelog).toContain("Gesamtparität");
+    expect(changelog).toContain("Navigator 1.0/1.7");
+    expect(changelog).toContain("keine integrierte TLS-Verschlüsselung");
+    expect(changelog).toContain("keine Modbus-Authentifizierung");
+  });
+
+  it("keeps exactly seven fixtures plus two documents as nine generated artifacts", () => {
+    const fixtures = generatedPaths.filter((path) => path.startsWith("test/fixtures/"));
+    const documents = generatedPaths.filter((path) => path.startsWith("docs/"));
+
+    expect(fixtures).toHaveLength(7);
+    expect(documents).toHaveLength(2);
+    expect(generatedPaths).toHaveLength(9);
+    expect(new Set(generatedPaths).size).toBe(9);
+    for (const relativePath of generatedPaths) {
+      expect(existsSync(resolve(root, relativePath)), relativePath).toBe(true);
+    }
+  });
+
+  it("closes only the Phase-2 read clauses while umbrella and write clauses stay pending", () => {
+    const requirements = readFileSync(resolve(root, ".planning/REQUIREMENTS.md"), "utf8");
+    const roadmap = readFileSync(resolve(root, ".planning/ROADMAP.md"), "utf8");
+    const checked = (id: string): boolean => {
+      const escapedId = id.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+      const match = requirements.match(
+        new RegExp(`^- \\[([ xX])\\] \\*\\*${escapedId}(?: \\(umbrella\\))?\\*\\*:`, "mu"),
+      );
+      expect(match, `requirement checkbox ${id}`).not.toBeNull();
+      return match?.[1]?.toLowerCase() === "x";
+    };
+
+    for (const id of ["TRN-01", "TRN-02", "TRN-03R", "DET-01", "DET-02", "ERR-01R"]) {
+      expect(checked(id), id).toBe(true);
+    }
+    for (const id of ["TRN-03", "TRN-03W", "ERR-01", "ERR-01W"]) {
+      expect(checked(id), id).toBe(false);
+    }
+    expect(requirements).toContain("| TRN-03R     | Phase 2  | Complete");
+    expect(requirements).toContain("| ERR-01R     | Phase 2  | Complete");
+    expect(requirements).toContain(
+      "| TRN-03      | Umbrella | Pending until TRN-03R and TRN-03W complete |",
+    );
+    expect(requirements).toContain(
+      "| ERR-01      | Umbrella | Pending until ERR-01R and ERR-01W complete |",
+    );
+    expect(requirements).toContain("| TRN-03W     | Phase 3  | Pending");
+    expect(requirements).toContain("| ERR-01W     | Phase 3  | Pending");
+    expect(roadmap).toContain("**Requirements**: TRN-01, TRN-02, TRN-03R, DET-01, DET-02, ERR-01R");
+    expect(roadmap).toContain("**Requirements**: WRT-01, WRT-02, TRN-03W, ERR-01W");
   });
 
   it("full gate keeps the package private, web-empty, covered, packaged, and parity-checked", () => {
@@ -641,10 +708,29 @@ describe("Phase 2 truthful documentation and closure", () => {
       readonly mappings: readonly {
         readonly export_path: string;
         readonly owner_phase: number;
+        readonly partial_class?: {
+          readonly implemented_members: readonly string[];
+          readonly omitted_members: readonly string[];
+        };
+        readonly python_symbol: string;
         readonly status: string;
+        readonly typescript_symbol: string;
+      }[];
+    };
+    const extensions = JSON.parse(
+      readFileSync(resolve(root, "contracts/typescript-extensions.json"), "utf8"),
+    ) as {
+      readonly extensions: readonly {
+        readonly export_path: string;
+        readonly kind: string;
+        readonly no_python_counterpart: boolean;
+        readonly owner_phase: number;
+        readonly status: string;
+        readonly typescript_symbol: string;
       }[];
     };
     const coverageConfig = readFileSync(resolve(root, "vitest.config.ts"), "utf8");
+    const rootSource = readFileSync(resolve(root, "src/index.ts"), "utf8");
     const webSource = readFileSync(resolve(root, "src/web/index.ts"), "utf8");
     const workflow = readFileSync(resolve(root, ".github/workflows/ci.yml"), "utf8");
     const completeRows = mapping.mappings.filter(({ status }) => status === "complete");
@@ -673,12 +759,46 @@ describe("Phase 2 truthful documentation and closure", () => {
     expect(partialRows).toEqual([
       expect.objectContaining({ export_path: ".", owner_phase: 2, status: "partial" }),
     ]);
+    const clientMapping = mapping.mappings.find(
+      ({ python_symbol: pythonSymbol }) => pythonSymbol === "IdmModbusClient",
+    );
+    expect(clientMapping?.partial_class?.implemented_members).toHaveLength(22);
+    expect(clientMapping?.partial_class?.omitted_members).toEqual(phase2OmittedWriteMembers);
+    expect(extensions.extensions).toEqual([
+      expect.objectContaining({
+        typescript_symbol: "ModbusTransport",
+        export_path: ".",
+        kind: "type",
+        owner_phase: 2,
+        status: "complete",
+        no_python_counterpart: true,
+      }),
+    ]);
+    const prototypeMembers = Object.getOwnPropertyNames(IdmModbusClient.prototype)
+      .filter((member) => member !== "constructor")
+      .sort();
+    expect(prototypeMembers).toEqual(
+      [...(clientMapping?.partial_class?.implemented_members ?? [])].sort(),
+    );
+    for (const member of phase2OmittedWriteMembers) {
+      expect(rootSource, member).not.toContain(member);
+      expect(prototypeMembers, member).not.toContain(member);
+    }
+    for (const internalName of [
+      "createModbusSerialTransport",
+      "modbus-serial-adapter",
+      "withInternalClientDependencies",
+      "attachInternalModbusTransport",
+      "registerPymodbusLoggingHook",
+    ]) {
+      expect(rootSource, internalName).not.toContain(internalName);
+    }
     expect(webSource).toMatch(/export \{\};/u);
     expect(webSource).not.toMatch(/export\s+(?:const|class|function|type)\b/u);
     expect(workflow).toContain("run: npm run check");
     expect(workflow).toContain("run: npm run parity:check");
-    for (const relativePath of generatedPaths) {
-      expect(existsSync(resolve(root, relativePath)), relativePath).toBe(true);
-    }
+    const releaseGate = run(process.execPath, ["scripts/generate-api-parity.mjs", "--release"]);
+    expect(releaseGate.status).not.toBe(0);
+    expect(releaseGate.stderr).toContain("mapping_release_status_incomplete");
   });
 });
