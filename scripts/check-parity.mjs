@@ -9,6 +9,7 @@ import {
   mkdtempSync,
   openSync,
   readFileSync,
+  readdirSync,
   realpathSync,
   renameSync,
   rmSync,
@@ -56,9 +57,15 @@ const GENERATED_PATHS = Object.freeze([
   "test/fixtures/register-schema.json",
   "test/fixtures/behavior-contract.json",
   "test/fixtures/web-contract.json",
+  "test/fixtures/transport-behavior.json",
   "docs/API-PARITY.md",
   "docs/BASELINE.md",
 ]);
+const GENERATED_ARTIFACT_LABELS = Object.freeze({
+  fixtures: "seven fixtures",
+  documents: "two generated documents",
+  total: "nine generated artifacts",
+});
 const MAX_MANIFEST_BYTES = 64 * 1024;
 const MAX_PROCESS_OUTPUT_BYTES = 64 * 1024;
 const MAX_ARTIFACT_BYTES = 16 * 1024 * 1024;
@@ -546,9 +553,51 @@ function generateArtifacts(runtime, interpreter, checkout, stageRoot) {
     "API parity document generation",
     { code: "api_generation_failed", cwd: stageRoot, timeout: SHORT_TIMEOUT_MS },
   );
+  if (process.env.IDM_PARITY_TEST_EXTRA_ARTIFACT === "1") {
+    writeFileSync(resolve(stageRoot, "test/fixtures/unexpected-generated.json"), "{}\n");
+  }
+}
+
+function validateGeneratedDirectory(stageRoot, relativeDirectory, expectedNames) {
+  const directory = resolve(stageRoot, relativeDirectory);
+  let entries;
+  try {
+    entries = readdirSync(directory, { withFileTypes: true });
+  } catch (error) {
+    fail("artifact_invalid", `${relativeDirectory} cannot be read: ${String(error)}`);
+  }
+  for (const entry of entries) {
+    if (!entry.isFile() || entry.isSymbolicLink() || !expectedNames.has(entry.name)) {
+      fail(
+        "artifact_invalid",
+        `${relativeDirectory}/${entry.name} is outside the fixed generated allowlist`,
+      );
+    }
+  }
+  if (entries.length !== expectedNames.size) {
+    fail("artifact_invalid", `${relativeDirectory} differs from the fixed generated allowlist`);
+  }
 }
 
 function validateStagedArtifacts(stageRoot) {
+  validateGeneratedDirectory(
+    stageRoot,
+    "test/fixtures",
+    new Set(
+      GENERATED_PATHS.filter((path) => path.startsWith("test/fixtures/")).map((path) =>
+        path.slice("test/fixtures/".length),
+      ),
+    ),
+  );
+  validateGeneratedDirectory(
+    stageRoot,
+    "docs",
+    new Set(
+      GENERATED_PATHS.filter((path) => path.startsWith("docs/")).map((path) =>
+        path.slice("docs/".length),
+      ),
+    ),
+  );
   for (const relativePath of GENERATED_PATHS) {
     const path = resolve(stageRoot, relativePath);
     let stats;
@@ -568,12 +617,30 @@ function validateStagedArtifacts(stageRoot) {
   }
 }
 
+function readCommittedArtifact(relativePath) {
+  const committedPath = resolve(ROOT, relativePath);
+  let stats;
+  try {
+    stats = lstatSync(committedPath);
+  } catch (error) {
+    fail("contract_drift", `${relativePath} is missing: ${String(error)}`);
+  }
+  if (
+    !stats.isFile() ||
+    stats.isSymbolicLink() ||
+    stats.size === 0 ||
+    stats.size > MAX_ARTIFACT_BYTES
+  ) {
+    fail("artifact_invalid", `${relativePath} is not a bounded regular committed artifact`);
+  }
+  return readFileSync(committedPath);
+}
+
 function checkArtifacts(stageRoot) {
   validateStagedArtifacts(stageRoot);
   for (const relativePath of GENERATED_PATHS) {
     const expected = readFileSync(resolve(stageRoot, relativePath));
-    const committedPath = resolve(ROOT, relativePath);
-    if (!existsSync(committedPath) || !readFileSync(committedPath).equals(expected)) {
+    if (!readCommittedArtifact(relativePath).equals(expected)) {
       fail("contract_drift", `${relativePath} differs from the exact pinned contract`);
     }
   }
@@ -607,6 +674,15 @@ function replaceArtifacts(stageRoot) {
       mkdirSync(dirname(destination), { recursive: true });
       const hadPrevious = existsSync(destination);
       if (hadPrevious) {
+        const committedStats = lstatSync(destination);
+        if (
+          !committedStats.isFile() ||
+          committedStats.isSymbolicLink() ||
+          committedStats.size === 0 ||
+          committedStats.size > MAX_ARTIFACT_BYTES
+        ) {
+          fail("artifact_invalid", `${relativePath} is not a bounded regular committed artifact`);
+        }
         renameSync(destination, backupPath);
       }
       try {
@@ -618,6 +694,11 @@ function replaceArtifacts(stageRoot) {
         throw error;
       }
       replaced.push({ destination, backupPath: hadPrevious ? backupPath : undefined });
+      if (process.env.IDM_PARITY_TEST_FAIL_AFTER_REPLACE === String(replaced.length)) {
+        throw new Error(
+          `test-only failure after replacing ${replaced.length} generated artifact(s)`,
+        );
+      }
     }
   } catch (error) {
     for (const entry of [...replaced].reverse()) {
@@ -653,11 +734,17 @@ function main() {
     generateArtifacts(runtime, interpreter, checkout, stageRoot);
     if (options.mode === "check") {
       checkArtifacts(stageRoot);
-      console.log(`Parity check passed for ${manifest.git_tag} ${manifest.git_commit}`);
+      console.log(
+        `Parity check passed for ${manifest.git_tag} ${manifest.git_commit} ` +
+          `(${GENERATED_ARTIFACT_LABELS.fixtures}, ${GENERATED_ARTIFACT_LABELS.documents}, ` +
+          `${GENERATED_ARTIFACT_LABELS.total})`,
+      );
     } else {
       replaceArtifacts(stageRoot);
       console.log(
-        `Generated exact parity artifacts for ${manifest.git_tag} ${manifest.git_commit}`,
+        `Generated exact parity artifacts for ${manifest.git_tag} ${manifest.git_commit} ` +
+          `(${GENERATED_ARTIFACT_LABELS.fixtures}, ${GENERATED_ARTIFACT_LABELS.documents}, ` +
+          `${GENERATED_ARTIFACT_LABELS.total})`,
       );
     }
   } finally {

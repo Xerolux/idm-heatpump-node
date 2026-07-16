@@ -202,7 +202,7 @@ describe.sequential("parity orchestrator phase gate", () => {
 
     expect(result.status).not.toBe(0);
     expect(result.stderr.toLowerCase()).toContain("tag");
-    expect(result.stderr).not.toContain("Generated 6 pinned semantic fixtures");
+    expect(result.stderr).not.toContain("Generated 7 pinned semantic fixtures");
     expectGeneratedUnchanged(beforeGenerated);
   }, 45_000);
 

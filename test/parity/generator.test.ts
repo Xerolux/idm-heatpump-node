@@ -771,7 +771,7 @@ describe("verified Python contract generator", () => {
     }
   }, 120_000);
 
-  it("atomically rolls back every prior fixture when transaction replacement fails", () => {
+  it("provides transactional rollback for every prior fixture when replacement fails", () => {
     const checkout = createExactCheckout();
     requireSuccess(runGenerator(checkout), "initial fixture generation");
     for (const name of FIXTURE_NAMES) {
