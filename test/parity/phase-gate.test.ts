@@ -27,6 +27,22 @@ const canonicalRepository = "https://github.com/Xerolux/idm-heatpump-api";
 const pinnedCommit = "ad121ebf34a5f5e37204371c026927d77efcd15c";
 const pinnedTag = "v0.7.6";
 const temporaryPrefix = "idm-heatpump-contract-";
+const phase2RuntimeSymbols = [
+  "IdmClientDiagnostics",
+  "IdmModbusClient",
+  "IllegalAddressError",
+  "ModbusErrorContext",
+  "quietPymodbusLogging",
+] as const;
+const phase2OmittedWriteMembers = [
+  "getActiveCyclicWrites",
+  "getExpiredCyclicWrites",
+  "resetCyclicWriteState",
+  "resetWriteThrottle",
+  "setValue",
+  "simulateWrite",
+  "writeRegister",
+] as const;
 const generatedPaths = [
   "test/fixtures/public-api.json",
   "test/fixtures/public-classes.json",
@@ -358,7 +374,7 @@ describe.sequential("parity orchestrator phase gate", () => {
 });
 
 describe("npm parity entry points and private package boundary", () => {
-  it("keeps mapping promotion API-only before the non-mutating Python fixture check", () => {
+  it("keeps Phase-2 mapping promotion API-only before the non-mutating Python fixture check", () => {
     const packageJson = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as {
       readonly scripts?: Readonly<Record<string, string>>;
     };
@@ -377,14 +393,15 @@ describe("npm parity entry points and private package boundary", () => {
 
     expect(packageJson.scripts?.["parity:api"]).toBe("node scripts/generate-api-parity.mjs");
     expect(packageJson.scripts?.["parity:check"]).toBe("node scripts/check-parity.mjs check");
-    expect(completeRows).toHaveLength(53);
-    expect(completeRows.every(({ owner_phase }) => owner_phase === 1)).toBe(true);
+    expect(completeRows).toHaveLength(57);
+    expect(completeRows.filter(({ owner_phase }) => owner_phase === 1)).toHaveLength(53);
+    expect(completeRows.filter(({ owner_phase }) => owner_phase === 2)).toHaveLength(4);
     for (const row of completeRows) {
       expect(apiDocument, row.python_symbol).toContain(
-        `| \`${row.python_symbol}\` | \`${row.typescript_symbol}\` | \`.\` | 1 | \`complete\` |`,
+        `| \`${row.python_symbol}\` | \`${row.typescript_symbol}\` | \`.\` | ${String(row.owner_phase)} | \`complete\` |`,
       );
     }
-    expect(mapping.mappings.filter(({ status }) => status === "planned")).toHaveLength(35);
+    expect(mapping.mappings.filter(({ status }) => status === "planned")).toHaveLength(31);
     expect(
       mapping.mappings.filter(
         ({ python_symbol, status }) => python_symbol === "IdmModbusClient" && status === "partial",
@@ -422,7 +439,7 @@ describe("npm parity entry points and private package boundary", () => {
     for (const row of mapping.mappings) {
       const documentedStatus = `| \`${row.python_symbol}\` | \`${row.typescript_symbol}\` | \`${row.export_path}\` |`;
       expect(apiDocument, row.python_symbol).toContain(documentedStatus);
-      if (row.status === "complete") {
+      if (row.status === "complete" || row.python_symbol === "IdmModbusClient") {
         expect(row.export_path, row.python_symbol).toBe(".");
         expect(rootSource, row.typescript_symbol).toContain(row.typescript_symbol);
       } else {
@@ -445,7 +462,7 @@ describe("npm parity entry points and private package boundary", () => {
       readonly scripts?: Readonly<Record<string, string>>;
     };
     expect(packageJson.private).toBe(true);
-    expect(packageJson.dependencies ?? {}).toEqual({});
+    expect(packageJson.dependencies ?? {}).toEqual({ "modbus-serial": "8.0.25" });
     expect(packageJson.files).toEqual(["dist"]);
     expect(packageJson.devDependencies).not.toHaveProperty("pymodbus");
     expect(packageJson.scripts).toMatchObject({
@@ -477,7 +494,44 @@ describe("npm parity entry points and private package boundary", () => {
         /^(?:scripts|test|contracts|docs|\.planning|UPSTREAM-PARITY\.json)(?:\/|$)/u.test(path),
       ),
     ).toEqual([]);
+    expect(paths.sort()).toEqual(
+      [
+        "LICENSE",
+        "README.md",
+        "dist/index.cjs",
+        "dist/index.cjs.map",
+        "dist/index.d.cts",
+        "dist/index.d.ts",
+        "dist/index.js",
+        "dist/index.js.map",
+        "dist/web/index.cjs",
+        "dist/web/index.cjs.map",
+        "dist/web/index.d.cts",
+        "dist/web/index.d.ts",
+        "dist/web/index.js",
+        "dist/web/index.js.map",
+        "package.json",
+      ].sort(),
+    );
   }, 30_000);
+
+  it("requires the package tarball ESM CommonJS declaration smoke to cover Phase 2 without connecting", () => {
+    const source = readFileSync(resolve(root, "scripts/check-package.mjs"), "utf8");
+
+    for (const symbol of phase2RuntimeSymbols) {
+      expect(source, symbol).toContain(symbol);
+    }
+    expect(source).toContain("ModbusTransport");
+    expect(source).toContain("EXPECTED_TARBALL_FILES");
+    expect(source).toContain('"modbus-serial": "8.0.25"');
+    expect(source).toContain("@ts-expect-error");
+    for (const member of phase2OmittedWriteMembers) {
+      expect(source, member).toContain(member);
+    }
+    expect(source).not.toMatch(
+      /\.(?:connect|readRegister|readBatch|probeRegister|detectModel)\s*\(/u,
+    );
+  });
 });
 
 describe("GitHub Actions workflow contract", () => {
@@ -524,7 +578,7 @@ describe("GitHub Actions workflow contract", () => {
   });
 });
 
-describe("Phase 1 truthful documentation and closure", () => {
+describe("Phase 2 truthful documentation and closure", () => {
   it("README documents the private Phase 1 scope and planned runtime work", () => {
     const readme = readFileSync(resolve(root, "README.md"), "utf8");
 
@@ -607,14 +661,15 @@ describe("Phase 1 truthful documentation and closure", () => {
     for (const threshold of ["branches", "functions", "lines", "statements"]) {
       expect(coverageConfig).toMatch(new RegExp("\\b" + threshold + ":\\s*80\\b", "u"));
     }
-    expect(completeRows).toHaveLength(53);
+    expect(completeRows).toHaveLength(57);
     expect(
       completeRows.every(
-        ({ export_path, owner_phase }) => export_path === "." && owner_phase === 1,
+        ({ export_path, owner_phase }) =>
+          export_path === "." && (owner_phase === 1 || owner_phase === 2),
       ),
     ).toBe(true);
-    expect(plannedRows).toHaveLength(35);
-    expect(plannedRows.every(({ owner_phase }) => owner_phase >= 2)).toBe(true);
+    expect(plannedRows).toHaveLength(31);
+    expect(plannedRows.every(({ owner_phase }) => owner_phase >= 3)).toBe(true);
     expect(partialRows).toEqual([
       expect.objectContaining({ export_path: ".", owner_phase: 2, status: "partial" }),
     ]);
