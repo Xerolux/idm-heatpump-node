@@ -25,8 +25,8 @@ export interface ModbusSerialClientBoundary {
   connectTCP(host: string, options: Readonly<{ readonly port: number }>): Promise<void>;
   readHoldingRegisters(address: number, count: number): Promise<unknown>;
   readInputRegisters(address: number, count: number): Promise<unknown>;
-  close(callback: (error?: unknown) => void): void;
-  destroy(callback: (error?: unknown) => void): void;
+  close(callback: (status?: unknown) => void): void;
+  destroy(callback: (status?: unknown) => void): void;
 }
 
 export type ModbusSerialClientFactory = () => ModbusSerialClientBoundary;
@@ -222,7 +222,7 @@ class ModbusSerialTransport implements ModbusTransport {
           return;
         }
         settled = true;
-        if (error === undefined || error === null) {
+        if (error === undefined || error === null || error === false) {
           resolve();
         } else {
           reject(normalizeAdapterError(error, operation, this.#endpoint));

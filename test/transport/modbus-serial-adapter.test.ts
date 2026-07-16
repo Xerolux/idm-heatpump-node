@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { IdmModbusClient } from "../../src/client/idm-modbus-client.js";
+import { createInternalIdmModbusClient } from "../../src/client/internal-create.js";
 import {
   createModbusSerialTransport,
   type ModbusSerialClientBoundary,
@@ -38,8 +39,8 @@ class MockModbusSerialClient implements ModbusSerialClientBoundary {
   readonly #holding: MockOutcome[] = [];
   readonly #input: MockOutcome[] = [];
   connectError: unknown;
-  closeError: unknown;
-  destroyError: unknown;
+  closeError: unknown = false;
+  destroyError: unknown = false;
   isOpen = false;
 
   public queueHolding(...outcomes: readonly MockOutcome[]): void {
@@ -362,6 +363,50 @@ describe("ModbusSerialTransport", () => {
     await destroyTransport.destroy();
     expect(destroyClient.events.filter((event) => event.kind === "destroy")).toHaveLength(1);
     expect(destroyTransport.connected).toBe(false);
+  });
+
+  it("accepts the dependency's false close status during a client-level reconnect", async () => {
+    const first = new MockModbusSerialClient();
+    first.queueInput({
+      kind: "error",
+      error: { code: "ETIMEDOUT", message: "timeout at example.invalid:15020" },
+    });
+    const second = new MockModbusSerialClient();
+    second.queueInput({ kind: "result", result: { data: [7] } });
+    const clients = [first, second];
+    const client = createInternalIdmModbusClient(
+      "example.invalid",
+      { port: 15_020, slaveId: 7, maxRetries: 2 },
+      {
+        transportFactory: (runtimeConfiguration) => {
+          const boundary = clients.shift();
+          if (boundary === undefined) {
+            throw new Error("Mock modbus-serial client factory exhausted");
+          }
+          return createModbusSerialTransport(runtimeConfiguration, () => boundary);
+        },
+        now: () => 0,
+        sleep: async () => undefined,
+      },
+    );
+
+    await expect(client.probeRegister(1_000, 1, { maxRetries: 2 })).resolves.toEqual([7]);
+
+    expect(first.events.filter((event) => event.kind === "close")).toHaveLength(1);
+    expect(second.events.filter((event) => event.kind === "connect")).toHaveLength(1);
+    expect(client.isConnected).toBe(true);
+  });
+
+  it("rejects the dependency's true close status as a transport failure", async () => {
+    const client = new MockModbusSerialClient();
+    client.closeError = true;
+    const transport = createTransport(client);
+    await transport.connect();
+
+    await expect(transport.close()).rejects.toMatchObject({
+      kind: NormalizedTransportFailureKind.DISCONNECTED,
+      message: "Modbus close failed",
+    });
   });
 
   it("normalizes callback lifecycle errors through the same closed boundary", async () => {
