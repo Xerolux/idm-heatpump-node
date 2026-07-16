@@ -2,13 +2,18 @@ import { describe, expect, it } from "vitest";
 
 import { groupRegisters } from "../../src/client/read-groups.js";
 import { createRegisterDef, type RegisterDef } from "../../src/registers/definitions.js";
-import { DataType, RegisterType } from "../../src/types.js";
+import {
+  DataType,
+  RegisterType,
+  type DataType as DataTypeValue,
+  type RegisterType as RegisterTypeValue,
+} from "../../src/types.js";
 
 function register(
   name: string,
   address: number,
-  datatype = DataType.UCHAR,
-  registerType = RegisterType.INPUT,
+  datatype: DataTypeValue = DataType.UCHAR,
+  registerType: RegisterTypeValue = RegisterType.INPUT,
 ): RegisterDef {
   return createRegisterDef({ address, datatype, name, registerType });
 }

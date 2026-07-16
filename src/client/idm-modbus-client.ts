@@ -9,7 +9,10 @@ import {
   MODEL_UNKNOWN,
   RETRY_BACKOFF_BASE,
 } from "../constants.js";
+import { decodeValue, encodeValue } from "../codec.js";
 import { compareUnicodeCodePoints } from "../contracts/canonical-order.js";
+import type { RegisterDef } from "../registers/definitions.js";
+import { getRegister } from "../registers/registry.js";
 import {
   createNormalizedTransportFailure,
   IllegalAddressError,
@@ -235,6 +238,14 @@ export class IdmModbusClient {
     this.#lastErrorContext = null;
   }
 
+  public decodeValue(registers: readonly number[], register: RegisterDef): unknown {
+    return decodeValue(registers, register);
+  }
+
+  public encodeValue(value: unknown, register: RegisterDef): readonly number[] {
+    return encodeValue(value, register);
+  }
+
   public getDiagnostics(): IdmClientDiagnosticsValue {
     const firmware =
       this.#modelInfo?.firmwareVersion === null || this.#modelInfo?.firmwareVersion === undefined
@@ -266,6 +277,17 @@ export class IdmModbusClient {
       await this.#closeTransportLocked();
       this.#connectionSuspect = false;
       await this.#connectLocked();
+    });
+  }
+
+  public async readRegister(register: RegisterDef): Promise<unknown> {
+    return this.#gate.runExclusive(async () => this.#readRegisterLocked(register));
+  }
+
+  public async readValue(key: string): Promise<unknown> {
+    return this.#gate.runExclusive(async () => {
+      const register = getRegister(key, { modelInfo: this.#modelInfo });
+      return this.#readRegisterLocked(register);
     });
   }
 
@@ -304,6 +326,29 @@ export class IdmModbusClient {
 
   async #disconnectLocked(): Promise<void> {
     await this.#closeTransportLocked();
+  }
+
+  async #readRegisterLocked(register: RegisterDef): Promise<unknown> {
+    if (register.writeOnly) {
+      throw new RangeError(`Register '${register.name}' is write-only`);
+    }
+    if (this.#permanentlyFailedRegisters.has(register.name)) {
+      throw new RangeError(
+        `Register '${register.name}' is permanently failed; call resetFailedRegisters() to retry`,
+      );
+    }
+
+    await this.#ensureConnectedLocked();
+    const holding = register.registerType === RegisterType.HOLDING;
+    const request = createModbusReadRequest({
+      unitId: this.#slaveId,
+      registerType: register.registerType,
+      functionCode: holding ? 3 : 4,
+      address: register.address,
+      count: register.size,
+    });
+    const words = await this.#retryReadLocked(request, this.#maxRetries);
+    return this.decodeValue(words, register);
   }
 
   async #ensureConnectedLocked(): Promise<ModbusTransport> {
