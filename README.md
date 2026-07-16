@@ -1,8 +1,8 @@
 # IDM Heatpump Node
 
 Ein in Entwicklung befindlicher TypeScript-Port von
-[Xerolux/idm-heatpump-api](https://github.com/Xerolux/idm-heatpump-api).
-Der vorgesehene Paketname ist:
+[Xerolux/idm-heatpump-api](https://github.com/Xerolux/idm-heatpump-api). Der
+vorgesehene Paketname ist:
 
 ```text
 @xerolux/idm-heatpump
@@ -10,77 +10,108 @@ Der vorgesehene Paketname ist:
 
 ## Status
 
-**Phase 1, der reproduzierbare Semantik-Vertrag, ist implementiert und
-maschinengeprüft. Das Gesamtprojekt ist nicht fertig und nicht auf npm
-veröffentlicht.**
+**Phase 2 ist implementiert und maschinengeprüft. Der Modbus-Lesepfad mit
+Erkennung und Resilienz ist nutzbar; das Gesamtprojekt ist noch nicht fertig
+und nicht auf npm veröffentlicht.**
 
-Der aktuelle Stand ist nicht auf npm veröffentlicht.
-
-Das Repository enthält derzeit den nutzbaren semantischen Kern, aber noch
-keinen Modbus-Transport und damit noch keinen einsatzfähigen
-Wärmepumpen-Client. package.json bleibt absichtlich auf private: true.
-Eine Veröffentlichung ist erst nach vollständiger Funktionsparität und allen
-Release-Gates der Phasen 2 bis 5 zulässig.
+`package.json` bleibt absichtlich auf `private: true`. Sichere Writes, das
+optionale Web-Supplement, die Veröffentlichung und die vollständige
+Gesamtparität folgen in den Phasen 3 bis 5. Bis dahin darf dieses Repository
+nicht als vollständiger, funktionsgleicher Gesamtport veröffentlicht werden.
 
 Die exakt geprüfte Python-Baseline ist:
 
-- Paketversion: 0.7.6
-- Git-Tag: v0.7.6
-- vollständiger Commit:
-  ad121ebf34a5f5e37204371c026927d77efcd15c
+- Paketversion: `0.7.6`
+- Git-Tag: `v0.7.6`
+- vollständiger Commit: `ad121ebf34a5f5e37204371c026927d77efcd15c`
 
-UPSTREAM-PARITY.json behält den Gesamtstatus planned, weil die späteren
-Laufzeitphasen noch fehlen. Auf Node-Seite wurde keine Live-Hardwarevalidierung
-durchgeführt.
+`UPSTREAM-PARITY.json` behält deshalb den Gesamtstatus `planned`. Keine
+Node-Hardwarevalidierung durchgeführt.
 
-## In Phase 1 nachgewiesen
+## In Phase 2 nachgewiesen
 
-Die Paritätsmatrix enthält 89 öffentliche Python-Symbole. Davon sind 53
-Phase-1-Zuordnungen vollständig implementiert und durch fokussierte
-Contract-Tests belegt: 53 Runtime-Exporte einschließlich der unveränderlichen
-`RegisterDef.create(...)`-Factory mit zugehörigen TypeScript-Typen.
+Der Paket-Root stellt den vollständigen Semantik-Kern aus Phase 1 sowie den
+evidenzbasierten Lesepfad aus Phase 2 bereit:
 
-Der aktuelle Paket-Root stellt bereit:
+- `IdmModbusClient` mit geschlossenem Konstruktor
+  `new IdmModbusClient(host, options?)`;
+- die öffentliche, adapterneutrale TypeScript-Schnittstelle
+  `ModbusTransport`; der konkrete `modbus-serial`-Adapter bleibt intern;
+- Connect, Disconnect, Force-Reconnect und vollständige FIFO-Serialisierung;
+- exakte FC03- und FC04-Einzelrequests;
+- Batching ausschließlich für exakt angrenzende, nicht überlappende Register
+  desselben Typs und innerhalb der maximalen Gruppengröße;
+- getrennte Requests für offizielle logische Überlappungen, insbesondere
+  `humidity_sensor` mit `1392/count=2` und `hc_a_mode` mit `1393/count=1`;
+- geordnetes Einzelregister-Fallback, Unsupported-Erkennung nur für
+  numerischen Modbus-Code 2, permanente Fehlerverfolgung und
+  Batch-unsafe-Quarantäne;
+- Retry mit Backoff, Reconnect und geschlossene Fehlernormalisierung;
+- Erkennung von Navigator 2.0, Navigator Pro und Navigator 10 samt Firmware,
+  Heizkreisen, Zonenmodulen, Solar, ISC, PV, Kaskade, Sentinels und
+  modellabhängiger Registerkarte;
+- unveränderliche Diagnostik für Verbindungs-, Fehler-, Unsupported-,
+  Permanent- und Quarantänezustand;
+- sieben exakt gepinnte Golden Fixtures und zwei generierte Dokumente als
+  neun transaktional geprüfte Paritätsartefakte.
 
-- unveränderliche Konstanten, Optionslisten und Domänentypen;
-- FeatureFlags, IdmModelInfo, AdaptiveBackoff und PollRateLimiter;
-- ModbusCodec mit bitgenauem Low-Word-first-Float32-, Integer- und
-  Rundungsverhalten;
-- die vollständigen Registerdefinitionen, Builder und RegisterRegistry für
-  die in der Baseline unterstützten Navigator-2.0/Pro/10-Modellkombinationen;
-- streng geprüfte, sprachneutrale Contract-Szenarien und Golden Fixtures.
+Die Paritätsmatrix enthält weiterhin exakt 89 öffentliche Python-Symbole. 57
+Zuordnungen sind `complete`; `IdmModbusClient` bleibt während der privaten
+Entwicklung bewusst `partial`: 22 Lesepfad-Mitglieder sind implementiert und
+die sieben Write-Mitglieder aus Phase 3 sind nicht als Stubs exportiert.
+`ModbusTransport` ist separat als vollständige additive TypeScript-Erweiterung
+dokumentiert.
 
-Die exakte Zuordnung, Darstellung und Testevidenz steht in
-[docs/API-PARITY.md](docs/API-PARITY.md). Interne Codec- und
-Serialisierungshelfer werden nicht als zusätzliche öffentliche API exportiert.
-Der Exportpfad @xerolux/idm-heatpump/web ist absichtlich leer.
+Die exakte Zuordnung, Repräsentation und Testevidenz steht in
+[docs/API-PARITY.md](docs/API-PARITY.md). Der Exportpfad
+`@xerolux/idm-heatpump/web` bleibt bis Phase 4 absichtlich leer.
 
-Ein Beispiel für den heute nutzbaren Semantik-Kern:
+## Verwendung des Lesepfads
 
 ```ts
-import { ModbusCodec, buildRegisterMap, getRegister } from "@xerolux/idm-heatpump";
+import { IdmModbusClient, getRegister } from "@xerolux/idm-heatpump";
 
-const words = ModbusCodec.encodeFloat32(21.5);
-const value = ModbusCodec.decodeFloat32(words);
-const registers = buildRegisterMap();
-const outdoorTemperature = getRegister("outdoor_temp");
+const client = new IdmModbusClient("heatpump.example.invalid", {
+  port: 502,
+  slaveId: 1,
+  timeout: 10,
+  maxRetries: 3,
+  maxGroupSize: 40,
+});
+
+await client.connect();
+try {
+  const model = await client.detectModel();
+  const outdoorTemperature = await client.readRegister(getRegister("outdoor_temp"));
+  console.log(model.modelName, outdoorTemperature);
+} finally {
+  await client.disconnect();
+}
 ```
 
-Dieses Beispiel führt keinen Netzwerkzugriff und keinen Geräte-Write aus.
+Der Beispielhost ist absichtlich synthetisch. Für einen echten Aufruf muss er
+durch den lokalen Host der eigenen Anlage ersetzt werden.
 
-## Noch geplant
+## Netzwerk- und Protokollgrenze
 
-- **Phase 2 – Transport und Erkennung:** Modbus TCP, exakte Request-Shapes,
-  Batching, Modell-/Feature-Erkennung, Retry, Reconnect und Diagnostik.
+Die Modbus-TCP-Verbindung bietet keine integrierte TLS-Verschlüsselung und
+keine Modbus-Authentifizierung. Verwende sie nur in einem vertrauenswürdigen
+lokalen Netzwerk und trenne das Gerät durch geeignete Netzwerkregeln von nicht
+vertrauenswürdigen Netzen.
+
+Navigator 1.0/1.7 ist eine andere, nicht unterstützte und ausdrücklich
+ausgeschlossene Protokollfamilie. Dieses Paket übernimmt keine Adressen dieser
+Familie in die Navigator-2.0/Pro/10-Registerkarte.
+
+## Noch ausstehend
+
 - **Phase 3 – sichere Writes:** Dry-run, Write-Validierung,
-  EEPROM-Drosselung und Cyclic-Heartbeats.
-- **Phase 4 – optionales Web-Supplement:** read-only Navigator-10-WebSocket
+  EEPROM-Drosselung, Cyclic-Heartbeats und Write-Fehlerpfade.
+- **Phase 4 – optionales read-only Web-Supplement:** Navigator-10-WebSocket
   und Navigator-2.0-HTTP.
-- **Phase 5 – Release-Sicherung:** vollständige Cross-Repository-Parität,
-  Upstream-Freshness, Hardwarevalidierungsnachweis und Veröffentlichung.
-
-Bis diese Arbeit abgeschlossen ist, darf das Repository weder als
-vollständiger Client noch als funktionsgleicher Gesamtport bezeichnet werden.
+- **Phase 5 – Veröffentlichung und Gesamtparität:** vollständige
+  Cross-Repository-Matrix, Upstream-Freshness, dokumentierte
+  Hardwarevalidierung und alle npm-Release-Gates.
 
 ## Entwicklung und Paritätsprüfung
 
@@ -92,16 +123,19 @@ benötigen keine Geräteadresse, Zugangsdaten oder PIN.
 npm ci
 npm run check
 npm run parity:check
+npm audit --omit=dev
 ```
 
-npm run check führt Formatprüfung, ESLint, strikten Typecheck, Tests mit
+`npm run check` führt Formatprüfung, ESLint, strikten Typecheck, Tests mit
 mindestens 80 Prozent Branch Coverage, ESM-/CommonJS-/Declaration-Build und
-einen Installations-/Importtest des kontrollierten npm-Tarballs aus.
+einen Installations-/Importtest des kontrollierten npm-Tarballs aus. Der
+Tarball-Smoke importiert und instanziiert den öffentlichen Lesepfad, ohne eine
+Verbindung zu öffnen.
 
-npm run parity:check ist nicht mutierend: Es klont vollständige Tag-Historie,
-verifiziert Version, Tag und vollständigen SHA vor jedem Python-Import,
-erzeugt die Referenzartefakte isoliert und schlägt bei jeder Abweichung hart
-fehl.
+`npm run parity:check` ist nicht mutierend: Es klont die vollständige
+Tag-Historie, verifiziert Version, Tag und vollständigen SHA vor jedem
+Python-Import, erzeugt die Referenzartefakte isoliert und schlägt bei jeder
+Abweichung hart fehl.
 
 Nur wenn die gepinnten Golden Fixtures bewusst aktualisiert werden sollen,
 wird der transaktionale Schreibpfad verwendet:
@@ -115,6 +149,7 @@ Der vollständige lokale Abschluss-Gate lautet:
 ```bash
 npm run check
 npm run parity:check
+npm audit --omit=dev
 git diff --exit-code -- contracts docs/API-PARITY.md docs/BASELINE.md test/fixtures
 ```
 
@@ -134,9 +169,8 @@ git diff --exit-code -- contracts docs/API-PARITY.md docs/BASELINE.md test/fixtu
 - Node.js 22 oder neuer
 - TypeScript im Strict Mode
 - Node.js-Laufzeit; keine Browser-Kompatibilitätszusage
-- später Modbus TCP für Navigator 2.0, Navigator Pro und Navigator 10
-
-Navigator 1.0/1.7 ist eine andere, nicht unterstützte Protokollfamilie.
+- Modbus TCP für Navigator 2.0, Navigator Pro und Navigator 10
+- keine Telemetrie
 
 ## Unofficial project
 

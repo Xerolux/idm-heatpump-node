@@ -263,25 +263,29 @@ describe.sequential("parity orchestrator phase gate", () => {
     }
   }, 180_000);
 
-  it("rejects symlinked committed artifacts without changing the nine generated artifacts", () => {
-    const target = resolve(root, "test/fixtures/transport-behavior.json");
-    const preserved = join(temporaryDirectory, "preserved-transport-behavior.json");
-    writeFileSync(preserved, readFileSync(target));
-    rmSync(target);
-    symlinkSync(preserved, target, "file");
-    const beforeTemporary = parityTemporaryEntries();
-    try {
-      const result = runOrchestrator("check", exactCheckout);
+  it.skipIf(process.platform === "win32")(
+    "rejects symlinked committed artifacts without changing the nine generated artifacts",
+    () => {
+      const target = resolve(root, "test/fixtures/transport-behavior.json");
+      const preserved = join(temporaryDirectory, "preserved-transport-behavior.json");
+      writeFileSync(preserved, readFileSync(target));
+      rmSync(target);
+      symlinkSync(preserved, target, "file");
+      const beforeTemporary = parityTemporaryEntries();
+      try {
+        const result = runOrchestrator("check", exactCheckout);
 
-      expect(result.status).not.toBe(0);
-      expect(result.stderr).toContain("artifact_invalid");
-      expect(lstatSync(target).isSymbolicLink()).toBe(true);
-      expectNoNewTemporaryEntries(beforeTemporary);
-    } finally {
-      rmSync(target, { force: true });
-      writeFileSync(target, readFileSync(preserved));
-    }
-  }, 180_000);
+        expect(result.status).not.toBe(0);
+        expect(result.stderr).toContain("artifact_invalid");
+        expect(lstatSync(target).isSymbolicLink()).toBe(true);
+        expectNoNewTemporaryEntries(beforeTemporary);
+      } finally {
+        rmSync(target, { force: true });
+        writeFileSync(target, readFileSync(preserved));
+      }
+    },
+    180_000,
+  );
 
   it("rejects extra staged generated paths without mutating committed artifacts", () => {
     const beforeGenerated = snapshotGenerated();
@@ -607,8 +611,8 @@ describe("Phase 2 truthful documentation and closure", () => {
     expect(readme).toMatch(/Navigator 1\.0\/1\.7[\s\S]*(?:nicht unterstützt|ausgeschlossen)/u);
     expect(readme).toContain("keine integrierte TLS-Verschlüsselung");
     expect(readme).toContain("keine Modbus-Authentifizierung");
-    expect(readme).toContain("vertrauenswürdigen lokalen Netzwerk");
-    expect(readme).toContain("Keine Node-Hardwarevalidierung durchgeführt.");
+    expect(readme).toMatch(/vertrauenswürdigen\s+lokalen Netzwerk/u);
+    expect(readme).toMatch(/Keine\s+Node-Hardwarevalidierung durchgeführt\./u);
     expect(readme).not.toMatch(/noch keinen Modbus-Transport|Phase 2[^\n]*(?:geplant|Transport)/u);
     expect(readme).toMatch(/nicht (?:auf npm )?veröffentlicht/u);
   });
@@ -648,7 +652,7 @@ describe("Phase 2 truthful documentation and closure", () => {
     expect(changelog).toContain("Gesamtparität");
     expect(changelog).toContain("Navigator 1.0/1.7");
     expect(changelog).toContain("keine integrierte TLS-Verschlüsselung");
-    expect(changelog).toContain("keine Modbus-Authentifizierung");
+    expect(changelog).toMatch(/keine\s+Modbus-Authentifizierung/u);
   });
 
   it("keeps exactly seven fixtures plus two documents as nine generated artifacts", () => {

@@ -7,40 +7,44 @@ dokumentiert.
 
 ### Added
 
-- Reproduzierbarer Phase-1-Vertrag gegen idm-heatpump-api 0.7.6, Tag
-  v0.7.6, vollständiger Commit
-  ad121ebf34a5f5e37204371c026927d77efcd15c.
-- Strikte Baseline-Prüfung vor jedem Import aus der Python-Referenz sowie sechs
-  deterministische Golden-Contract-Familien für öffentliche API und Klassen,
-  Codec-Vektoren, Registerschemas, semantische Szenarien und den späteren
-  Web-Vertrag.
-- 53 vollständige API-Zuordnungen: unveränderliche Konstanten und Typen,
-  Klassen-/Factory-Verträge, zeitabhängige Helfer, ModbusCodec,
-  Registerdefinitionen, Register-Builder und RegisterRegistry.
-- Exakte Registerkarten für die gepinnten Navigator-2.0/Pro/10-Kombinationen,
-  einschließlich offizieller logischer Überschneidungen, Modell-Metadaten,
-  Sentinels und einer getrennten vollständigen Contract-Serialisierung.
-- Verlustfreie Contract-Darstellung für NaN, beide Unendlichkeiten und
-  negatives Null sowie bitgenaue Low-Word-first-Float32- und
-  Python-Rundungsparität.
-- ESM-, CommonJS- und Declaration-Builds aus einer TypeScript-Implementierung,
-  mindestens 80 Prozent Branch Coverage und ein kontrollierter
-  Tarball-Installations-/Importtest.
-- Read-only CI für Node.js 22 und 24 sowie ein separater, vollständig
-  SHA-gepinnter Python-3.12-Job, der ausschließlich npm run parity:check
-  verwendet.
+- Reproduzierbarer Semantik- und Laufzeitvertrag gegen
+  `idm-heatpump-api` `0.7.6`, Tag `v0.7.6`, vollständiger Commit
+  `ad121ebf34a5f5e37204371c026927d77efcd15c`.
+- Strikte Baseline-Prüfung vor jedem Import aus der Python-Referenz sowie
+  sieben deterministische Golden Fixtures und zwei generierte Dokumente als
+  neun transaktional geprüfte Paritätsartefakte.
+- 57 vollständige API-Zuordnungen für Konstanten, Typen, Codec,
+  Registerdefinitionen und -Builder sowie Phase-2-Diagnostik, Fehler und
+  Logging; `IdmModbusClient` bleibt mit exakt 22 implementierten und sieben
+  nicht exportierten Write-Mitgliedern `partial`.
+- Öffentliche additive TypeScript-Schnittstelle `ModbusTransport` mit einem
+  internen, retry-neutralen `modbus-serial`-Adapter in exakt Version `8.0.25`.
+- Serialisierter Modbus-Lesepfad mit Connect, Disconnect, Reconnect, Retry,
+  Backoff, exakten FC03- und FC04-Requests sowie striktem Batching ohne Lücken,
+  Typmischung oder Überlappungen.
+- Einzelregister-Fallback mit Code-2-Unsupported-Erkennung, permanenter
+  Fehlerverfolgung, Batch-unsafe-Quarantäne und unveränderlicher Diagnostik.
+- Geordnete Modell- und Feature-Erkennung für Navigator 2.0, Navigator Pro und
+  Navigator 10 einschließlich Firmware, Heizkreisen, Zonenmodulen, Solar, ISC,
+  PV, Kaskade, Sentinels und modellabhängiger Registerkarte.
+- Kontrollierter npm-Tarball mit exakter Dist-Allowlist, ESM-, CommonJS- und
+  Declaration-Smoke sowie sauberer Installation und struktureller
+  `ModbusTransport`-Implementierung ohne Verbindungsaufbau.
 
 ### Not yet implemented
 
-- Phase 2: Modbus-Transport, Batching, Erkennung, Resilienz und Diagnostik.
-- Phase 3: sichere Writes, Dry-run, EEPROM-Drosselung und
-  Cyclic-Heartbeats.
+- Phase 3: sichere Writes, Dry-run, EEPROM-Drosselung, Cyclic-Heartbeats und
+  Write-Fehlerpfade.
 - Phase 4: optionales read-only Web-Supplement.
-- Phase 5: vollständige Paritäts- und Release-Sicherung einschließlich
-  Upstream-Freshness und Hardwarevalidierungsnachweis.
+- Phase 5: Veröffentlichung, vollständige Gesamtparität,
+  Upstream-Freshness, Hardwarevalidierungsnachweis und sämtliche Release-Gates.
 
 ### Release status
 
-- Das Paket bleibt mit private: true unveröffentlicht. Phase 1 ist kein
-  funktionsgleicher Gesamtport und nicht releasebereit.
-- No Node hardware validation performed.
+- Das Paket bleibt mit `private: true` unveröffentlicht und nicht
+  releasebereit; bekannte Teilstände werden nicht publiziert.
+- Navigator 1.0/1.7 bleibt als separate Protokollfamilie ausgeschlossen.
+- Modbus TCP bietet keine integrierte TLS-Verschlüsselung und keine
+  Modbus-Authentifizierung; vorgesehen ist ausschließlich ein
+  vertrauenswürdiges lokales Netzwerk.
+- Keine Node-Hardwarevalidierung durchgeführt.
