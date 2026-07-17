@@ -253,7 +253,7 @@ function register(
 }
 
 describe("internal register-aware codec ownership", () => {
-  it("keeps helpers out of the 89-row mapping and package root while the client remains partial", () => {
+  it("keeps helpers out of the 89-row mapping and package root after client completion", () => {
     expect(mapping.mappings).toHaveLength(89);
     expect(
       mapping.mappings.some(({ typescript_symbol }) =>
@@ -268,7 +268,7 @@ describe("internal register-aware codec ownership", () => {
     ).toMatchObject({
       typescript_symbol: "IdmModbusClient",
       owner_phase: 2,
-      status: "partial",
+      status: "complete",
     });
   });
 });
