@@ -25,7 +25,6 @@ import {
   NormalizedTransportFailureKind,
 } from "../../src/transport/errors.js";
 import type {
-  ModbusReadRequest,
   ModbusTransport,
   ModbusWriteRequest,
   ModbusWriteTransport,
@@ -289,10 +288,7 @@ describe("internal IdmModbusClient write execution", () => {
       "Modbus Code 2 writing example.invalid:502",
     );
     const retrying = new FakeModbusTransport([], {
-      writeResponses: [
-        { kind: "error", error: codeTwo },
-        { kind: "write_ok" },
-      ],
+      writeResponses: [{ kind: "error", error: codeTwo }, { kind: "write_ok" }],
     });
     const { client: retryingClient } = clientFromTransports([retrying], clock, { maxRetries: 3 });
     await writeInternalRegister(retryingClient, eepromRegister(), 1);
@@ -312,9 +308,9 @@ describe("internal IdmModbusClient write execution", () => {
       unsupportedRegisters: ["existing"],
       permanentlyFailedRegisters: ["existing"],
     });
-    await expect(writeInternalRegister(structuredClient, eepromRegister(), 1)).rejects.toBeInstanceOf(
-      IllegalAddressError,
-    );
+    await expect(
+      writeInternalRegister(structuredClient, eepromRegister(), 1),
+    ).rejects.toBeInstanceOf(IllegalAddressError);
     expect(writeRequests(structured)).toHaveLength(1);
     expect(structuredClient.getUnsupportedRegisters()).toEqual(["existing"]);
     expect(structuredClient.getDiagnostics().permanentlyFailedRegisters).toEqual(["existing"]);
@@ -399,13 +395,17 @@ describe("internal IdmModbusClient write execution", () => {
           "connect example.invalid:502 failed",
         );
       }
-      public async close(): Promise<void> {}
-      public async destroy(): Promise<void> {}
-      public async read(_request: ModbusReadRequest): Promise<readonly number[]> {
-        throw new Error("unexpected read");
+      public close(): Promise<void> {
+        return Promise.resolve();
       }
-      public async write(_request: ModbusWriteRequest): Promise<void> {
-        throw new Error("unexpected write");
+      public destroy(): Promise<void> {
+        return Promise.resolve();
+      }
+      public read(): Promise<readonly number[]> {
+        return Promise.reject(new Error("unexpected read"));
+      }
+      public write(): Promise<void> {
+        return Promise.reject(new Error("unexpected write"));
       }
     }
     const transport = new FailingConnectTransport();
@@ -460,7 +460,7 @@ describe("internal IdmModbusClient write execution", () => {
     const client = createInternalIdmModbusClient("example.invalid", undefined, {
       transportFactory: () => new FakeModbusTransport([]),
       now: () => 0,
-      sleep: async () => {},
+      sleep: () => Promise.resolve(),
     });
     for (const name of clientMapping?.partial_class?.omitted_members ?? []) {
       expect(name in (client as unknown as Record<string, unknown>)).toBe(false);

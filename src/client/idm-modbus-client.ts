@@ -354,9 +354,7 @@ export function seedInternalWriteState(
   requireInternalTestControl(client).seedWriteState(seed);
 }
 
-export function getInternalWriteStateSnapshot(
-  client: IdmModbusClient,
-): InternalWriteStateSnapshot {
+export function getInternalWriteStateSnapshot(client: IdmModbusClient): InternalWriteStateSnapshot {
   return requireInternalTestControl(client).writeStateSnapshot();
 }
 
