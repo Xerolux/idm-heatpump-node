@@ -19,7 +19,13 @@ import {
   NormalizedTransportFailure,
   NormalizedTransportFailureKind,
 } from "../../src/transport/errors.js";
-import type { ModbusReadRequest, ModbusTransport } from "../../src/transport/types.js";
+import {
+  createModbusWriteRequest,
+  type ModbusReadRequest,
+  type ModbusTransport,
+  type ModbusWriteRequest,
+  type ModbusWriteTransport,
+} from "../../src/transport/types.js";
 import { RegisterType } from "../../src/types.js";
 
 type MockOutcome =
@@ -35,6 +41,11 @@ type MockEvent =
       readonly address: number;
       readonly count: number;
     }>
+  | Readonly<{
+      readonly kind: "write_registers";
+      readonly address: number;
+      readonly values: readonly number[];
+    }>
   | Readonly<{ readonly kind: "set_id"; readonly unitId: number }>
   | Readonly<{ readonly kind: "set_timeout"; readonly timeoutMs: number }>;
 
@@ -42,6 +53,8 @@ class MockModbusSerialClient implements ModbusSerialClientBoundary {
   readonly events: MockEvent[] = [];
   readonly #holding: MockOutcome[] = [];
   readonly #input: MockOutcome[] = [];
+  readonly #write: MockOutcome[] = [];
+  readonly writeValueReferences: number[][] = [];
   connectError: unknown;
   closeError: unknown = false;
   destroyError: unknown = false;
@@ -53,6 +66,10 @@ class MockModbusSerialClient implements ModbusSerialClientBoundary {
 
   public queueInput(...outcomes: readonly MockOutcome[]): void {
     this.#input.push(...outcomes);
+  }
+
+  public queueWrite(...outcomes: readonly MockOutcome[]): void {
+    this.#write.push(...outcomes);
   }
 
   public setID(unitId: number): void {
@@ -82,6 +99,12 @@ class MockModbusSerialClient implements ModbusSerialClientBoundary {
   public async readInputRegisters(address: number, count: number): Promise<unknown> {
     this.events.push({ kind: "read_input", address, count });
     return this.#consume(this.#input);
+  }
+
+  public async writeRegisters(address: number, values: number[]): Promise<unknown> {
+    this.writeValueReferences.push(values);
+    this.events.push({ kind: "write_registers", address, values: Object.freeze([...values]) });
+    return this.#consume(this.#write);
   }
 
   public close(callback: (error?: unknown) => void): void {
@@ -127,6 +150,18 @@ function inputRequest(overrides: Partial<ModbusReadRequest> = {}): ModbusReadReq
     functionCode: 4,
     address: 1_392,
     count: 2,
+    ...overrides,
+  });
+}
+
+function writeRequest(overrides: Partial<ModbusWriteRequest> = {}): ModbusWriteRequest {
+  return createModbusWriteRequest({
+    unitId: 7,
+    registerType: RegisterType.HOLDING,
+    functionCode: 16,
+    address: 1_696,
+    count: 2,
+    words: [0, 16_938],
     ...overrides,
   });
 }
@@ -232,6 +267,61 @@ describe("ModbusSerialTransport", () => {
       { kind: "set_id", unitId: 3 },
       { kind: "set_id", unitId: 4 },
     ]);
+  });
+
+  it("maps one- and two-word writes only through writeRegisters with exact FC16 identity", async () => {
+    const client = new MockModbusSerialClient();
+    client.queueWrite(
+      { kind: "result", result: { address: 1_005, length: 1 } },
+      { kind: "result", result: { address: 1_696, length: 2, ignored: true } },
+    );
+    const transport = createTransport(client) as ModbusWriteTransport;
+    await transport.connect();
+    const oneWord = writeRequest({ address: 1_005, count: 1, words: [1] });
+    const twoWord = writeRequest();
+
+    await expect(transport.write(oneWord)).resolves.toBeUndefined();
+    await expect(transport.write(twoWord)).resolves.toBeUndefined();
+
+    expect(client.events.filter((event) => event.kind === "write_registers")).toEqual([
+      { kind: "write_registers", address: 1_005, values: [1] },
+      { kind: "write_registers", address: 1_696, values: [0, 16_938] },
+    ]);
+    expect(client.events.filter((event) => event.kind === "set_id")).toEqual([
+      { kind: "set_id", unitId: 7 },
+      { kind: "set_id", unitId: 7 },
+      { kind: "set_id", unitId: 7 },
+    ]);
+    expect(client.writeValueReferences[0]).not.toBe(oneWord.words);
+    expect(client.writeValueReferences[1]).not.toBe(twoWord.words);
+    expect(Object.isFrozen(client.writeValueReferences[0])).toBe(false);
+    expect(Object.isFrozen(client.writeValueReferences[1])).toBe(false);
+    expect(oneWord.words).toEqual([1]);
+    expect(twoWord.words).toEqual([0, 16_938]);
+  });
+
+  it.each([
+    { label: "missing", result: undefined },
+    { label: "null", result: null },
+    { label: "array", result: [1_696, 2] },
+    { label: "wrong address", result: { address: 1_697, length: 2 } },
+    { label: "fractional address", result: { address: 1_696.5, length: 2 } },
+    { label: "negative address", result: { address: -1, length: 2 } },
+    { label: "out-of-range address", result: { address: 65_536, length: 2 } },
+    { label: "wrong length", result: { address: 1_696, length: 1 } },
+    { label: "fractional length", result: { address: 1_696, length: 2.5 } },
+    { label: "negative length", result: { address: 1_696, length: -1 } },
+    { label: "out-of-range length", result: { address: 1_696, length: 124 } },
+  ])("rejects a $label FC16 acknowledgement", async ({ result }) => {
+    const client = new MockModbusSerialClient();
+    client.queueWrite({ kind: "result", result });
+    const transport = createTransport(client) as ModbusWriteTransport;
+    await transport.connect();
+
+    await expect(transport.write(writeRequest())).rejects.toMatchObject({
+      kind: NormalizedTransportFailureKind.INVALID_RESPONSE,
+    });
+    expect(client.events.filter((event) => event.kind === "write_registers")).toHaveLength(1);
   });
 
   it("restores the normal timeout in finally after a successful temporary-timeout read", async () => {
