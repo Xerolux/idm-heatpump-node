@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import { IdmModbusClient } from "../../src/client/index.js";
 import {
   createInternalIdmModbusClient,
+  getInternalClientSnapshot,
   type InternalTransportFactoryConfiguration,
 } from "../../src/client/internal-create.js";
 import type { ModbusReadRequest, ModbusTransport } from "../../src/transport/types.js";
@@ -140,6 +141,18 @@ describe("IdmModbusClient constructor and lifecycle", () => {
       });
       expect(Object.is(configurations[0]?.timeout, timeout)).toBe(true);
     }
+  });
+
+  it("preserves Python's lower-only trusted retry and group configuration domain", () => {
+    const client = createClient(() => new LifecycleTransport(1, createTracker()), {
+      maxRetries: Number.MAX_SAFE_INTEGER,
+      maxGroupSize: Number.MAX_SAFE_INTEGER,
+    });
+
+    expect(getInternalClientSnapshot(client).configuration).toMatchObject({
+      maxRetries: Number.MAX_SAFE_INTEGER,
+      maxGroupSize: Number.MAX_SAFE_INTEGER,
+    });
   });
 
   it("rejects invalid mapped configuration before creating a transport", () => {

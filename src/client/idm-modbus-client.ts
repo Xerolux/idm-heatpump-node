@@ -173,6 +173,9 @@ function normalizeRetryCount(value: number | undefined, fallback: number): numbe
   if (!Number.isFinite(value)) {
     throw new RangeError("maxRetries override must be finite");
   }
+  // Pinned Python 0.7.6 applies max(1, int(value)) without an upper bound.
+  // This is trusted local configuration, so preserving that domain takes
+  // precedence over silently changing the requested retry behavior.
   return Math.max(1, Math.trunc(value));
 }
 

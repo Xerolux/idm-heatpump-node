@@ -126,6 +126,16 @@ binary64 round-half-to-even, then bounded to the inclusive transport interval
 and maps to 1 ms; larger finite values remain accepted and saturate at the
 transport maximum. This is the only approved timeout unit conversion.
 
+Pinned Python `0.7.6` accepts every constructor `max_retries` and
+`max_group_size` integer greater than or equal to one, and its per-operation
+retry override applies `max(1, int(value))` without an upper cap. TypeScript
+preserves that lower-only domain exactly. These values are trusted local
+consumer configuration rather than network input; imposing a Node-only upper
+bound would break functional parity. The resulting deliberate availability
+risk is recorded as an accepted risk in the Phase-2 security register. Modbus
+request validation remains independently bounded to the protocol maximum of
+125 registers.
+
 Runtime failures are classified from structured evidence before comparison.
 Numeric Modbus exception Code 2 and the structured illegal-address marker are
 the only unsupported-address evidence. Exception class names, message
