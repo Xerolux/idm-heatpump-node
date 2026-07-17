@@ -1,8 +1,17 @@
 import { encodeValue } from "../codec.js";
+import { compareUnicodeCodePoints } from "../contracts/canonical-order.js";
 import { SemanticValidationError } from "../errors.js";
 import type { RegisterDef } from "../registers/definitions.js";
 import { buildRegisterMap, getRegister } from "../registers/registry.js";
-import { DataType, type DataType as DataTypeValue, type IdmModelInfo } from "../types.js";
+import {
+  DataType,
+  WriteClass,
+  type DataType as DataTypeValue,
+  type IdmModelInfo,
+} from "../types.js";
+
+const EEPROM_WRITE_INTERVAL_SECONDS = 60;
+const DEFAULT_CYCLIC_WRITE_TTL_SECONDS = 300;
 
 const INTEGER_WRITE_TYPES: ReadonlySet<DataTypeValue> = new Set([
   DataType.UCHAR,
@@ -51,6 +60,18 @@ interface WriteSafetyStateGuard {
   assertEepromWriteAllowed(register: RegisterDef, now: number): void;
 }
 
+export interface InternalWriteSafetyStateSeed {
+  readonly writeThrottle?: Readonly<Record<string, number>>;
+  readonly cyclicWrites?: Readonly<Record<string, number>>;
+}
+
+export interface InternalWriteSafetyStateSnapshot {
+  readonly writeThrottle: Readonly<Record<string, number>>;
+  readonly cyclicWrites: Readonly<Record<string, number>>;
+  readonly activeCyclicWrites: Readonly<Record<string, number>>;
+  readonly expiredCyclicWrites: ReadonlySet<string>;
+}
+
 export interface WritePlanInput {
   readonly register: RegisterDef | string;
   readonly value: unknown;
@@ -88,6 +109,171 @@ function pythonRepr(value: unknown): string {
 
 function pythonValueText(value: unknown): string {
   return typeof value === "number" ? pythonNumberText(value) : String(value);
+}
+
+function requireMonotonicSeconds(value: number, field: string): void {
+  if (!Number.isFinite(value) || value < 0 || Object.is(value, -0)) {
+    throw new RangeError(`${field} must be a finite non-negative number`);
+  }
+}
+
+/** Match CPython's correctly rounded binary64 ``format(value, ".1f")``. */
+function formatPythonBinary64OneDecimal(value: number): string {
+  if (!Number.isFinite(value)) {
+    throw new RangeError("One-decimal diagnostics require a finite number");
+  }
+
+  const negative = value < 0 || Object.is(value, -0);
+  const buffer = new ArrayBuffer(8);
+  const view = new DataView(buffer);
+  view.setFloat64(0, Math.abs(value), false);
+  const high = view.getUint32(0, false);
+  const low = view.getUint32(4, false);
+  const exponentBits = (high >>> 20) & 0x7ff;
+  const fractionBits = (BigInt(high & 0x000f_ffff) << 32n) | BigInt(low);
+  const significand = exponentBits === 0 ? fractionBits : (1n << 52n) | fractionBits;
+  const binaryExponent = exponentBits === 0 ? -1074 : exponentBits - 1023 - 52;
+
+  let numerator = significand * 10n;
+  let denominator = 1n;
+  if (binaryExponent >= 0) {
+    numerator <<= BigInt(binaryExponent);
+  } else {
+    denominator <<= BigInt(-binaryExponent);
+  }
+
+  let rounded = numerator / denominator;
+  const remainder = numerator % denominator;
+  const comparison = remainder * 2n - denominator;
+  if (comparison > 0n || (comparison === 0n && rounded % 2n !== 0n)) {
+    rounded += 1n;
+  }
+
+  const whole = rounded / 10n;
+  const fraction = rounded % 10n;
+  return `${negative ? "-" : ""}${whole.toString()}.${fraction.toString()}`;
+}
+
+function sortedEntries(source: ReadonlyMap<string, number>): readonly [string, number][] {
+  return [...source].sort(([left], [right]) => compareUnicodeCodePoints(left, right));
+}
+
+function immutableTimestampRecord(
+  source: ReadonlyMap<string, number>,
+  predicate: (value: number) => boolean = () => true,
+): Readonly<Record<string, number>> {
+  return Object.freeze(
+    Object.fromEntries(sortedEntries(source).filter(([, value]) => predicate(value))),
+  );
+}
+
+function immutableStringSet(values: Iterable<string>): ReadonlySet<string> {
+  const backing = new Set(values);
+  const view: ReadonlySet<string> = {
+    get size(): number {
+      return backing.size;
+    },
+    has: (value): boolean => backing.has(value),
+    entries: (): SetIterator<[string, string]> => backing.entries(),
+    keys: (): SetIterator<string> => backing.keys(),
+    values: (): SetIterator<string> => backing.values(),
+    forEach(callback, thisArg): void {
+      for (const value of backing) callback.call(thisArg, value, value, view);
+    },
+    [Symbol.iterator]: (): SetIterator<string> => backing[Symbol.iterator](),
+  };
+  return Object.freeze(view);
+}
+
+function timestampMap(
+  source: Readonly<Record<string, number>> | undefined,
+  field: string,
+): Map<string, number> {
+  const result = new Map<string, number>();
+  for (const [name, timestamp] of Object.entries(source ?? {})) {
+    requireMonotonicSeconds(timestamp, `${field}.${name}`);
+    result.set(name, timestamp);
+  }
+  return result;
+}
+
+/** Provider-neutral EEPROM and cyclic state with one explicit success mutation hook. */
+export class WriteSafetyState implements WriteSafetyStateGuard {
+  #lastEepromWrites = new Map<string, number>();
+  #cyclicWriteDeadlines = new Map<string, number>();
+
+  public constructor(seed: InternalWriteSafetyStateSeed = {}) {
+    this.seed(seed);
+  }
+
+  public seed(seed: InternalWriteSafetyStateSeed): void {
+    const writeThrottle = timestampMap(seed.writeThrottle, "writeThrottle");
+    const cyclicWrites = timestampMap(seed.cyclicWrites, "cyclicWrites");
+    this.#lastEepromWrites = writeThrottle;
+    this.#cyclicWriteDeadlines = cyclicWrites;
+  }
+
+  public assertEepromWriteAllowed(register: RegisterDef, now: number): void {
+    requireMonotonicSeconds(now, "now");
+    if (register.writeClass !== WriteClass.EEPROM) return;
+    const lastWrite = this.#lastEepromWrites.get(register.name);
+    if (lastWrite === undefined) return;
+    const elapsed = now - lastWrite;
+    if (elapsed < EEPROM_WRITE_INTERVAL_SECONDS) {
+      const remaining = EEPROM_WRITE_INTERVAL_SECONDS - elapsed;
+      reject(
+        "write_eeprom_throttled",
+        `EEPROM-sensitive register '${register.name}' was written too recently (try again in ${formatPythonBinary64OneDecimal(remaining)}s)`,
+      );
+    }
+  }
+
+  public recordSuccessfulWrite(register: RegisterDef, now: number): void {
+    requireMonotonicSeconds(now, "now");
+    if (register.writeClass === WriteClass.EEPROM) {
+      this.#lastEepromWrites.set(register.name, now);
+    }
+    if (register.writeClass === WriteClass.CYCLIC) {
+      this.#cyclicWriteDeadlines.set(
+        register.name,
+        now + (register.cyclicWriteTtl ?? DEFAULT_CYCLIC_WRITE_TTL_SECONDS),
+      );
+    }
+  }
+
+  public resetWriteThrottle(register: RegisterDef | null = null): void {
+    if (register === null) this.#lastEepromWrites.clear();
+    else this.#lastEepromWrites.delete(register.name);
+  }
+
+  public getActiveCyclicWrites(now: number): Readonly<Record<string, number>> {
+    requireMonotonicSeconds(now, "now");
+    return immutableTimestampRecord(this.#cyclicWriteDeadlines, (deadline) => deadline > now);
+  }
+
+  public getExpiredCyclicWrites(now: number): ReadonlySet<string> {
+    requireMonotonicSeconds(now, "now");
+    return immutableStringSet(
+      sortedEntries(this.#cyclicWriteDeadlines)
+        .filter(([, deadline]) => deadline <= now)
+        .map(([name]) => name),
+    );
+  }
+
+  public resetCyclicWriteState(register: RegisterDef | null = null): void {
+    if (register === null) this.#cyclicWriteDeadlines.clear();
+    else this.#cyclicWriteDeadlines.delete(register.name);
+  }
+
+  public snapshot(now: number): InternalWriteSafetyStateSnapshot {
+    requireMonotonicSeconds(now, "now");
+    return Object.freeze({
+      writeThrottle: immutableTimestampRecord(this.#lastEepromWrites),
+      cyclicWrites: immutableTimestampRecord(this.#cyclicWriteDeadlines),
+      activeCyclicWrites: this.getActiveCyclicWrites(now),
+      expiredCyclicWrites: this.getExpiredCyclicWrites(now),
+    });
+  }
 }
 
 function resolveRegister(
