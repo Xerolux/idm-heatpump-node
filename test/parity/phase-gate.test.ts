@@ -18,7 +18,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { getRegister, IdmModbusClient } from "../../src/index.js";
+import { getRegister, IdmModbusClient, WriteSafetyResult } from "../../src/index.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const orchestrator = resolve(root, "scripts/check-parity.mjs");
@@ -27,14 +27,15 @@ const canonicalRepository = "https://github.com/Xerolux/idm-heatpump-api";
 const pinnedCommit = "ad121ebf34a5f5e37204371c026927d77efcd15c";
 const pinnedTag = "v0.7.6";
 const temporaryPrefix = "idm-heatpump-contract-";
-const phase2RuntimeSymbols = [
+const phase3RuntimeSymbols = [
   "IdmClientDiagnostics",
   "IdmModbusClient",
   "IllegalAddressError",
   "ModbusErrorContext",
   "quietPymodbusLogging",
+  "WriteSafetyResult",
 ] as const;
-const phase2OmittedWriteMembers = [
+const phase3WriteMembers = [
   "getActiveCyclicWrites",
   "getExpiredCyclicWrites",
   "resetCyclicWriteState",
@@ -379,7 +380,7 @@ describe.sequential("parity orchestrator phase gate", () => {
 });
 
 describe("npm parity entry points and private package boundary", () => {
-  it("keeps Phase-2 mapping promotion API-only before the non-mutating Python fixture check", () => {
+  it("keeps Phase-3 mapping promotion API-only before the non-mutating Python fixture check", () => {
     const packageJson = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as {
       readonly scripts?: Readonly<Record<string, string>>;
     };
@@ -398,20 +399,17 @@ describe("npm parity entry points and private package boundary", () => {
 
     expect(packageJson.scripts?.["parity:api"]).toBe("node scripts/generate-api-parity.mjs");
     expect(packageJson.scripts?.["parity:check"]).toBe("node scripts/check-parity.mjs check");
-    expect(completeRows).toHaveLength(57);
+    expect(completeRows).toHaveLength(59);
     expect(completeRows.filter(({ owner_phase }) => owner_phase === 1)).toHaveLength(53);
-    expect(completeRows.filter(({ owner_phase }) => owner_phase === 2)).toHaveLength(4);
+    expect(completeRows.filter(({ owner_phase }) => owner_phase === 2)).toHaveLength(5);
+    expect(completeRows.filter(({ owner_phase }) => owner_phase === 3)).toHaveLength(1);
     for (const row of completeRows) {
       expect(apiDocument, row.python_symbol).toContain(
         `| \`${row.python_symbol}\` | \`${row.typescript_symbol}\` | \`.\` | ${String(row.owner_phase)} | \`complete\` |`,
       );
     }
-    expect(mapping.mappings.filter(({ status }) => status === "planned")).toHaveLength(31);
-    expect(
-      mapping.mappings.filter(
-        ({ python_symbol, status }) => python_symbol === "IdmModbusClient" && status === "partial",
-      ),
-    ).toHaveLength(1);
+    expect(mapping.mappings.filter(({ status }) => status === "planned")).toHaveLength(30);
+    expect(mapping.mappings.filter(({ status }) => status === "partial")).toHaveLength(0);
   });
 
   it("wires all npm parity commands to fixed repository scripts", () => {
@@ -444,7 +442,7 @@ describe("npm parity entry points and private package boundary", () => {
     for (const row of mapping.mappings) {
       const documentedStatus = `| \`${row.python_symbol}\` | \`${row.typescript_symbol}\` | \`${row.export_path}\` |`;
       expect(apiDocument, row.python_symbol).toContain(documentedStatus);
-      if (row.status === "complete" || row.python_symbol === "IdmModbusClient") {
+      if (row.status === "complete") {
         expect(row.export_path, row.python_symbol).toBe(".");
         expect(rootSource, row.typescript_symbol).toContain(row.typescript_symbol);
       } else {
@@ -520,11 +518,11 @@ describe("npm parity entry points and private package boundary", () => {
     );
   }, 30_000);
 
-  it("requires the package tarball ESM CommonJS declaration smoke to cover Phase 2 without connecting", () => {
+  it("requires package ESM CommonJS declaration smoke to cover safe writes without connecting", () => {
     const source = readFileSync(resolve(root, "scripts/check-package.mjs"), "utf8");
     const commandSource = readFileSync(resolve(root, "scripts/package-command.mjs"), "utf8");
 
-    for (const symbol of phase2RuntimeSymbols) {
+    for (const symbol of phase3RuntimeSymbols) {
       expect(source, symbol).toContain(symbol);
     }
     expect(source).toContain("ModbusTransport");
@@ -535,9 +533,12 @@ describe("npm parity entry points and private package boundary", () => {
     expect(source).not.toContain("spawnSync");
     expect(commandSource).toContain("PACKAGE_COMMAND_TIMEOUT_MS = 120_000");
     expect(commandSource).toContain("timeout: timeoutMs");
-    for (const member of phase2OmittedWriteMembers) {
+    for (const member of phase3WriteMembers) {
       expect(source, member).toContain(member);
     }
+    expect(source).toContain("setValue(\"system_mode\", 2, { dryRun: true })");
+    expect(source).toContain("simulateWrite(\"system_mode\", 2)");
+    expect(source).toContain("WriteSafetyResult.create");
     expect(source).not.toMatch(
       /\.(?:connect|readRegister|readBatch|probeRegister|detectModel)\s*\(/u,
     );
@@ -817,23 +818,21 @@ describe("Phase 2 truthful documentation and closure", () => {
     for (const threshold of ["branches", "functions", "lines", "statements"]) {
       expect(coverageConfig).toMatch(new RegExp("\\b" + threshold + ":\\s*80\\b", "u"));
     }
-    expect(completeRows).toHaveLength(57);
+    expect(completeRows).toHaveLength(59);
     expect(
       completeRows.every(
         ({ export_path, owner_phase }) =>
-          export_path === "." && (owner_phase === 1 || owner_phase === 2),
+          export_path === "." && owner_phase <= 3,
       ),
     ).toBe(true);
-    expect(plannedRows).toHaveLength(31);
-    expect(plannedRows.every(({ owner_phase }) => owner_phase >= 3)).toBe(true);
-    expect(partialRows).toEqual([
-      expect.objectContaining({ export_path: ".", owner_phase: 2, status: "partial" }),
-    ]);
+    expect(plannedRows).toHaveLength(30);
+    expect(plannedRows.every(({ owner_phase }) => owner_phase === 4)).toBe(true);
+    expect(partialRows).toEqual([]);
     const clientMapping = mapping.mappings.find(
       ({ python_symbol: pythonSymbol }) => pythonSymbol === "IdmModbusClient",
     );
-    expect(clientMapping?.partial_class?.implemented_members).toHaveLength(22);
-    expect(clientMapping?.partial_class?.omitted_members).toEqual(phase2OmittedWriteMembers);
+    expect(clientMapping).toMatchObject({ status: "complete", owner_phase: 2 });
+    expect(clientMapping?.partial_class).toBeUndefined();
     expect(extensions.extensions).toEqual([
       expect.objectContaining({
         typescript_symbol: "ModbusTransport",
@@ -848,12 +847,42 @@ describe("Phase 2 truthful documentation and closure", () => {
       .filter((member) => member !== "constructor")
       .sort();
     expect(prototypeMembers).toEqual(
-      [...(clientMapping?.partial_class?.implemented_members ?? [])].sort(),
+      [
+        "clearLastErrorContext",
+        "connect",
+        "decodeValue",
+        "detectModel",
+        "disconnect",
+        "encodeValue",
+        "forceReconnect",
+        "getActiveCyclicWrites",
+        "getBatchUnsafeRegisters",
+        "getDiagnostics",
+        "getExpiredCyclicWrites",
+        "getLastErrorContext",
+        "getUnsupportedRegisters",
+        "host",
+        "isConnected",
+        "markBatchUnsafe",
+        "modelInfo",
+        "modelName",
+        "port",
+        "probeRegister",
+        "readBatch",
+        "readRegister",
+        "readValue",
+        "resetCyclicWriteState",
+        "resetFailedRegisters",
+        "resetWriteThrottle",
+        "setValue",
+        "simulateWrite",
+        "writeRegister",
+      ].sort(),
     );
-    for (const member of phase2OmittedWriteMembers) {
-      expect(rootSource, member).not.toContain(member);
-      expect(prototypeMembers, member).not.toContain(member);
+    for (const member of phase3WriteMembers) {
+      expect(prototypeMembers, member).toContain(member);
     }
+    expect(WriteSafetyResult.create).toBeTypeOf("function");
     for (const internalName of [
       "createModbusSerialTransport",
       "modbus-serial-adapter",

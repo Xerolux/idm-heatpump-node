@@ -262,7 +262,7 @@ const MODBUS_TRANSPORT_EXTENSION: TypeScriptExtensions = {
     },
   ],
 };
-const IDM_MODBUS_IMPLEMENTED_MEMBERS = [
+const IDM_MODBUS_PHASE_2_MEMBERS = [
   "clearLastErrorContext",
   "connect",
   "decodeValue",
@@ -286,10 +286,41 @@ const IDM_MODBUS_IMPLEMENTED_MEMBERS = [
   "readValue",
   "resetFailedRegisters",
 ] as const;
-const IDM_MODBUS_OMITTED_MEMBERS = [
+const IDM_MODBUS_PHASE_3_MEMBERS = [
   "getActiveCyclicWrites",
   "getExpiredCyclicWrites",
   "resetCyclicWriteState",
+  "resetWriteThrottle",
+  "setValue",
+  "simulateWrite",
+  "writeRegister",
+] as const;
+const IDM_MODBUS_COMPLETE_MEMBERS = [
+  "clearLastErrorContext",
+  "connect",
+  "decodeValue",
+  "detectModel",
+  "disconnect",
+  "encodeValue",
+  "forceReconnect",
+  "getActiveCyclicWrites",
+  "getBatchUnsafeRegisters",
+  "getDiagnostics",
+  "getExpiredCyclicWrites",
+  "getLastErrorContext",
+  "getUnsupportedRegisters",
+  "host",
+  "isConnected",
+  "markBatchUnsafe",
+  "modelInfo",
+  "modelName",
+  "port",
+  "probeRegister",
+  "readBatch",
+  "readRegister",
+  "readValue",
+  "resetCyclicWriteState",
+  "resetFailedRegisters",
   "resetWriteThrottle",
   "setValue",
   "simulateWrite",
@@ -425,8 +456,8 @@ function preparePartialIdmModbusClient(project: string): void {
     );
     (client as { status: string }).status = "partial";
     (client as { partial_class?: PartialClassAuthority }).partial_class = {
-      implemented_members: [...IDM_MODBUS_IMPLEMENTED_MEMBERS],
-      omitted_members: [...IDM_MODBUS_OMITTED_MEMBERS],
+      implemented_members: [...IDM_MODBUS_PHASE_2_MEMBERS],
+      omitted_members: [...IDM_MODBUS_PHASE_3_MEMBERS],
     };
   });
 }
@@ -503,7 +534,7 @@ describe("API mapping inventory", () => {
     }
   });
 
-  it("mapping promotion completes the exact fully evidenced Phase-1 and Phase-2 surface", () => {
+  it("mapping promotion completes the exact fully evidenced Phase-1 through Phase-3 surface", () => {
     const allowedNormalizations = new Set([
       "diagnostic_message_redaction",
       "enum_to_const_union",
@@ -523,23 +554,17 @@ describe("API mapping inventory", () => {
     const counterpartKeys = new Set<string>();
     const completedRows = apiMapping.mappings.filter(({ status }) => status === "complete");
 
-    expect(completedRows).toHaveLength(57);
+    expect(completedRows).toHaveLength(59);
     expect(completedRows.map(({ python_symbol }) => python_symbol)).toEqual(
       apiMapping.mappings
         .filter(
-          ({ owner_phase, python_symbol }) =>
-            owner_phase === 1 || (owner_phase === 2 && python_symbol !== "IdmModbusClient"),
+          ({ owner_phase }) => owner_phase <= 3,
         )
         .map(({ python_symbol }) => python_symbol),
     );
 
     for (const row of apiMapping.mappings) {
-      const expectedStatus =
-        row.owner_phase <= 2
-          ? row.python_symbol === "IdmModbusClient"
-            ? "partial"
-            : "complete"
-          : "planned";
+      const expectedStatus = row.owner_phase <= 3 ? "complete" : "planned";
       expect(row.status, row.python_symbol).toBe(expectedStatus);
       expect(row.typescript_symbol, row.python_symbol).toMatch(/^[A-Za-z][A-Za-z0-9_]*$/);
       expect([1, 2, 3, 4], row.python_symbol).toContain(row.owner_phase);
@@ -600,9 +625,36 @@ describe("API mapping inventory", () => {
       contract_test: "test/client/errors.test.ts",
     });
     expect(phaseTwo.IdmModbusClient).toMatchObject({
-      status: "partial",
+      status: "complete",
       contract_test: "test/parity/transport-contract.test.ts",
     });
+  });
+
+  it("uses exact generated write evidence for the promoted Phase-3 result and client", () => {
+    const writeResult = requireDefined(
+      apiMapping.mappings.find(({ python_symbol }) => python_symbol === "WriteSafetyResult"),
+      "WriteSafetyResult mapping row",
+    );
+    const client = requireDefined(
+      apiMapping.mappings.find(({ python_symbol }) => python_symbol === "IdmModbusClient"),
+      "IdmModbusClient mapping row",
+    );
+
+    expect(writeResult).toMatchObject({
+      owner_phase: 3,
+      status: "complete",
+      contract_test: "test/parity/write-contract.test.ts",
+    });
+    expect(client.status).toBe("complete");
+    expect(client.partial_class).toBeUndefined();
+
+    const clientFact = requireDefined(
+      publicClasses.classes.find(({ python_name }) => python_name === "IdmModbusClient"),
+      "IdmModbusClient class facts",
+    );
+    expect(clientFact.members.map(({ name }) => counterpart(client, name))).toEqual(
+      IDM_MODBUS_COMPLETE_MEMBERS,
+    );
   });
 });
 
@@ -679,10 +731,10 @@ describe("Phase-1 class representation mapping", () => {
     }
   });
 
-  it("later-owned runtime classes remain planned and absent from package entry points", () => {
+  it("Phase-4 runtime classes remain planned and absent from package entry points", () => {
     const rootSource = readFileSync(resolve(ROOT, "src/index.ts"), "utf8");
     const webSource = readFileSync(resolve(ROOT, "src/web/index.ts"), "utf8");
-    const laterRows = apiMapping.mappings.filter(({ owner_phase }) => owner_phase > 2);
+    const laterRows = apiMapping.mappings.filter(({ owner_phase }) => owner_phase > 3);
 
     expect(laterRows.length).toBeGreaterThan(0);
     for (const row of laterRows) {
@@ -694,19 +746,17 @@ describe("Phase-1 class representation mapping", () => {
 });
 
 describe("checked mapping export closure", () => {
-  it("exports exactly the authorized complete mappings and reviewed partial client", () => {
+  it("exports exactly the authorized complete mappings", () => {
     const expectedRuntimeSymbols = apiMapping.mappings
       .filter(
-        ({ export_path, status, python_symbol }) =>
-          export_path === "." &&
-          (status === "complete" || (python_symbol === "IdmModbusClient" && status === "partial")),
+        ({ export_path, status }) => export_path === "." && status === "complete",
       )
       .map(({ typescript_symbol }) => typescript_symbol)
       .sort();
 
     expect(Object.keys(rootExports).sort()).toEqual(expectedRuntimeSymbols);
     expect(Object.keys(webExports)).toEqual([]);
-    expect(expectedRuntimeSymbols).toHaveLength(58);
+    expect(expectedRuntimeSymbols).toHaveLength(59);
     expect(rootExports).not.toHaveProperty("ModbusTransport");
   });
 
@@ -749,6 +799,7 @@ describe("checked mapping export closure", () => {
       "InternalReadStateSeed",
       "InternalTransportFactoryConfiguration",
       "NormalizedTransportFailure",
+      "WriteSafetyState",
       "PymodbusLoggingHook",
       "attachInternalModbusTransport",
       "createInternalIdmModbusClient",
@@ -759,6 +810,7 @@ describe("checked mapping export closure", () => {
       "registerPymodbusLoggingHook",
       "seedInternalReadState",
       "withInternalClientDependencies",
+      "createWritePlan",
     ] as const;
 
     expect(rootSource).not.toMatch(/export\s+\*/u);
@@ -776,7 +828,7 @@ describe("checked mapping export closure", () => {
     }
   });
 
-  it("builds exact ESM, CJS, and declaration surfaces without Phase-3 stubs", async () => {
+  it("builds exact ESM, CJS, and declaration surfaces with the complete write API", async () => {
     const build = spawnSync(
       process.execPath,
       [resolve(ROOT, "node_modules/tsup/dist/cli-default.js")],
@@ -792,9 +844,7 @@ describe("checked mapping export closure", () => {
 
     const expectedRuntimeSymbols = apiMapping.mappings
       .filter(
-        ({ export_path, status, python_symbol }) =>
-          export_path === "." &&
-          (status === "complete" || (python_symbol === "IdmModbusClient" && status === "partial")),
+        ({ export_path, status }) => export_path === "." && status === "complete",
       )
       .map(({ typescript_symbol }) => typescript_symbol)
       .sort();
@@ -823,6 +873,7 @@ describe("checked mapping export closure", () => {
       "ModbusSerialClientBoundary",
       "ModbusSerialClientFactory",
       "NormalizedTransportFailure",
+      "WriteSafetyState",
       "attachInternalModbusTransport",
       "createInternalIdmModbusClient",
       "createModbusSerialTransport",
@@ -831,21 +882,20 @@ describe("checked mapping export closure", () => {
       "registerPymodbusLoggingHook",
       "seedInternalReadState",
       "withInternalClientDependencies",
+      "createWritePlan",
     ] as const;
-    const omitted = [...IDM_MODBUS_OMITTED_MEMBERS];
 
     for (const declaration of declarations) {
       expect(declaration).toContain("declare class IdmModbusClient");
+      expect(declaration).toContain("interface WriteSafetyResult");
+      expect(declaration).toContain("declare const WriteSafetyResult");
       expect(declaration).toMatch(
         /constructor\(host: string, options\?: IdmModbusClientOptions\)/u,
       );
       expect(declaration).toContain("interface ModbusTransport");
       expect(declaration).toMatch(/export[^;]*\bModbusTransport\b/u);
-      for (const member of IDM_MODBUS_IMPLEMENTED_MEMBERS) {
+      for (const member of IDM_MODBUS_COMPLETE_MEMBERS) {
         expect(declaration, member).toMatch(new RegExp(`\\b${member}\\b`, "u"));
-      }
-      for (const member of omitted) {
-        expect(declaration, member).not.toMatch(new RegExp(`\\b${member}\\b`, "u"));
       }
       for (const symbol of forbidden) {
         expect(declaration, symbol).not.toMatch(new RegExp(`\\b${symbol}\\b`, "u"));
