@@ -7,9 +7,7 @@ import {
 } from "../../src/transport/types.js";
 import { RegisterType } from "../../src/types.js";
 
-function validInput(
-  patch: Partial<ModbusWriteRequestInput> = {},
-): ModbusWriteRequestInput {
+function validInput(patch: Partial<ModbusWriteRequestInput> = {}): ModbusWriteRequestInput {
   return {
     unitId: 1,
     registerType: RegisterType.HOLDING,
@@ -23,18 +21,16 @@ function validInput(
 
 describe("createModbusWriteRequest", () => {
   it("creates exact FC16 requests for one- and two-word writes", () => {
-    expect(
-      createModbusWriteRequest(
-        validInput({ address: 1_200, count: 1, words: [42] }),
-      ),
-    ).toEqual({
-      unitId: 1,
-      registerType: RegisterType.HOLDING,
-      functionCode: 16,
-      address: 1_200,
-      count: 1,
-      words: [42],
-    });
+    expect(createModbusWriteRequest(validInput({ address: 1_200, count: 1, words: [42] }))).toEqual(
+      {
+        unitId: 1,
+        registerType: RegisterType.HOLDING,
+        functionCode: 16,
+        address: 1_200,
+        count: 1,
+        words: [42],
+      },
+    );
 
     expect(createModbusWriteRequest(validInput())).toEqual({
       unitId: 1,
@@ -82,10 +78,7 @@ describe("createModbusWriteRequest", () => {
       createModbusWriteRequest(
         validInput({
           unitId: MODBUS_WRITE_LIMITS.maximumUnitId,
-          address:
-            MODBUS_WRITE_LIMITS.maximumAddress -
-            MODBUS_WRITE_LIMITS.maximumCount +
-            1,
+          address: MODBUS_WRITE_LIMITS.maximumAddress - MODBUS_WRITE_LIMITS.maximumCount + 1,
           count: MODBUS_WRITE_LIMITS.maximumCount,
           words: maximumWords,
         }),
@@ -119,7 +112,7 @@ describe("createModbusWriteRequest", () => {
     ["word above maximum", { words: [0, 65_536] }],
     ["fractional word", { words: [0, 1.5] }],
     ["non-finite word", { words: [0, Number.NaN] }],
-  ] satisfies readonly [string, Partial<ModbusWriteRequestInput>][]) (
+  ] satisfies readonly [string, Partial<ModbusWriteRequestInput>][])(
     "rejects %s before transport execution",
     (_label, patch) => {
       expect(() => createModbusWriteRequest(validInput(patch))).toThrow();

@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  SemanticValidationError,
-  type SemanticValidationErrorCode,
-} from "../../src/errors.js";
+import { SemanticValidationError, type SemanticValidationErrorCode } from "../../src/errors.js";
 import {
   createModbusFailure,
   createNormalizedTransportFailure,
