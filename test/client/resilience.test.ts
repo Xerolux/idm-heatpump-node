@@ -3,6 +3,10 @@ import { describe, expect, it } from "vitest";
 import type { IdmModbusClient } from "../../src/client/index.js";
 import {
   createInternalIdmModbusClient,
+  getInternalWriteStateSnapshot,
+  seedInternalReadState,
+  seedInternalWriteState,
+  writeInternalRegister,
   type InternalClientDependencies,
 } from "../../src/client/internal-create.js";
 import {
@@ -279,6 +283,98 @@ describe("IdmModbusClient retry and reconnect behavior", () => {
       message: "Illegal address at <endpoint>",
       attempt: 1,
     });
+  });
+});
+
+describe("IdmModbusClient write retry and rollback behavior", () => {
+  it("retries invalid write acknowledgements on the same connection", async () => {
+    const clock = new FakeClock();
+    const invalid = failure(
+      NormalizedTransportFailureKind.INVALID_RESPONSE,
+      "invalid write acknowledgement at example.invalid:502",
+    );
+    const transport = new FakeModbusTransport([], {
+      writeResponses: [
+        { kind: "error", error: invalid },
+        { kind: "error", error: invalid },
+        { kind: "write_ok" },
+      ],
+    });
+    const { client, factoryCalls } = createSequenceClient([transport], clock, {
+      maxRetries: 3,
+    });
+    const register = createRegisterDef({
+      address: 4_500,
+      datatype: DataType.FLOAT,
+      name: "write_retry_float",
+      writable: true,
+      cyclicRequired: true,
+      cyclicWriteTtl: 30,
+    });
+
+    await expect(writeInternalRegister(client, register, 42.5)).resolves.toBeUndefined();
+
+    expect(factoryCalls()).toBe(1);
+    expect(fakeEventKinds(transport)).toEqual(["connect", "write", "write", "write"]);
+    expect(clock.delays).toEqual([0.5, 1]);
+    expect(getInternalWriteStateSnapshot(client).cyclicWrites).toEqual({
+      write_retry_float: 31.5,
+    });
+    expect(client.getLastErrorContext()).toEqual({
+      operation: "write",
+      address: 4_500,
+      count: 2,
+      registerType: "holding",
+      errorType: NormalizedTransportFailureKind.INVALID_RESPONSE,
+      message: "invalid write acknowledgement at <endpoint>",
+      attempt: 2,
+    });
+  });
+
+  it("keeps read failure and write safety state unchanged after Code 2 exhaustion", async () => {
+    const clock = new FakeClock(10);
+    const codeTwo = failure(
+      NormalizedTransportFailureKind.MODBUS,
+      "Modbus Code 2 writing example.invalid:502",
+    );
+    const transport = new FakeModbusTransport([], {
+      writeResponses: [
+        { kind: "error", error: codeTwo },
+        { kind: "error", error: codeTwo },
+        { kind: "error", error: codeTwo },
+      ],
+    });
+    const { client } = createSequenceClient([transport], clock, { maxRetries: 3 });
+    const register = createRegisterDef({
+      address: 4_502,
+      datatype: DataType.UCHAR,
+      name: "write_code_two_eeprom",
+      writable: true,
+      eepromSensitive: true,
+    });
+    seedInternalReadState(client, {
+      permanentlyFailedRegisters: ["existing_failed"],
+      unsupportedRegisters: ["existing_unsupported"],
+    });
+    seedInternalWriteState(client, {
+      writeThrottle: { prior_eeprom: 5 },
+      cyclicWrites: { prior_cyclic: 20 },
+    });
+
+    await expect(writeInternalRegister(client, register, 1)).rejects.toMatchObject({
+      kind: NormalizedTransportFailureKind.MODBUS,
+    });
+
+    expect(fakeEventKinds(transport)).toEqual(["connect", "write", "write", "write"]);
+    expect(client.getUnsupportedRegisters()).toEqual(["existing_unsupported"]);
+    expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual(["existing_failed"]);
+    expect(getInternalWriteStateSnapshot(client)).toMatchObject({
+      writeThrottle: { prior_eeprom: 5 },
+      cyclicWrites: { prior_cyclic: 20 },
+    });
+    const serialized = JSON.stringify(client.getLastErrorContext());
+    expect(serialized).not.toContain("example.invalid");
+    expect(serialized).not.toMatch(/cause|payload|response|words/u);
   });
 });
 
