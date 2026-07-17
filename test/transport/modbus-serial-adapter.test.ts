@@ -7,8 +7,13 @@ import { IdmModbusClient } from "../../src/client/idm-modbus-client.js";
 import {
   createInternalIdmModbusClient,
   getInternalClientSnapshot,
+  getInternalWriteStateSnapshot,
   readInternalModbusRegisters,
+  seedInternalReadState,
+  seedInternalWriteState,
+  writeInternalRegister,
 } from "../../src/client/internal-create.js";
+import { createRegisterDef } from "../../src/registers/definitions.js";
 import {
   createModbusSerialTransport,
   type ModbusSerialClientBoundary,
@@ -26,7 +31,7 @@ import {
   type ModbusWriteRequest,
   type ModbusWriteTransport,
 } from "../../src/transport/types.js";
-import { RegisterType } from "../../src/types.js";
+import { DataType, RegisterType } from "../../src/types.js";
 
 type MockOutcome =
   | Readonly<{ readonly kind: "error"; readonly error: unknown }>
@@ -397,6 +402,147 @@ describe("ModbusSerialTransport", () => {
       expect(error).toMatchObject({ kind: NormalizedTransportFailureKind.MODBUS });
       expect(error).not.toBeInstanceOf(IllegalAddressError);
     }
+  });
+
+  it("normalizes structured write Code 2 as generic Modbus without raw provider state", async () => {
+    const client = new MockModbusSerialClient();
+    client.queueWrite({
+      kind: "error",
+      error: {
+        modbusCode: 2,
+        message: "Code 2 writing example.invalid:15020",
+        cause: { secret: true },
+        payload: { words: [0, 16_938] },
+        result: { address: 1_696, length: 2 },
+        value: 42.5,
+      },
+    });
+    const transport = createTransport(client) as ModbusWriteTransport;
+    await transport.connect();
+
+    const error = await transport.write(writeRequest()).catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(NormalizedTransportFailure);
+    expect(error).toMatchObject({
+      kind: NormalizedTransportFailureKind.MODBUS,
+      message: "Code 2 writing <endpoint>",
+    });
+    expect(error).not.toBeInstanceOf(IllegalAddressError);
+    const serialized = JSON.stringify(error);
+    expect(serialized).not.toContain("example.invalid");
+    expect(serialized).not.toMatch(/cause|payload|result|value|words|16938/u);
+  });
+
+  it("retries malformed real-adapter acknowledgements without committing prior state", async () => {
+    const boundary = new MockModbusSerialClient();
+    boundary.queueWrite(
+      { kind: "result", result: undefined },
+      { kind: "result", result: { address: 4_500, length: 1 } },
+    );
+    const delays: number[] = [];
+    const client = createInternalIdmModbusClient(
+      "example.invalid",
+      { port: 15_020, slaveId: 7, maxRetries: 2 },
+      {
+        transportFactory: (runtimeConfiguration) =>
+          createModbusSerialTransport(runtimeConfiguration, () => boundary),
+        now: () => 10,
+        sleep: async (seconds) => {
+          delays.push(seconds);
+        },
+      },
+    );
+    const register = createRegisterDef({
+      address: 4_500,
+      datatype: DataType.FLOAT,
+      name: "real_adapter_cyclic",
+      writable: true,
+      cyclicRequired: true,
+      cyclicWriteTtl: 30,
+    });
+    seedInternalReadState(client, {
+      unsupportedRegisters: ["existing_unsupported"],
+      permanentlyFailedRegisters: ["existing_failed"],
+    });
+    seedInternalWriteState(client, { cyclicWrites: { real_adapter_cyclic: 50 } });
+
+    await expect(writeInternalRegister(client, register, 42.5)).rejects.toMatchObject({
+      kind: NormalizedTransportFailureKind.INVALID_RESPONSE,
+    });
+
+    expect(boundary.events.filter((event) => event.kind === "write_registers")).toHaveLength(2);
+    expect(delays).toEqual([0.5]);
+    expect(getInternalWriteStateSnapshot(client).cyclicWrites).toEqual({
+      real_adapter_cyclic: 50,
+    });
+    expect(client.getUnsupportedRegisters()).toEqual(["existing_unsupported"]);
+    expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual(["existing_failed"]);
+    expect(client.getLastErrorContext()).toEqual({
+      operation: "write",
+      address: 4_500,
+      count: 2,
+      registerType: "holding",
+      errorType: NormalizedTransportFailureKind.INVALID_RESPONSE,
+      message: "Invalid Modbus write response at address 4500: expected length 2",
+      attempt: 2,
+    });
+    expect(JSON.stringify(client.getLastErrorContext())).not.toMatch(
+      /cause|endpoint|payload|result|value|words|16938/u,
+    );
+  });
+
+  it("retries real-adapter write Code 2 as Modbus and never mutates read failure state", async () => {
+    const boundary = new MockModbusSerialClient();
+    boundary.queueWrite(
+      {
+        kind: "error",
+        error: { modbusCode: 2, message: "Code 2 writing example.invalid:15020" },
+      },
+      {
+        kind: "error",
+        error: { modbusCode: 2, message: "Code 2 writing example.invalid:15020" },
+      },
+      { kind: "result", result: { address: 4_502, length: 1 } },
+    );
+    const delays: number[] = [];
+    const client = createInternalIdmModbusClient(
+      "example.invalid",
+      { port: 15_020, slaveId: 7, maxRetries: 3 },
+      {
+        transportFactory: (runtimeConfiguration) =>
+          createModbusSerialTransport(runtimeConfiguration, () => boundary),
+        now: () => 10,
+        sleep: async (seconds) => {
+          delays.push(seconds);
+        },
+      },
+    );
+    const register = createRegisterDef({
+      address: 4_502,
+      datatype: DataType.UCHAR,
+      name: "real_adapter_eeprom",
+      writable: true,
+      eepromSensitive: true,
+    });
+    seedInternalReadState(client, {
+      unsupportedRegisters: ["existing_unsupported"],
+      permanentlyFailedRegisters: ["existing_failed"],
+    });
+
+    await expect(writeInternalRegister(client, register, 1)).resolves.toBeUndefined();
+
+    expect(boundary.events.filter((event) => event.kind === "write_registers")).toHaveLength(3);
+    expect(delays).toEqual([0.5, 1]);
+    expect(getInternalWriteStateSnapshot(client).writeThrottle).toEqual({
+      real_adapter_eeprom: 10,
+    });
+    expect(client.getUnsupportedRegisters()).toEqual(["existing_unsupported"]);
+    expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual(["existing_failed"]);
+    expect(client.getLastErrorContext()).toMatchObject({
+      operation: "write",
+      errorType: NormalizedTransportFailureKind.MODBUS,
+      attempt: 2,
+    });
   });
 
   it.each([
