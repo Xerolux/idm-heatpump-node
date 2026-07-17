@@ -11,6 +11,7 @@ import {
   NormalizedTransportFailureKind,
 } from "../../src/transport/errors.js";
 import type { ModbusReadRequest, ModbusTransport } from "../../src/transport/types.js";
+import type { ModbusWriteRequest } from "../../src/transport/types.js";
 import {
   DataType,
   RegisterType,
@@ -83,6 +84,11 @@ class LooseScriptedTransport implements ModbusTransport {
       throw response;
     }
     return response as readonly number[];
+  }
+
+  public async write(request: ModbusWriteRequest): Promise<void> {
+    void request;
+    throw new Error("LooseScriptedTransport does not provide writes");
   }
 }
 

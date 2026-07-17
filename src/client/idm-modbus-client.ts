@@ -33,7 +33,6 @@ import {
   type ModbusReadRequest,
   type ModbusTransport,
   type ModbusWriteRequest,
-  type ModbusWriteTransport,
   validateModbusWords,
 } from "../transport/types.js";
 import { RegisterType, type IdmModelInfo } from "../types.js";
@@ -1024,7 +1023,7 @@ export class IdmModbusClient {
   async #retryWriteLocked(request: ModbusWriteRequest, retries: number): Promise<void> {
     for (let attemptIndex = 0; attemptIndex < retries; attemptIndex += 1) {
       try {
-        await this.#requireWriteTransportLocked().write(request);
+        await this.#requireTransportLocked().write(request);
         this.#connectionSuspect = false;
         return;
       } catch (error) {
@@ -1052,14 +1051,6 @@ export class IdmModbusClient {
       }
     }
     throw new Error("Unreachable retry state");
-  }
-
-  #requireWriteTransportLocked(): ModbusWriteTransport {
-    const transport = this.#requireTransportLocked();
-    if (!("write" in transport) || typeof transport.write !== "function") {
-      throw new TypeError("Connected Modbus transport does not support writes");
-    }
-    return transport as ModbusWriteTransport;
   }
 
   async #tryReconnectLocked(): Promise<void> {

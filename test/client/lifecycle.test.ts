@@ -9,7 +9,11 @@ import {
   getInternalClientSnapshot,
   type InternalTransportFactoryConfiguration,
 } from "../../src/client/internal-create.js";
-import type { ModbusReadRequest, ModbusTransport } from "../../src/transport/types.js";
+import type {
+  ModbusReadRequest,
+  ModbusTransport,
+  ModbusWriteRequest,
+} from "../../src/transport/types.js";
 import { RegisterType } from "../../src/types.js";
 
 interface ActivityTracker {
@@ -55,6 +59,11 @@ class LifecycleTransport implements ModbusTransport {
   public async read(request: ModbusReadRequest): Promise<readonly number[]> {
     void request;
     throw new Error("LifecycleTransport does not provide reads");
+  }
+
+  public async write(request: ModbusWriteRequest): Promise<void> {
+    void request;
+    throw new Error("LifecycleTransport does not provide writes");
   }
 
   async #record(operation: string): Promise<void> {

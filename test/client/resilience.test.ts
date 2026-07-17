@@ -17,7 +17,11 @@ import {
   type RetryableTransportFailureKind,
 } from "../../src/transport/errors.js";
 import { createRegisterDef } from "../../src/registers/definitions.js";
-import type { ModbusReadRequest, ModbusTransport } from "../../src/transport/types.js";
+import type {
+  ModbusReadRequest,
+  ModbusTransport,
+  ModbusWriteRequest,
+} from "../../src/transport/types.js";
 import { DataType, RegisterType } from "../../src/types.js";
 import { FakeClock } from "../support/fake-clock.js";
 import { FakeModbusTransport } from "../support/fake-modbus-transport.js";
@@ -73,6 +77,11 @@ class LooseScriptedTransport implements ModbusTransport {
       throw response.error;
     }
     return response.words;
+  }
+
+  public async write(request: ModbusWriteRequest): Promise<void> {
+    void request;
+    throw new Error("LooseScriptedTransport does not provide writes");
   }
 }
 

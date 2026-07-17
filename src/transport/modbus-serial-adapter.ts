@@ -8,7 +8,13 @@ import {
   type DiagnosticEndpoint,
   type RetryableTransportFailureKind,
 } from "./errors.js";
-import { type ModbusReadRequest, type ModbusTransport, validateModbusWords } from "./types.js";
+import {
+  createModbusWriteRequest,
+  type ModbusReadRequest,
+  type ModbusTransport,
+  type ModbusWriteRequest,
+  validateModbusWords,
+} from "./types.js";
 
 export interface ModbusSerialTransportConfiguration {
   readonly host: string;
@@ -25,13 +31,14 @@ export interface ModbusSerialClientBoundary {
   connectTCP(host: string, options: Readonly<{ readonly port: number }>): Promise<void>;
   readHoldingRegisters(address: number, count: number): Promise<unknown>;
   readInputRegisters(address: number, count: number): Promise<unknown>;
+  writeRegisters(address: number, values: number[]): Promise<unknown>;
   close(callback: (status?: unknown) => void): void;
   destroy(callback: (status?: unknown) => void): void;
 }
 
 export type ModbusSerialClientFactory = () => ModbusSerialClientBoundary;
 
-type AdapterOperation = "close" | "connect" | "destroy" | "read";
+type AdapterOperation = "close" | "connect" | "destroy" | "read" | "write";
 
 const disconnectedCodes: ReadonlySet<string> = new Set([
   "ENOTCONN",
@@ -95,7 +102,7 @@ function normalizeAdapterError(
     kind = NormalizedTransportFailureKind.NO_RESPONSE;
   } else if (code !== null && socketCodes.has(code)) {
     kind = NormalizedTransportFailureKind.SOCKET;
-  } else if (operation === "read") {
+  } else if (operation === "read" || operation === "write") {
     kind = NormalizedTransportFailureKind.MODBUS;
   } else {
     kind = NormalizedTransportFailureKind.DISCONNECTED;
@@ -124,6 +131,35 @@ function extractWords(
     return validateModbusWords(record.data);
   } catch {
     throw invalidResponse(request, endpoint);
+  }
+}
+
+function invalidWriteResponse(request: ModbusWriteRequest, endpoint: DiagnosticEndpoint): Error {
+  return createNormalizedTransportFailure(
+    NormalizedTransportFailureKind.INVALID_RESPONSE,
+    `Invalid Modbus write response at address ${String(request.address)}: expected length ${String(request.count)}`,
+    endpoint,
+  );
+}
+
+function validateWriteAcknowledgement(
+  result: unknown,
+  request: ModbusWriteRequest,
+  endpoint: DiagnosticEndpoint,
+): void {
+  if (typeof result !== "object" || result === null || Array.isArray(result)) {
+    throw invalidWriteResponse(request, endpoint);
+  }
+  const acknowledgement = result as Readonly<Record<string, unknown>>;
+  if (
+    typeof acknowledgement.address !== "number" ||
+    !Number.isInteger(acknowledgement.address) ||
+    acknowledgement.address !== request.address ||
+    typeof acknowledgement.length !== "number" ||
+    !Number.isInteger(acknowledgement.length) ||
+    acknowledgement.length !== request.count
+  ) {
+    throw invalidWriteResponse(request, endpoint);
   }
 }
 
@@ -203,6 +239,19 @@ class ModbusSerialTransport implements ModbusTransport {
       if (temporaryTimeout !== undefined) {
         this.#setTimeout(this.#normalTimeoutMs);
       }
+    }
+  }
+
+  public async write(request: ModbusWriteRequest): Promise<void> {
+    const ownedRequest = createModbusWriteRequest(request);
+    this.#client.setID(ownedRequest.unitId);
+    try {
+      const result = await this.#client.writeRegisters(ownedRequest.address, [
+        ...ownedRequest.words,
+      ]);
+      validateWriteAcknowledgement(result, ownedRequest, this.#endpoint);
+    } catch (error) {
+      throw normalizeAdapterError(error, "write", this.#endpoint);
     }
   }
 

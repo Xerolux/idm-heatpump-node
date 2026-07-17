@@ -4,7 +4,11 @@ import type { IdmModbusClient } from "../../src/client/index.js";
 import { createInternalIdmModbusClient } from "../../src/client/internal-create.js";
 import { createRegisterDef, type RegisterDef } from "../../src/registers/definitions.js";
 import { IllegalAddressError, NormalizedTransportFailureKind } from "../../src/transport/errors.js";
-import type { ModbusReadRequest, ModbusTransport } from "../../src/transport/types.js";
+import type {
+  ModbusReadRequest,
+  ModbusTransport,
+  ModbusWriteRequest,
+} from "../../src/transport/types.js";
 import { DataType, RegisterType } from "../../src/types.js";
 import { FakeClock } from "../support/fake-clock.js";
 import { FakeModbusTransport } from "../support/fake-modbus-transport.js";
@@ -53,6 +57,11 @@ class LooseResponseTransport implements ModbusTransport {
   public async read(request: ModbusReadRequest): Promise<readonly number[]> {
     this.requests.push(request);
     return this.#response as readonly number[];
+  }
+
+  public async write(request: ModbusWriteRequest): Promise<void> {
+    void request;
+    throw new Error("LooseResponseTransport does not provide writes");
   }
 }
 

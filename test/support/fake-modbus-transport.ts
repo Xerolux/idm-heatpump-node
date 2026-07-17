@@ -2,8 +2,8 @@ import {
   createModbusReadRequest,
   createModbusWriteRequest,
   type ModbusReadRequest,
+  type ModbusTransport,
   type ModbusWriteRequest,
-  type ModbusWriteTransport,
   validateModbusWords,
 } from "../../src/transport/types.js";
 
@@ -49,7 +49,7 @@ function cloneWriteResponse(response: FakeModbusWriteResponse): FakeModbusWriteR
   return Object.freeze({ kind: "write_ok" });
 }
 
-export class FakeModbusTransport implements ModbusWriteTransport {
+export class FakeModbusTransport implements ModbusTransport {
   readonly #responses: FakeModbusResponse[];
   readonly #writeResponses: FakeModbusWriteResponse[];
   readonly #events: FakeModbusTransportEvent[] = [];

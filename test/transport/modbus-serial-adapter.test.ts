@@ -600,6 +600,7 @@ describe("normal public client wiring", () => {
       close: vi.fn(async () => undefined),
       destroy: vi.fn(async () => undefined),
       read: vi.fn(async () => []),
+      write: vi.fn(async () => undefined),
     };
     const factory = vi.fn(() => fakeTransport);
     vi.resetModules();

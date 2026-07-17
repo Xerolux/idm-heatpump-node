@@ -64,12 +64,11 @@ export interface ModbusTransport {
   close(): Promise<void>;
   destroy(): Promise<void>;
   read(request: ModbusReadRequest): Promise<readonly number[]>;
-}
-
-/** Temporary additive refinement until every transport implements Phase-3 writes. */
-export interface ModbusWriteTransport extends ModbusTransport {
   write(request: ModbusWriteRequest): Promise<void>;
 }
+
+/** Backwards-compatible name for the Phase-3 write-capable transport boundary. */
+export type ModbusWriteTransport = ModbusTransport;
 
 function requireBoundedInteger(
   value: number,
