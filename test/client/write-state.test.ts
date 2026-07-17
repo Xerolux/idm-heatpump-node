@@ -181,4 +181,17 @@ describe("write safety state", () => {
       RangeError,
     );
   });
+
+  it("uses synchronous query/reset semantics without requiring transport state", () => {
+    const state = new WriteSafetyState({
+      writeThrottle: { eeprom: 1 },
+      cyclicWrites: { active: 20, expired: 10 },
+    });
+
+    expect(state.getActiveCyclicWrites(10)).toEqual({ active: 20 });
+    expect([...state.getExpiredCyclicWrites(10)]).toEqual(["expired"]);
+    state.resetWriteThrottle();
+    state.resetCyclicWriteState();
+    expect(state.snapshot(10)).toMatchObject({ writeThrottle: {}, cyclicWrites: {} });
+  });
 });
