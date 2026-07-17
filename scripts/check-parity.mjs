@@ -58,13 +58,14 @@ const GENERATED_PATHS = Object.freeze([
   "test/fixtures/behavior-contract.json",
   "test/fixtures/web-contract.json",
   "test/fixtures/transport-behavior.json",
+  "test/fixtures/write-behavior.json",
   "docs/API-PARITY.md",
   "docs/BASELINE.md",
 ]);
 const GENERATED_ARTIFACT_LABELS = Object.freeze({
-  fixtures: "seven fixtures",
+  fixtures: "eight fixtures",
   documents: "two generated documents",
-  total: "nine generated artifacts",
+  total: "ten generated artifacts",
 });
 const MAX_MANIFEST_BYTES = 64 * 1024;
 const MAX_PROCESS_OUTPUT_BYTES = 64 * 1024;

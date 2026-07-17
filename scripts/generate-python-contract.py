@@ -63,6 +63,7 @@ OUTPUT_PATHS = (
     Path("test/fixtures/behavior-contract.json"),
     Path("test/fixtures/web-contract.json"),
     Path("test/fixtures/transport-behavior.json"),
+    Path("test/fixtures/write-behavior.json"),
 )
 
 
@@ -2367,6 +2368,766 @@ def _transport_fixture(
     )
 
 
+WRITE_ACTION_KINDS = (
+    "simulate_write",
+    "write_register",
+    "set_value",
+    "advance_time",
+    "reset_write_throttle",
+    "get_active_cyclic_writes",
+    "get_expired_cyclic_writes",
+    "reset_cyclic_write_state",
+)
+
+
+def _write_custom_register(
+    name: str,
+    address: int,
+    datatype: str,
+    *,
+    writable: bool = True,
+    **metadata: Any,
+) -> dict[str, Any]:
+    return {
+        "address": address,
+        "datatype": datatype,
+        "name": name,
+        "source": "synthetic_contract",
+        "sourceVersion": "1",
+        "supportedModels": ["Navigator 2.0", "Navigator 10", "Navigator Pro"],
+        "writable": writable,
+        **metadata,
+    }
+
+
+def _write_python_register(client_module: Any, value: Mapping[str, Any]) -> Any:
+    arguments: dict[str, Any] = {
+        "address": value["address"],
+        "datatype": client_module.DataType(value["datatype"]),
+        "name": value["name"],
+        "source": value["source"],
+        "source_version": value["sourceVersion"],
+        "supported_models": tuple(value["supportedModels"]),
+        "writable": value["writable"],
+    }
+    translations = {
+        "binary": "binary",
+        "cyclicRequired": "cyclic_required",
+        "cyclicWriteTtl": "cyclic_write_ttl",
+        "eepromSensitive": "eeprom_sensitive",
+        "enabledByDefault": "enabled_by_default",
+        "icon": "icon",
+        "lastVerified": "last_verified",
+        "maxVal": "max_val",
+        "minVal": "min_val",
+        "multiplier": "multiplier",
+        "stateClass": "state_class",
+        "unit": "unit",
+        "writeOnly": "write_only",
+    }
+    for source, destination in translations.items():
+        if source in value:
+            arguments[destination] = value[source]
+    if "enumOptions" in value:
+        options = value["enumOptions"]
+        arguments["enum_options"] = (
+            None if options is None else {int(key): item for key, item in options.items()}
+        )
+    if "excludeFromWrite" in value:
+        excluded = value["excludeFromWrite"]
+        arguments["exclude_from_write"] = None if excluded is None else set(excluded)
+    if "registerType" in value:
+        arguments["register_type"] = client_module.RegisterType(value["registerType"])
+    if "sentinelValues" in value:
+        arguments["sentinel_values"] = tuple(value["sentinelValues"])
+    return client_module.RegisterDef(**arguments)
+
+
+class _WriteHarness:
+    def __init__(self, scripts: Sequence[Mapping[str, Any]], client_module: Any) -> None:
+        self.scripts = [dict(script) for script in scripts]
+        self.client_module = client_module
+        self.events: list[dict[str, Any]] = []
+        self.clock: list[float] = []
+        self.elapsed = 0.0
+        self.index = 0
+        self.active_requests = 0
+        self.max_active_requests = 0
+        self.last_error_source: str | None = None
+        self._original_sleep = asyncio.sleep
+
+    async def sleep(self, delay: float) -> None:
+        numeric = float(delay)
+        if not math.isfinite(numeric) or numeric < 0:
+            fail("fixture_invalid", "write controlled delay must be finite and non-negative")
+        self.elapsed += numeric
+        self.clock.append(self.elapsed)
+        await self._original_sleep(0)
+
+    def next_script(self, address: int, count: int) -> dict[str, Any]:
+        if self.index >= len(self.scripts):
+            fail("fixture_invalid", "write fake response script is exhausted")
+        script = self.scripts[self.index]
+        self.index += 1
+        source = script.get("source")
+        if isinstance(source, str):
+            self.last_error_source = source
+        if script.get("kind") == "ack":
+            script.setdefault("address", address)
+            script.setdefault("count", count)
+        if source == "numeric_modbus_exception_code_2":
+            script["message"] = (
+                f"Illegal Data Address writing address {address}: "
+                "ExceptionResponse(exception_code=2)"
+            )
+        return script
+
+    def assert_consumed(self) -> None:
+        if self.index != len(self.scripts):
+            fail(
+                "fixture_invalid",
+                f"write fake has {len(self.scripts) - self.index} unconsumed response(s)",
+            )
+
+
+class _WriteFakeTransport:
+    def __init__(self, harness: _WriteHarness) -> None:
+        self.harness = harness
+        self.connected = True
+
+    async def connect(self) -> bool:
+        self.harness.events.append({"kind": "connect"})
+        self.connected = True
+        return True
+
+    def close(self) -> None:
+        self.harness.events.append({"kind": "close"})
+        self.connected = False
+
+    async def write_registers(self, *, address: int, values: Sequence[int], **kwargs: Any) -> Any:
+        words = [int(value) for value in values]
+        unit_id = next(iter(kwargs.values()), 1)
+        request = {
+            "unitId": int(unit_id),
+            "registerType": "holding",
+            "functionCode": 16,
+            "address": address,
+            "count": len(words),
+            "words": words,
+        }
+        self.harness.events.append({"kind": "write", "request": request})
+        self.harness.active_requests += 1
+        self.harness.max_active_requests = max(
+            self.harness.max_active_requests,
+            self.harness.active_requests,
+        )
+        try:
+            await self.harness._original_sleep(0)
+            script = self.harness.next_script(address, len(words))
+            kind = script.get("kind")
+            if kind == "ack":
+                return _RuntimeResponse()
+            if kind != "error":
+                fail("fixture_invalid", "write response script kind is invalid")
+            source = script.get("source")
+            message = script.get("message")
+            if source == "numeric_modbus_exception_code_2":
+                return _RuntimeResponse(exception_code=2)
+            if not isinstance(source, str) or not isinstance(message, str):
+                fail("fixture_invalid", "write error script is incomplete")
+            if source == "timeout_exception":
+                raise TimeoutError(message)
+            if source == "connection_exception":
+                raise self.harness.client_module.ConnectionException(message)
+            if source == "socket_or_os_error":
+                raise OSError(message)
+            if source == "modbus_io_exception_or_structured_no_response":
+                raise self.harness.client_module.ModbusIOException(message)
+            if source == "other_modbus_exception":
+                raise self.harness.client_module.ModbusException(message)
+            if source == "structured_illegal_address_marker":
+                raise self.harness.client_module.IllegalAddressError(message)
+            fail("fixture_invalid", f"write fake cannot execute source: {source}")
+        finally:
+            self.harness.active_requests -= 1
+
+
+def _write_error_projection(
+    source: str,
+    message: str,
+    *,
+    host: str,
+    port: int,
+) -> dict[str, str]:
+    error_type = (
+        "modbus"
+        if source == "numeric_modbus_exception_code_2"
+        else transport_error_type_to_closed_kind(source)
+    )
+    return {
+        "errorType": error_type,
+        "message": diagnostic_message_redaction(message, host, port),
+    }
+
+
+def _write_script_contract(script: Mapping[str, Any], *, host: str, port: int) -> dict[str, Any]:
+    if script.get("kind") == "ack":
+        address = script.get("address")
+        count = script.get("count")
+        if not isinstance(address, int) or not isinstance(count, int):
+            fail("fixture_invalid", "write acknowledgement was not exercised")
+        return {"kind": "ack", "address": address, "count": count}
+    source = script.get("source")
+    message = script.get("message")
+    if not isinstance(source, str) or not isinstance(message, str):
+        fail("fixture_invalid", "write error script is incomplete after execution")
+    return {
+        "kind": "error",
+        **_write_error_projection(source, message, host=host, port=port),
+    }
+
+
+def _write_context_projection(
+    client: Any,
+    harness: _WriteHarness,
+    *,
+    host: str,
+    port: int,
+) -> dict[str, Any] | None:
+    context = client.get_last_error_context()
+    if context is None:
+        return None
+    if harness.last_error_source is None:
+        fail("fixture_invalid", "write error context lacks structured source evidence")
+    return {
+        "operation": context.operation,
+        "address": context.address,
+        "count": context.count,
+        "registerType": context.register_type,
+        **_write_error_projection(
+            harness.last_error_source,
+            context.message,
+            host=host,
+            port=port,
+        ),
+        "attempt": context.attempt,
+    }
+
+
+def _write_state(client: Any, harness: _WriteHarness, *, host: str, port: int) -> dict[str, Any]:
+    return {
+        "activeCyclicWrites": {
+            name: value for name, value in sorted(client.get_active_cyclic_writes().items())
+        },
+        "connected": client.is_connected,
+        "connectionSuspect": client._connection_suspect,
+        "cyclicWrites": {
+            name: value for name, value in sorted(client._cyclic_write_deadlines.items())
+        },
+        "expiredCyclicWrites": sorted(client.get_expired_cyclic_writes()),
+        "lastError": _write_context_projection(client, harness, host=host, port=port),
+        "maxActiveRequests": harness.max_active_requests,
+        "unsupportedRegisters": list(client.get_unsupported_registers()),
+        "writeThrottle": {
+            name: value for name, value in sorted(client._last_eeprom_writes.items())
+        },
+    }
+
+
+def _write_plan_result(plan: Any) -> dict[str, Any]:
+    return {
+        "dryRun": plan.dry_run,
+        "encodedRegisters": list(plan.encoded_registers),
+        "register": {"address": plan.register.address, "name": plan.register.name},
+        "requestedValue": plan.requested_value,
+    }
+
+
+def _write_resolve_register(
+    client_module: Any,
+    registers: Any,
+    client: Any,
+    operand: Any,
+) -> Any:
+    if isinstance(operand, str):
+        return registers.get_register(operand, model_info=client._model_info)
+    return _write_python_register(client_module, operand)
+
+
+async def _execute_write_action(
+    action: Mapping[str, Any],
+    client: Any,
+    client_module: Any,
+    registers: Any,
+    harness: _WriteHarness,
+) -> Any:
+    kind = action["kind"]
+    if kind == "advance_time":
+        harness.elapsed += float(action["seconds"])
+        return None
+    if kind == "get_active_cyclic_writes":
+        return {name: value for name, value in sorted(client.get_active_cyclic_writes().items())}
+    if kind == "get_expired_cyclic_writes":
+        return sorted(client.get_expired_cyclic_writes())
+    if kind == "reset_write_throttle":
+        register = (
+            None
+            if "register" not in action
+            else _write_resolve_register(client_module, registers, client, action["register"])
+        )
+        client.reset_write_throttle(register)
+        return None
+    if kind == "reset_cyclic_write_state":
+        register = (
+            None
+            if "register" not in action
+            else _write_resolve_register(client_module, registers, client, action["register"])
+        )
+        client.reset_cyclic_write_state(register)
+        return None
+    if kind == "set_value":
+        return _write_plan_result(
+            await client.set_value(action["key"], action["value"], dry_run=action["dryRun"])
+        )
+    register = _write_resolve_register(client_module, registers, client, action["register"])
+    if kind == "simulate_write":
+        return _write_plan_result(
+            client.simulate_write(
+                register,
+                action["value"],
+                dry_run=action["dryRun"],
+                allow_custom_register=action["allowCustomRegister"],
+            )
+        )
+    if kind == "write_register":
+        await client.write_register(
+            register,
+            action["value"],
+            allow_custom_register=action["allowCustomRegister"],
+        )
+        return None
+    fail("fixture_invalid", f"unknown write action kind: {kind}")
+
+
+def _write_scenario(
+    client_module: Any,
+    registers: Any,
+    *,
+    name: str,
+    actions: Sequence[Mapping[str, Any]],
+    scripts: Sequence[Mapping[str, Any]] = (),
+    validation_codes: Sequence[str | None] = (),
+    detected_model: str | None = None,
+) -> dict[str, Any]:
+    codes = list(validation_codes) or [None] * len(actions)
+    if len(codes) != len(actions):
+        fail("fixture_invalid", f"write validation-code matrix is incomplete: {name}")
+    custom_definitions: dict[str, Mapping[str, Any]] = {}
+    for action in actions:
+        operand = action.get("register")
+        if isinstance(operand, Mapping):
+            custom_definitions[str(operand["name"])] = operand
+    configuration = {
+        "detectedModel": detected_model,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": list(custom_definitions.values()),
+        "slaveId": 1,
+        "timeout": 10,
+    }
+    harness = _WriteHarness(scripts, client_module)
+    transport = _WriteFakeTransport(harness)
+    client = client_module.IdmModbusClient(
+        configuration["host"],
+        port=configuration["port"],
+        slave_id=configuration["slaveId"],
+        timeout=configuration["timeout"],
+        max_retries=configuration["maxRetries"],
+        pymodbus_retries=0,
+        max_group_size=configuration["maxGroupSize"],
+    )
+    client._client = transport
+    client._time = lambda: harness.elapsed
+    if detected_model is not None:
+        client._model_info = client_module.IdmModelInfo(
+            model_name=detected_model,
+            active_heating_circuits=["A"],
+            zone_modules=0,
+            has_solar=False,
+            has_isc=False,
+            has_pv=False,
+            has_cascade=False,
+        )
+    original_factory = client_module.AsyncModbusTcpClient
+    original_sleep = client_module.asyncio.sleep
+    client_module.AsyncModbusTcpClient = lambda **_: transport
+    client_module.asyncio.sleep = harness.sleep
+
+    async def execute() -> list[dict[str, Any]]:
+        steps: list[dict[str, Any]] = []
+        for index, action in enumerate(actions):
+            try:
+                value = await _execute_write_action(
+                    action,
+                    client,
+                    client_module,
+                    registers,
+                    harness,
+                )
+                if codes[index] is not None:
+                    fail("fixture_invalid", f"expected write validation rejection did not occur: {name}")
+                result = {"kind": "value", "value": value}
+            except Exception as error:  # noqa: BLE001 - exact Python rejection is fixture data
+                code = codes[index]
+                if code is not None:
+                    result = {
+                        "kind": "error",
+                        "category": "validation",
+                        "code": code,
+                        "diagnostic": str(error),
+                    }
+                elif harness.last_error_source is not None:
+                    result = {
+                        "kind": "error",
+                        "category": "transport",
+                        **_write_error_projection(
+                            harness.last_error_source,
+                            str(error),
+                            host=configuration["host"],
+                            port=configuration["port"],
+                        ),
+                    }
+                else:
+                    raise
+            steps.append(
+                {
+                    "result": result,
+                    "state": _write_state(
+                        client,
+                        harness,
+                        host=configuration["host"],
+                        port=configuration["port"],
+                    ),
+                }
+            )
+        return steps
+
+    try:
+        steps = asyncio.run(execute())
+    finally:
+        client_module.AsyncModbusTcpClient = original_factory
+        client_module.asyncio.sleep = original_sleep
+    harness.assert_consumed()
+    return {
+        "name": name,
+        "configuration": configuration,
+        "transport_responses": [
+            _write_script_contract(
+                script,
+                host=configuration["host"],
+                port=configuration["port"],
+            )
+            for script in harness.scripts
+        ],
+        "clock": harness.clock,
+        "operation": {"kind": "sequence", "actions": [dict(action) for action in actions]},
+        "expected_result": {"steps": steps},
+        "expected_requests": harness.events,
+        "expected_state": _write_state(
+            client,
+            harness,
+            host=configuration["host"],
+            port=configuration["port"],
+        ),
+    }
+
+
+def _write_fixture(manifest: Mapping[str, Any], client_module: Any, constants: Any, registers: Any) -> dict[str, Any]:
+    custom_float = _write_custom_register("synthetic_float", 4200, "FLOAT")
+    custom_bool = _write_custom_register("synthetic_bool", 4202, "BOOL")
+    custom_int = _write_custom_register("synthetic_int", 4203, "INT16", minVal=-10, maxVal=10)
+    custom_bitflag = _write_custom_register("synthetic_bitflag", 4204, "BITFLAG")
+    custom_read_only = _write_custom_register("synthetic_read_only", 4205, "UCHAR", writable=False)
+    custom_eeprom = _write_custom_register(
+        "synthetic_eeprom", 4206, "UCHAR", eepromSensitive=True, minVal=0, maxVal=10
+    )
+    custom_eeprom_other = _write_custom_register(
+        "synthetic_eeprom_other", 4207, "UCHAR", eepromSensitive=True, minVal=0, maxVal=10
+    )
+    custom_cyclic = _write_custom_register("synthetic_cyclic", 4208, "FLOAT", cyclicRequired=True)
+    custom_cyclic_ttl = _write_custom_register(
+        "synthetic_cyclic_ttl", 4210, "FLOAT", cyclicRequired=True, cyclicWriteTtl=30
+    )
+    custom_enum = _write_custom_register(
+        "synthetic_enum",
+        4212,
+        "UCHAR",
+        minVal=0,
+        maxVal=5,
+        enumOptions={"0": "Off", "1": "On"},
+        excludeFromWrite=[5],
+    )
+    custom_write_only = _write_custom_register(
+        "synthetic_write_only", 4213, "UCHAR", writeOnly=True
+    )
+    wrong_address = _write_custom_register("system_mode", 4214, "UCHAR")
+
+    def simulate(register: Any, value: Any, *, dry_run: bool = True, custom: bool = False) -> dict[str, Any]:
+        return {
+            "allowCustomRegister": custom,
+            "dryRun": dry_run,
+            "kind": "simulate_write",
+            "register": register,
+            "value": value,
+        }
+
+    def write(register: Any, value: Any, *, custom: bool = False) -> dict[str, Any]:
+        return {
+            "allowCustomRegister": custom,
+            "kind": "write_register",
+            "register": register,
+            "value": value,
+        }
+
+    ack = lambda: {"kind": "ack"}
+    modbus_error = lambda: {
+        "kind": "error",
+        "source": "other_modbus_exception",
+        "message": "write at example.invalid:502 failed",
+    }
+    timeout_error = lambda: {
+        "kind": "error",
+        "source": "timeout_exception",
+        "message": "timeout at [example.invalid]:502",
+    }
+    reconnect_error = lambda source: {
+        "kind": "error",
+        "source": source,
+        "message": f"{source} at example.invalid:502",
+    }
+
+    cases: list[dict[str, Any]] = []
+    add = lambda **kwargs: cases.append(
+        _write_scenario(client_module, registers, **kwargs)
+    )
+
+    add(name="simulate_one_word_default", actions=[simulate("system_mode", 1)])
+    add(name="simulate_float_low_word_first", actions=[simulate("glt_temp_demand_heating", 42.5)])
+    add(name="simulate_dry_run_false_no_traffic", actions=[simulate("system_mode", 1, dry_run=False)])
+    add(
+        name="set_value_dry_run_no_traffic",
+        actions=[{"dryRun": True, "key": "system_mode", "kind": "set_value", "value": 1}],
+    )
+    add(name="write_custom_identity_no_model", actions=[simulate(custom_float, 42.5)])
+    add(
+        name="write_validation_unknown_key",
+        actions=[simulate("not_a_register", 1)],
+        validation_codes=["write_unknown_register"],
+    )
+    add(
+        name="write_validation_read_only",
+        actions=[simulate(custom_read_only, 1, custom=True)],
+        validation_codes=["write_read_only"],
+    )
+    add(
+        name="write_validation_model_unavailable",
+        actions=[simulate(custom_float, 42.5)],
+        validation_codes=["write_model_unavailable"],
+        detected_model=constants.MODEL_NAVIGATOR_20,
+    )
+    add(
+        name="write_validation_custom_bypass",
+        actions=[simulate(custom_float, 42.5, custom=True)],
+        detected_model=constants.MODEL_NAVIGATOR_20,
+    )
+    add(
+        name="write_validation_custom_bypass_keeps_read_only",
+        actions=[simulate(custom_read_only, 1, custom=True)],
+        validation_codes=["write_read_only"],
+        detected_model=constants.MODEL_NAVIGATOR_20,
+    )
+    add(
+        name="write_validation_same_name_wrong_address",
+        actions=[simulate(wrong_address, 1)],
+        validation_codes=["write_model_unavailable"],
+        detected_model=constants.MODEL_NAVIGATOR_20,
+    )
+    add(
+        name="write_validation_canonical_model_available",
+        actions=[simulate("system_mode", 1)],
+        detected_model=constants.MODEL_NAVIGATOR_20,
+    )
+    for suffix, value in (("true", True), ("false", False), ("zero", 0), ("one", 1)):
+        add(name=f"write_boolean_{suffix}", actions=[simulate(custom_bool, value)])
+    add(
+        name="write_validation_boolean_required",
+        actions=[simulate(custom_bool, 2)],
+        validation_codes=["write_boolean_required"],
+    )
+    add(
+        name="write_validation_boolean_for_numeric",
+        actions=[simulate(custom_float, True)],
+        validation_codes=["write_boolean_for_numeric"],
+    )
+    add(
+        name="write_validation_not_numeric",
+        actions=[simulate(custom_float, "not-numeric")],
+        validation_codes=["write_not_numeric"],
+    )
+    for suffix, value in (("nan", float("nan")), ("positive_infinity", float("inf")), ("negative_infinity", float("-inf"))):
+        add(
+            name=f"write_validation_nonfinite_{suffix}",
+            actions=[simulate(custom_float, value)],
+            validation_codes=["write_nonfinite"],
+        )
+    add(
+        name="write_validation_integer_required",
+        actions=[simulate(custom_int, 1.5)],
+        validation_codes=["write_integer_required"],
+    )
+    add(
+        name="write_validation_excluded_precedence",
+        actions=[simulate(custom_enum, 5)],
+        validation_codes=["write_excluded"],
+    )
+    add(
+        name="write_validation_below_minimum",
+        actions=[simulate(custom_int, -11)],
+        validation_codes=["write_below_minimum"],
+    )
+    add(
+        name="write_validation_above_maximum",
+        actions=[simulate(custom_int, 11)],
+        validation_codes=["write_above_maximum"],
+    )
+    add(
+        name="write_validation_enum_unsupported",
+        actions=[simulate(custom_enum, 3)],
+        validation_codes=["write_enum_unsupported"],
+    )
+    add(name="write_validation_bitflag_codec", actions=[simulate(custom_bitflag, 255)])
+    add(name="write_validation_write_only", actions=[simulate(custom_write_only, 1)])
+    add(name="write_fc16_one_word", actions=[write("system_mode", 1)], scripts=[ack()])
+    add(name="write_fc16_bool_one_word", actions=[write(custom_bool, True)], scripts=[ack()])
+    add(name="write_fc16_int_one_word", actions=[write(custom_int, -10)], scripts=[ack()])
+    add(name="write_fc16_float_low_word_first", actions=[write(custom_float, 42.5)], scripts=[ack()])
+    add(
+        name="eeprom_immediate_throttle",
+        actions=[write(custom_eeprom, 1), write(custom_eeprom, 2)],
+        scripts=[ack()],
+        validation_codes=[None, "write_eeprom_throttled"],
+    )
+    add(
+        name="eeprom_exact_60_second_boundary",
+        actions=[
+            write(custom_eeprom, 1),
+            {"kind": "advance_time", "seconds": 59.999},
+            write(custom_eeprom, 2),
+            {"kind": "advance_time", "seconds": 0.001},
+            write(custom_eeprom, 3),
+        ],
+        scripts=[ack(), ack()],
+        validation_codes=[None, None, "write_eeprom_throttled", None, None],
+    )
+    add(
+        name="eeprom_reset_scopes",
+        actions=[
+            write(custom_eeprom, 1),
+            write(custom_eeprom_other, 1),
+            {"kind": "reset_write_throttle", "register": custom_eeprom},
+            write(custom_eeprom, 2),
+            {"kind": "reset_write_throttle"},
+            write(custom_eeprom_other, 2),
+        ],
+        scripts=[ack(), ack(), ack(), ack()],
+    )
+    add(
+        name="cyclic_default_ttl_boundary",
+        actions=[
+            write(custom_cyclic, 20.0),
+            {"kind": "get_active_cyclic_writes"},
+            {"kind": "advance_time", "seconds": 299.999},
+            {"kind": "get_active_cyclic_writes"},
+            {"kind": "advance_time", "seconds": 0.001},
+            {"kind": "get_expired_cyclic_writes"},
+        ],
+        scripts=[ack()],
+    )
+    add(
+        name="cyclic_custom_ttl_refresh_and_resets",
+        actions=[
+            write(custom_cyclic_ttl, 20.0),
+            {"kind": "advance_time", "seconds": 10},
+            write(custom_cyclic_ttl, 21.0),
+            {"kind": "reset_cyclic_write_state", "register": custom_cyclic_ttl},
+            write(custom_cyclic, 22.0),
+            {"kind": "reset_cyclic_write_state"},
+        ],
+        scripts=[ack(), ack(), ack()],
+    )
+    add(
+        name="write_retry_modbus_eventual_success",
+        actions=[write(custom_float, 42.5)],
+        scripts=[modbus_error(), ack()],
+    )
+    add(
+        name="write_retry_code_2_is_modbus",
+        actions=[write(custom_float, 42.5)],
+        scripts=[
+            {"kind": "error", "source": "numeric_modbus_exception_code_2", "message": "code 2"},
+            ack(),
+        ],
+    )
+    add(
+        name="write_retry_transport_reconnect",
+        actions=[write(custom_float, 42.5)],
+        scripts=[timeout_error(), ack()],
+    )
+    for suffix, source in (
+        ("disconnected", "connection_exception"),
+        ("socket", "socket_or_os_error"),
+        ("no_response", "modbus_io_exception_or_structured_no_response"),
+    ):
+        add(
+            name=f"write_retry_{suffix}_reconnect",
+            actions=[write(custom_float, 42.5)],
+            scripts=[reconnect_error(source), ack()],
+        )
+    add(
+        name="write_retry_exhaustion_rollback",
+        actions=[write(custom_eeprom, 1)],
+        scripts=[modbus_error(), modbus_error(), modbus_error()],
+    )
+    add(
+        name="write_failed_cyclic_refresh_preserves_deadline",
+        actions=[write(custom_cyclic_ttl, 20.0), {"kind": "advance_time", "seconds": 10}, write(custom_cyclic_ttl, 21.0)],
+        scripts=[ack(), modbus_error(), modbus_error(), modbus_error()],
+    )
+    add(
+        name="write_failed_first_cyclic_has_no_deadline",
+        actions=[write(custom_cyclic_ttl, 20.0)],
+        scripts=[modbus_error(), modbus_error(), modbus_error()],
+    )
+    add(
+        name="write_diagnostics_redacted_and_last_error_retained",
+        actions=[write(custom_float, 42.5), write(custom_float, 43.0)],
+        scripts=[modbus_error(), ack(), ack()],
+    )
+    add(
+        name="write_fifo_ordering",
+        actions=[write(custom_eeprom, 1), write(custom_eeprom, 2)],
+        scripts=[ack()],
+        validation_codes=[None, "write_eeprom_throttled"],
+    )
+
+    names = [case["name"] for case in cases]
+    if len(names) != len(set(names)) or len(cases) < 26:
+        fail("fixture_invalid", "write scenario inventory must be complete and unique")
+    return _fixture_root(manifest, operation_kinds=list(WRITE_ACTION_KINDS), scenarios=cases)
+
+
 def generate_fixtures(manifest: Mapping[str, Any], checkout: Path) -> dict[Path, bytes]:
     # This is the first upstream execution point. Every caller reaches it only
     # after ``verify_checkout`` and output-root validation have succeeded.
@@ -2393,6 +3154,12 @@ def generate_fixtures(manifest: Mapping[str, Any], checkout: Path) -> dict[Path,
                 scenarios=[],
             ),
             OUTPUT_PATHS[6]: _transport_fixture(
+                manifest,
+                client_module,
+                constants,
+                registers,
+            ),
+            OUTPUT_PATHS[7]: _write_fixture(
                 manifest,
                 client_module,
                 constants,

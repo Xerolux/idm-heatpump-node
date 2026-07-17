@@ -460,7 +460,9 @@ describe("closed write scenario schema parser", () => {
       -0,
     ]) {
       const fixture = validFixture();
-      actionsOf(fixture)[0]!.value = value;
+      const action = actionsOf(fixture)[0];
+      if (action === undefined) throw new Error("Expected one write action");
+      action.value = value;
       expect(() => parseWriteBehaviorFixture(fixture)).toThrow();
     }
 

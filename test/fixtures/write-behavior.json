@@ -1,0 +1,6182 @@
+{
+  "baseline": {
+    "git_commit": "ad121ebf34a5f5e37204371c026927d77efcd15c",
+    "git_tag": "v0.7.6",
+    "parity_schema_version": 1,
+    "python_package": "idm-heatpump-api",
+    "python_version": "0.7.6",
+    "repository": "https://github.com/Xerolux/idm-heatpump-api"
+  },
+  "generator_version": "1",
+  "operation_kinds": [
+    "simulate_write",
+    "write_register",
+    "set_value",
+    "advance_time",
+    "reset_write_throttle",
+    "get_active_cyclic_writes",
+    "get_expired_cyclic_writes",
+    "reset_cyclic_write_state"
+  ],
+  "scenarios": [
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": true,
+                "encodedRegisters": [
+                  1
+                ],
+                "register": {
+                  "address": 1005,
+                  "name": "system_mode"
+                },
+                "requestedValue": 1
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "simulate_one_word_default",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": "system_mode",
+            "value": 1
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": true,
+                "encodedRegisters": [
+                  0,
+                  16938
+                ],
+                "register": {
+                  "address": 1696,
+                  "name": "glt_temp_demand_heating"
+                },
+                "requestedValue": 42.5
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "simulate_float_low_word_first",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": "glt_temp_demand_heating",
+            "value": 42.5
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": false,
+                "encodedRegisters": [
+                  1
+                ],
+                "register": {
+                  "address": 1005,
+                  "name": "system_mode"
+                },
+                "requestedValue": 1
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "simulate_dry_run_false_no_traffic",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": false,
+            "kind": "simulate_write",
+            "register": "system_mode",
+            "value": 1
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": true,
+                "encodedRegisters": [
+                  1
+                ],
+                "register": {
+                  "address": 1005,
+                  "name": "system_mode"
+                },
+                "requestedValue": 1
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "set_value_dry_run_no_traffic",
+      "operation": {
+        "actions": [
+          {
+            "dryRun": true,
+            "key": "system_mode",
+            "kind": "set_value",
+            "value": 1
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": true,
+                "encodedRegisters": [
+                  0,
+                  16938
+                ],
+                "register": {
+                  "address": 4200,
+                  "name": "synthetic_float"
+                },
+                "requestedValue": 42.5
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_custom_identity_no_model",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 42.5
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_unknown_register",
+              "diagnostic": "Register 'not_a_register' not found.",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_unknown_key",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": "not_a_register",
+            "value": 1
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4205,
+            "datatype": "UCHAR",
+            "name": "synthetic_read_only",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": false
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_read_only",
+              "diagnostic": "Register 'synthetic_read_only' is read-only",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_read_only",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": true,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4205,
+              "datatype": "UCHAR",
+              "name": "synthetic_read_only",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": false
+            },
+            "value": 1
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": "Navigator 2.0",
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_model_unavailable",
+              "diagnostic": "Register 'synthetic_float' is not available for detected model Navigator 2.0",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_model_unavailable",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 42.5
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": "Navigator 2.0",
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": true,
+                "encodedRegisters": [
+                  0,
+                  16938
+                ],
+                "register": {
+                  "address": 4200,
+                  "name": "synthetic_float"
+                },
+                "requestedValue": 42.5
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_custom_bypass",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": true,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 42.5
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": "Navigator 2.0",
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4205,
+            "datatype": "UCHAR",
+            "name": "synthetic_read_only",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": false
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_read_only",
+              "diagnostic": "Register 'synthetic_read_only' is read-only",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_custom_bypass_keeps_read_only",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": true,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4205,
+              "datatype": "UCHAR",
+              "name": "synthetic_read_only",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": false
+            },
+            "value": 1
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": "Navigator 2.0",
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4214,
+            "datatype": "UCHAR",
+            "name": "system_mode",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_model_unavailable",
+              "diagnostic": "Register 'system_mode' is not available for detected model Navigator 2.0",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_same_name_wrong_address",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4214,
+              "datatype": "UCHAR",
+              "name": "system_mode",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 1
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": "Navigator 2.0",
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": true,
+                "encodedRegisters": [
+                  1
+                ],
+                "register": {
+                  "address": 1005,
+                  "name": "system_mode"
+                },
+                "requestedValue": 1
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_canonical_model_available",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": "system_mode",
+            "value": 1
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4202,
+            "datatype": "BOOL",
+            "name": "synthetic_bool",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": true,
+                "encodedRegisters": [
+                  1
+                ],
+                "register": {
+                  "address": 4202,
+                  "name": "synthetic_bool"
+                },
+                "requestedValue": true
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_boolean_true",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4202,
+              "datatype": "BOOL",
+              "name": "synthetic_bool",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": true
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4202,
+            "datatype": "BOOL",
+            "name": "synthetic_bool",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": true,
+                "encodedRegisters": [
+                  0
+                ],
+                "register": {
+                  "address": 4202,
+                  "name": "synthetic_bool"
+                },
+                "requestedValue": false
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_boolean_false",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4202,
+              "datatype": "BOOL",
+              "name": "synthetic_bool",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": false
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4202,
+            "datatype": "BOOL",
+            "name": "synthetic_bool",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": true,
+                "encodedRegisters": [
+                  0
+                ],
+                "register": {
+                  "address": 4202,
+                  "name": "synthetic_bool"
+                },
+                "requestedValue": 0
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_boolean_zero",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4202,
+              "datatype": "BOOL",
+              "name": "synthetic_bool",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 0
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4202,
+            "datatype": "BOOL",
+            "name": "synthetic_bool",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": true,
+                "encodedRegisters": [
+                  1
+                ],
+                "register": {
+                  "address": 4202,
+                  "name": "synthetic_bool"
+                },
+                "requestedValue": 1
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_boolean_one",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4202,
+              "datatype": "BOOL",
+              "name": "synthetic_bool",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 1
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4202,
+            "datatype": "BOOL",
+            "name": "synthetic_bool",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_boolean_required",
+              "diagnostic": "Value 2 for 'synthetic_bool' must be a boolean or integer 0/1",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_boolean_required",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4202,
+              "datatype": "BOOL",
+              "name": "synthetic_bool",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 2
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_boolean_for_numeric",
+              "diagnostic": "Boolean value is not valid for numeric register 'synthetic_float'",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_boolean_for_numeric",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": true
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_not_numeric",
+              "diagnostic": "Value 'not-numeric' for 'synthetic_float' is not numeric",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_not_numeric",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": "not-numeric"
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_nonfinite",
+              "diagnostic": "Value nan for 'synthetic_float' must be finite",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_nonfinite_nan",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": {
+              "$number": "NaN"
+            }
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_nonfinite",
+              "diagnostic": "Value inf for 'synthetic_float' must be finite",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_nonfinite_positive_infinity",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": {
+              "$number": "+Infinity"
+            }
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_nonfinite",
+              "diagnostic": "Value -inf for 'synthetic_float' must be finite",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_nonfinite_negative_infinity",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": {
+              "$number": "-Infinity"
+            }
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4203,
+            "datatype": "INT16",
+            "maxVal": 10,
+            "minVal": -10,
+            "name": "synthetic_int",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_integer_required",
+              "diagnostic": "Value 1.5 for 'synthetic_int' must be an integer",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_integer_required",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4203,
+              "datatype": "INT16",
+              "maxVal": 10,
+              "minVal": -10,
+              "name": "synthetic_int",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 1.5
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4212,
+            "datatype": "UCHAR",
+            "enumOptions": {
+              "0": "Off",
+              "1": "On"
+            },
+            "excludeFromWrite": [
+              5
+            ],
+            "maxVal": 5,
+            "minVal": 0,
+            "name": "synthetic_enum",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_excluded",
+              "diagnostic": "Value 5 for 'synthetic_enum' is not writable (excluded values: {5})",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_excluded_precedence",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4212,
+              "datatype": "UCHAR",
+              "enumOptions": {
+                "0": "Off",
+                "1": "On"
+              },
+              "excludeFromWrite": [
+                5
+              ],
+              "maxVal": 5,
+              "minVal": 0,
+              "name": "synthetic_enum",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 5
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4203,
+            "datatype": "INT16",
+            "maxVal": 10,
+            "minVal": -10,
+            "name": "synthetic_int",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_below_minimum",
+              "diagnostic": "Value -11 for 'synthetic_int' is below minimum -10",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_below_minimum",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4203,
+              "datatype": "INT16",
+              "maxVal": 10,
+              "minVal": -10,
+              "name": "synthetic_int",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": -11
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4203,
+            "datatype": "INT16",
+            "maxVal": 10,
+            "minVal": -10,
+            "name": "synthetic_int",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_above_maximum",
+              "diagnostic": "Value 11 for 'synthetic_int' exceeds maximum 10",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_above_maximum",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4203,
+              "datatype": "INT16",
+              "maxVal": 10,
+              "minVal": -10,
+              "name": "synthetic_int",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 11
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4212,
+            "datatype": "UCHAR",
+            "enumOptions": {
+              "0": "Off",
+              "1": "On"
+            },
+            "excludeFromWrite": [
+              5
+            ],
+            "maxVal": 5,
+            "minVal": 0,
+            "name": "synthetic_enum",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_enum_unsupported",
+              "diagnostic": "Value 3 for 'synthetic_enum' is not a supported option ([0, 1])",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_enum_unsupported",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4212,
+              "datatype": "UCHAR",
+              "enumOptions": {
+                "0": "Off",
+                "1": "On"
+              },
+              "excludeFromWrite": [
+                5
+              ],
+              "maxVal": 5,
+              "minVal": 0,
+              "name": "synthetic_enum",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 3
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4204,
+            "datatype": "BITFLAG",
+            "name": "synthetic_bitflag",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": true,
+                "encodedRegisters": [
+                  255
+                ],
+                "register": {
+                  "address": 4204,
+                  "name": "synthetic_bitflag"
+                },
+                "requestedValue": 255
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_bitflag_codec",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4204,
+              "datatype": "BITFLAG",
+              "name": "synthetic_bitflag",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 255
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4213,
+            "datatype": "UCHAR",
+            "name": "synthetic_write_only",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true,
+            "writeOnly": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": true,
+                "encodedRegisters": [
+                  1
+                ],
+                "register": {
+                  "address": 4213,
+                  "name": "synthetic_write_only"
+                },
+                "requestedValue": 1
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_write_only",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4213,
+              "datatype": "UCHAR",
+              "name": "synthetic_write_only",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true,
+              "writeOnly": true
+            },
+            "value": 1
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 1005,
+            "count": 1,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              1
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {
+                "system_mode": 0.0
+              }
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {
+          "system_mode": 0.0
+        }
+      },
+      "name": "write_fc16_one_word",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": "system_mode",
+            "value": 1
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "address": 1005,
+          "count": 1,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4202,
+            "datatype": "BOOL",
+            "name": "synthetic_bool",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4202,
+            "count": 1,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              1
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_fc16_bool_one_word",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4202,
+              "datatype": "BOOL",
+              "name": "synthetic_bool",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": true
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "address": 4202,
+          "count": 1,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4203,
+            "datatype": "INT16",
+            "maxVal": 10,
+            "minVal": -10,
+            "name": "synthetic_int",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4203,
+            "count": 1,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              65526
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_fc16_int_one_word",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4203,
+              "datatype": "INT16",
+              "maxVal": 10,
+              "minVal": -10,
+              "name": "synthetic_int",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": -10
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "address": 4203,
+          "count": 1,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4200,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16938
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_fc16_float_low_word_first",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 42.5
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "address": 4200,
+          "count": 2,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4206,
+            "datatype": "UCHAR",
+            "eepromSensitive": true,
+            "maxVal": 10,
+            "minVal": 0,
+            "name": "synthetic_eeprom",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4206,
+            "count": 1,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              1
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {
+                "synthetic_eeprom": 0.0
+              }
+            }
+          },
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_eeprom_throttled",
+              "diagnostic": "EEPROM-sensitive register 'synthetic_eeprom' was written too recently (try again in 60.0s)",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {
+                "synthetic_eeprom": 0.0
+              }
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {
+          "synthetic_eeprom": 0.0
+        }
+      },
+      "name": "eeprom_immediate_throttle",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4206,
+              "datatype": "UCHAR",
+              "eepromSensitive": true,
+              "maxVal": 10,
+              "minVal": 0,
+              "name": "synthetic_eeprom",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 1
+          },
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4206,
+              "datatype": "UCHAR",
+              "eepromSensitive": true,
+              "maxVal": 10,
+              "minVal": 0,
+              "name": "synthetic_eeprom",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 2
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "address": 4206,
+          "count": 1,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4206,
+            "datatype": "UCHAR",
+            "eepromSensitive": true,
+            "maxVal": 10,
+            "minVal": 0,
+            "name": "synthetic_eeprom",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4206,
+            "count": 1,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              1
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4206,
+            "count": 1,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              3
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {
+                "synthetic_eeprom": 0.0
+              }
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {
+                "synthetic_eeprom": 0.0
+              }
+            }
+          },
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_eeprom_throttled",
+              "diagnostic": "EEPROM-sensitive register 'synthetic_eeprom' was written too recently (try again in 0.0s)",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {
+                "synthetic_eeprom": 0.0
+              }
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {
+                "synthetic_eeprom": 0.0
+              }
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {
+                "synthetic_eeprom": 60.0
+              }
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {
+          "synthetic_eeprom": 60.0
+        }
+      },
+      "name": "eeprom_exact_60_second_boundary",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4206,
+              "datatype": "UCHAR",
+              "eepromSensitive": true,
+              "maxVal": 10,
+              "minVal": 0,
+              "name": "synthetic_eeprom",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 1
+          },
+          {
+            "kind": "advance_time",
+            "seconds": 59.999
+          },
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4206,
+              "datatype": "UCHAR",
+              "eepromSensitive": true,
+              "maxVal": 10,
+              "minVal": 0,
+              "name": "synthetic_eeprom",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 2
+          },
+          {
+            "kind": "advance_time",
+            "seconds": 0.001
+          },
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4206,
+              "datatype": "UCHAR",
+              "eepromSensitive": true,
+              "maxVal": 10,
+              "minVal": 0,
+              "name": "synthetic_eeprom",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 3
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "address": 4206,
+          "count": 1,
+          "kind": "ack"
+        },
+        {
+          "address": 4206,
+          "count": 1,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4206,
+            "datatype": "UCHAR",
+            "eepromSensitive": true,
+            "maxVal": 10,
+            "minVal": 0,
+            "name": "synthetic_eeprom",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          },
+          {
+            "address": 4207,
+            "datatype": "UCHAR",
+            "eepromSensitive": true,
+            "maxVal": 10,
+            "minVal": 0,
+            "name": "synthetic_eeprom_other",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4206,
+            "count": 1,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              1
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4207,
+            "count": 1,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              1
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4206,
+            "count": 1,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              2
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4207,
+            "count": 1,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              2
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {
+                "synthetic_eeprom": 0.0
+              }
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {
+                "synthetic_eeprom": 0.0,
+                "synthetic_eeprom_other": 0.0
+              }
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {
+                "synthetic_eeprom_other": 0.0
+              }
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {
+                "synthetic_eeprom": 0.0,
+                "synthetic_eeprom_other": 0.0
+              }
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {
+                "synthetic_eeprom_other": 0.0
+              }
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {
+          "synthetic_eeprom_other": 0.0
+        }
+      },
+      "name": "eeprom_reset_scopes",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4206,
+              "datatype": "UCHAR",
+              "eepromSensitive": true,
+              "maxVal": 10,
+              "minVal": 0,
+              "name": "synthetic_eeprom",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 1
+          },
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4207,
+              "datatype": "UCHAR",
+              "eepromSensitive": true,
+              "maxVal": 10,
+              "minVal": 0,
+              "name": "synthetic_eeprom_other",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 1
+          },
+          {
+            "kind": "reset_write_throttle",
+            "register": {
+              "address": 4206,
+              "datatype": "UCHAR",
+              "eepromSensitive": true,
+              "maxVal": 10,
+              "minVal": 0,
+              "name": "synthetic_eeprom",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            }
+          },
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4206,
+              "datatype": "UCHAR",
+              "eepromSensitive": true,
+              "maxVal": 10,
+              "minVal": 0,
+              "name": "synthetic_eeprom",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 2
+          },
+          {
+            "kind": "reset_write_throttle"
+          },
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4207,
+              "datatype": "UCHAR",
+              "eepromSensitive": true,
+              "maxVal": 10,
+              "minVal": 0,
+              "name": "synthetic_eeprom_other",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 2
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "address": 4206,
+          "count": 1,
+          "kind": "ack"
+        },
+        {
+          "address": 4207,
+          "count": 1,
+          "kind": "ack"
+        },
+        {
+          "address": 4206,
+          "count": 1,
+          "kind": "ack"
+        },
+        {
+          "address": 4207,
+          "count": 1,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4208,
+            "cyclicRequired": true,
+            "datatype": "FLOAT",
+            "name": "synthetic_cyclic",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4208,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16800
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {
+                "synthetic_cyclic": 300.0
+              },
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {
+                "synthetic_cyclic": 300.0
+              },
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "synthetic_cyclic": 300.0
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {
+                "synthetic_cyclic": 300.0
+              },
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {
+                "synthetic_cyclic": 300.0
+              },
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {
+                "synthetic_cyclic": 300.0
+              },
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {
+                "synthetic_cyclic": 300.0
+              },
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "synthetic_cyclic": 300.0
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {
+                "synthetic_cyclic": 300.0
+              },
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {
+                "synthetic_cyclic": 300.0
+              },
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {
+                "synthetic_cyclic": 300.0
+              },
+              "expiredCyclicWrites": [
+                "synthetic_cyclic"
+              ],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": [
+                "synthetic_cyclic"
+              ]
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {
+                "synthetic_cyclic": 300.0
+              },
+              "expiredCyclicWrites": [
+                "synthetic_cyclic"
+              ],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {
+          "synthetic_cyclic": 300.0
+        },
+        "expiredCyclicWrites": [
+          "synthetic_cyclic"
+        ],
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "cyclic_default_ttl_boundary",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4208,
+              "cyclicRequired": true,
+              "datatype": "FLOAT",
+              "name": "synthetic_cyclic",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 20.0
+          },
+          {
+            "kind": "get_active_cyclic_writes"
+          },
+          {
+            "kind": "advance_time",
+            "seconds": 299.999
+          },
+          {
+            "kind": "get_active_cyclic_writes"
+          },
+          {
+            "kind": "advance_time",
+            "seconds": 0.001
+          },
+          {
+            "kind": "get_expired_cyclic_writes"
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "address": 4208,
+          "count": 2,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4210,
+            "cyclicRequired": true,
+            "cyclicWriteTtl": 30,
+            "datatype": "FLOAT",
+            "name": "synthetic_cyclic_ttl",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          },
+          {
+            "address": 4208,
+            "cyclicRequired": true,
+            "datatype": "FLOAT",
+            "name": "synthetic_cyclic",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4210,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16800
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4210,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16808
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4208,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16816
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {
+                "synthetic_cyclic_ttl": 30.0
+              },
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {
+                "synthetic_cyclic_ttl": 30.0
+              },
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {
+                "synthetic_cyclic_ttl": 30.0
+              },
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {
+                "synthetic_cyclic_ttl": 30.0
+              },
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {
+                "synthetic_cyclic_ttl": 40.0
+              },
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {
+                "synthetic_cyclic_ttl": 40.0
+              },
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {
+                "synthetic_cyclic": 310.0
+              },
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {
+                "synthetic_cyclic": 310.0
+              },
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "cyclic_custom_ttl_refresh_and_resets",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4210,
+              "cyclicRequired": true,
+              "cyclicWriteTtl": 30,
+              "datatype": "FLOAT",
+              "name": "synthetic_cyclic_ttl",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 20.0
+          },
+          {
+            "kind": "advance_time",
+            "seconds": 10
+          },
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4210,
+              "cyclicRequired": true,
+              "cyclicWriteTtl": 30,
+              "datatype": "FLOAT",
+              "name": "synthetic_cyclic_ttl",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 21.0
+          },
+          {
+            "kind": "reset_cyclic_write_state",
+            "register": {
+              "address": 4210,
+              "cyclicRequired": true,
+              "cyclicWriteTtl": 30,
+              "datatype": "FLOAT",
+              "name": "synthetic_cyclic_ttl",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            }
+          },
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4208,
+              "cyclicRequired": true,
+              "datatype": "FLOAT",
+              "name": "synthetic_cyclic",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 22.0
+          },
+          {
+            "kind": "reset_cyclic_write_state"
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "address": 4210,
+          "count": 2,
+          "kind": "ack"
+        },
+        {
+          "address": 4210,
+          "count": 2,
+          "kind": "ack"
+        },
+        {
+          "address": 4208,
+          "count": 2,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [
+        0.5
+      ],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4200,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16938
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4200,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16938
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": {
+                "address": 4200,
+                "attempt": 1,
+                "count": 2,
+                "errorType": "modbus",
+                "message": "Modbus Error: write at <endpoint> failed",
+                "operation": "write",
+                "registerType": "holding"
+              },
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": {
+          "address": 4200,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "modbus",
+          "message": "Modbus Error: write at <endpoint> failed",
+          "operation": "write",
+          "registerType": "holding"
+        },
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_retry_modbus_eventual_success",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 42.5
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "write at <endpoint> failed"
+        },
+        {
+          "address": 4200,
+          "count": 2,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [
+        0.5
+      ],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4200,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16938
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4200,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16938
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": {
+                "address": 4200,
+                "attempt": 1,
+                "count": 2,
+                "errorType": "modbus",
+                "message": "Modbus Error: Modbus error writing address 4200: ExceptionResponse(exception_code=2)",
+                "operation": "write",
+                "registerType": "holding"
+              },
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": {
+          "address": 4200,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "modbus",
+          "message": "Modbus Error: Modbus error writing address 4200: ExceptionResponse(exception_code=2)",
+          "operation": "write",
+          "registerType": "holding"
+        },
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_retry_code_2_is_modbus",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 42.5
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "Illegal Data Address writing address 4200: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "address": 4200,
+          "count": 2,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [
+        0.5
+      ],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4200,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16938
+            ]
+          }
+        },
+        {
+          "kind": "close"
+        },
+        {
+          "kind": "connect"
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4200,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16938
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": {
+                "address": 4200,
+                "attempt": 1,
+                "count": 2,
+                "errorType": "timeout",
+                "message": "timeout at <endpoint>",
+                "operation": "write",
+                "registerType": "holding"
+              },
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": {
+          "address": 4200,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "timeout",
+          "message": "timeout at <endpoint>",
+          "operation": "write",
+          "registerType": "holding"
+        },
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_retry_transport_reconnect",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 42.5
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "errorType": "timeout",
+          "kind": "error",
+          "message": "timeout at <endpoint>"
+        },
+        {
+          "address": 4200,
+          "count": 2,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [
+        0.5
+      ],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4200,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16938
+            ]
+          }
+        },
+        {
+          "kind": "close"
+        },
+        {
+          "kind": "connect"
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4200,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16938
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": {
+                "address": 4200,
+                "attempt": 1,
+                "count": 2,
+                "errorType": "disconnected",
+                "message": "Modbus Error: [Connection] connection_exception at <endpoint>",
+                "operation": "write",
+                "registerType": "holding"
+              },
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": {
+          "address": 4200,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "disconnected",
+          "message": "Modbus Error: [Connection] connection_exception at <endpoint>",
+          "operation": "write",
+          "registerType": "holding"
+        },
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_retry_disconnected_reconnect",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 42.5
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "errorType": "disconnected",
+          "kind": "error",
+          "message": "connection_exception at <endpoint>"
+        },
+        {
+          "address": 4200,
+          "count": 2,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [
+        0.5
+      ],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4200,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16938
+            ]
+          }
+        },
+        {
+          "kind": "close"
+        },
+        {
+          "kind": "connect"
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4200,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16938
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": {
+                "address": 4200,
+                "attempt": 1,
+                "count": 2,
+                "errorType": "socket",
+                "message": "socket_or_os_error at <endpoint>",
+                "operation": "write",
+                "registerType": "holding"
+              },
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": {
+          "address": 4200,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "socket",
+          "message": "socket_or_os_error at <endpoint>",
+          "operation": "write",
+          "registerType": "holding"
+        },
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_retry_socket_reconnect",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 42.5
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "errorType": "socket",
+          "kind": "error",
+          "message": "socket_or_os_error at <endpoint>"
+        },
+        {
+          "address": 4200,
+          "count": 2,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [
+        0.5
+      ],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4200,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16938
+            ]
+          }
+        },
+        {
+          "kind": "close"
+        },
+        {
+          "kind": "connect"
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4200,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16938
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": {
+                "address": 4200,
+                "attempt": 1,
+                "count": 2,
+                "errorType": "no_response",
+                "message": "Modbus Error: [Input/Output] modbus_io_exception_or_structured_no_response at <endpoint>",
+                "operation": "write",
+                "registerType": "holding"
+              },
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": {
+          "address": 4200,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "no_response",
+          "message": "Modbus Error: [Input/Output] modbus_io_exception_or_structured_no_response at <endpoint>",
+          "operation": "write",
+          "registerType": "holding"
+        },
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_retry_no_response_reconnect",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 42.5
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "errorType": "no_response",
+          "kind": "error",
+          "message": "modbus_io_exception_or_structured_no_response at <endpoint>"
+        },
+        {
+          "address": 4200,
+          "count": 2,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [
+        0.5,
+        1.5
+      ],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4206,
+            "datatype": "UCHAR",
+            "eepromSensitive": true,
+            "maxVal": 10,
+            "minVal": 0,
+            "name": "synthetic_eeprom",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4206,
+            "count": 1,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              1
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4206,
+            "count": 1,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              1
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4206,
+            "count": 1,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              1
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "transport",
+              "errorType": "modbus",
+              "kind": "error",
+              "message": "Modbus Error: write at <endpoint> failed"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": {
+                "address": 4206,
+                "attempt": 3,
+                "count": 1,
+                "errorType": "modbus",
+                "message": "Modbus Error: write at <endpoint> failed",
+                "operation": "write",
+                "registerType": "holding"
+              },
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": {
+          "address": 4206,
+          "attempt": 3,
+          "count": 1,
+          "errorType": "modbus",
+          "message": "Modbus Error: write at <endpoint> failed",
+          "operation": "write",
+          "registerType": "holding"
+        },
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_retry_exhaustion_rollback",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4206,
+              "datatype": "UCHAR",
+              "eepromSensitive": true,
+              "maxVal": 10,
+              "minVal": 0,
+              "name": "synthetic_eeprom",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 1
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "write at <endpoint> failed"
+        },
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "write at <endpoint> failed"
+        },
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "write at <endpoint> failed"
+        }
+      ]
+    },
+    {
+      "clock": [
+        10.5,
+        11.5
+      ],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4210,
+            "cyclicRequired": true,
+            "cyclicWriteTtl": 30,
+            "datatype": "FLOAT",
+            "name": "synthetic_cyclic_ttl",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4210,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16800
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4210,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16808
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4210,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16808
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4210,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16808
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {
+                "synthetic_cyclic_ttl": 30.0
+              },
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {
+                "synthetic_cyclic_ttl": 30.0
+              },
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {
+                "synthetic_cyclic_ttl": 30.0
+              },
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {
+                "synthetic_cyclic_ttl": 30.0
+              },
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          },
+          {
+            "result": {
+              "category": "transport",
+              "errorType": "modbus",
+              "kind": "error",
+              "message": "Modbus Error: write at <endpoint> failed"
+            },
+            "state": {
+              "activeCyclicWrites": {
+                "synthetic_cyclic_ttl": 30.0
+              },
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {
+                "synthetic_cyclic_ttl": 30.0
+              },
+              "expiredCyclicWrites": [],
+              "lastError": {
+                "address": 4210,
+                "attempt": 3,
+                "count": 2,
+                "errorType": "modbus",
+                "message": "Modbus Error: write at <endpoint> failed",
+                "operation": "write",
+                "registerType": "holding"
+              },
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {
+          "synthetic_cyclic_ttl": 30.0
+        },
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {
+          "synthetic_cyclic_ttl": 30.0
+        },
+        "expiredCyclicWrites": [],
+        "lastError": {
+          "address": 4210,
+          "attempt": 3,
+          "count": 2,
+          "errorType": "modbus",
+          "message": "Modbus Error: write at <endpoint> failed",
+          "operation": "write",
+          "registerType": "holding"
+        },
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_failed_cyclic_refresh_preserves_deadline",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4210,
+              "cyclicRequired": true,
+              "cyclicWriteTtl": 30,
+              "datatype": "FLOAT",
+              "name": "synthetic_cyclic_ttl",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 20.0
+          },
+          {
+            "kind": "advance_time",
+            "seconds": 10
+          },
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4210,
+              "cyclicRequired": true,
+              "cyclicWriteTtl": 30,
+              "datatype": "FLOAT",
+              "name": "synthetic_cyclic_ttl",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 21.0
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "address": 4210,
+          "count": 2,
+          "kind": "ack"
+        },
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "write at <endpoint> failed"
+        },
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "write at <endpoint> failed"
+        },
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "write at <endpoint> failed"
+        }
+      ]
+    },
+    {
+      "clock": [
+        0.5,
+        1.5
+      ],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4210,
+            "cyclicRequired": true,
+            "cyclicWriteTtl": 30,
+            "datatype": "FLOAT",
+            "name": "synthetic_cyclic_ttl",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4210,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16800
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4210,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16800
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4210,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16800
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "transport",
+              "errorType": "modbus",
+              "kind": "error",
+              "message": "Modbus Error: write at <endpoint> failed"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": {
+                "address": 4210,
+                "attempt": 3,
+                "count": 2,
+                "errorType": "modbus",
+                "message": "Modbus Error: write at <endpoint> failed",
+                "operation": "write",
+                "registerType": "holding"
+              },
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": {
+          "address": 4210,
+          "attempt": 3,
+          "count": 2,
+          "errorType": "modbus",
+          "message": "Modbus Error: write at <endpoint> failed",
+          "operation": "write",
+          "registerType": "holding"
+        },
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_failed_first_cyclic_has_no_deadline",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4210,
+              "cyclicRequired": true,
+              "cyclicWriteTtl": 30,
+              "datatype": "FLOAT",
+              "name": "synthetic_cyclic_ttl",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 20.0
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "write at <endpoint> failed"
+        },
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "write at <endpoint> failed"
+        },
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "write at <endpoint> failed"
+        }
+      ]
+    },
+    {
+      "clock": [
+        0.5
+      ],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4200,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16938
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4200,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16938
+            ]
+          }
+        },
+        {
+          "kind": "write",
+          "request": {
+            "address": 4200,
+            "count": 2,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              0,
+              16940
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": {
+                "address": 4200,
+                "attempt": 1,
+                "count": 2,
+                "errorType": "modbus",
+                "message": "Modbus Error: write at <endpoint> failed",
+                "operation": "write",
+                "registerType": "holding"
+              },
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          },
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": {
+                "address": 4200,
+                "attempt": 1,
+                "count": 2,
+                "errorType": "modbus",
+                "message": "Modbus Error: write at <endpoint> failed",
+                "operation": "write",
+                "registerType": "holding"
+              },
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": {
+          "address": 4200,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "modbus",
+          "message": "Modbus Error: write at <endpoint> failed",
+          "operation": "write",
+          "registerType": "holding"
+        },
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_diagnostics_redacted_and_last_error_retained",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 42.5
+          },
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 43.0
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "errorType": "modbus",
+          "kind": "error",
+          "message": "write at <endpoint> failed"
+        },
+        {
+          "address": 4200,
+          "count": 2,
+          "kind": "ack"
+        },
+        {
+          "address": 4200,
+          "count": 2,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4206,
+            "datatype": "UCHAR",
+            "eepromSensitive": true,
+            "maxVal": 10,
+            "minVal": 0,
+            "name": "synthetic_eeprom",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 4206,
+            "count": 1,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              1
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {
+                "synthetic_eeprom": 0.0
+              }
+            }
+          },
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_eeprom_throttled",
+              "diagnostic": "EEPROM-sensitive register 'synthetic_eeprom' was written too recently (try again in 60.0s)",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {
+                "synthetic_eeprom": 0.0
+              }
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {
+          "synthetic_eeprom": 0.0
+        }
+      },
+      "name": "write_fifo_ordering",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4206,
+              "datatype": "UCHAR",
+              "eepromSensitive": true,
+              "maxVal": 10,
+              "minVal": 0,
+              "name": "synthetic_eeprom",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 1
+          },
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": {
+              "address": 4206,
+              "datatype": "UCHAR",
+              "eepromSensitive": true,
+              "maxVal": 10,
+              "minVal": 0,
+              "name": "synthetic_eeprom",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 2
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "address": 4206,
+          "count": 1,
+          "kind": "ack"
+        }
+      ]
+    }
+  ],
+  "schema_version": 1
+}

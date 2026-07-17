@@ -1,4 +1,5 @@
 import {
+  copyFileSync,
   existsSync,
   mkdtempSync,
   mkdirSync,
@@ -388,10 +389,23 @@ describe("verified Python contract generator", () => {
     }
   }, 30_000);
 
-  it("generates complete fixtures with exact API, class, codec, schema, and scenario facts", () => {
+  it("generates complete fixtures with exact API, class, codec, schema, read, and write facts", () => {
     const checkout = createExactCheckout();
+    const oldFixtureNames = FIXTURE_NAMES.filter((name) => name !== "write-behavior.json");
+    mkdirSync(join(checkout.output, "test/fixtures"), { recursive: true });
+    for (const name of oldFixtureNames) {
+      copyFileSync(resolve(ROOT, "test/fixtures", name), fixturePath(checkout, name));
+    }
+    const oldFixtureBytes = Object.fromEntries(
+      oldFixtureNames.map((name) => [name, readFileSync(fixturePath(checkout, name))]),
+    );
     const result = runGenerator(checkout);
     requireSuccess(result, "fixture generation");
+    for (const name of oldFixtureNames) {
+      const previous = oldFixtureBytes[name];
+      if (previous === undefined) throw new Error(`Missing old fixture snapshot: ${name}`);
+      expect(readFileSync(fixturePath(checkout, name)).equals(previous)).toBe(true);
+    }
 
     const fixtures = Object.fromEntries(
       FIXTURE_NAMES.map((name) => [name, readJson<FixtureRoot>(fixturePath(checkout, name))]),
@@ -771,8 +785,12 @@ describe("verified Python contract generator", () => {
         "write_retry_modbus_eventual_success",
         "write_retry_code_2_is_modbus",
         "write_retry_transport_reconnect",
+        "write_retry_disconnected_reconnect",
+        "write_retry_socket_reconnect",
+        "write_retry_no_response_reconnect",
         "write_retry_exhaustion_rollback",
         "write_failed_cyclic_refresh_preserves_deadline",
+        "write_failed_first_cyclic_has_no_deadline",
         "write_diagnostics_redacted_and_last_error_retained",
         "write_fifo_ordering",
       ]),
@@ -784,7 +802,7 @@ describe("verified Python contract generator", () => {
     }
   }, 120_000);
 
-  it("is deterministic and keeps check mode byte- and mtime-non-mutating", () => {
+  it("is a fixed point and keeps all old fixture bytes plus check-mode mtimes unchanged", () => {
     const checkout = createExactCheckout();
     requireSuccess(runGenerator(checkout), "initial fixture generation");
     const first = fixtureSnapshot(checkout);

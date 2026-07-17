@@ -51,6 +51,7 @@ const generatedPaths = [
   "test/fixtures/behavior-contract.json",
   "test/fixtures/web-contract.json",
   "test/fixtures/transport-behavior.json",
+  "test/fixtures/write-behavior.json",
   "docs/API-PARITY.md",
   "docs/BASELINE.md",
 ] as const;
@@ -264,7 +265,7 @@ describe.sequential("parity orchestrator phase gate", () => {
   }, 180_000);
 
   it.skipIf(process.platform === "win32")(
-    "rejects symlinked committed artifacts without changing the nine generated artifacts",
+    "rejects symlinked committed artifacts without changing the ten generated artifacts",
     () => {
       const target = resolve(root, "test/fixtures/transport-behavior.json");
       const preserved = join(temporaryDirectory, "preserved-transport-behavior.json");
@@ -302,7 +303,7 @@ describe.sequential("parity orchestrator phase gate", () => {
     expectNoNewTemporaryEntries(beforeTemporary);
   }, 180_000);
 
-  it("rolls back all nine artifacts after an injected replacement failure", () => {
+  it("rolls back all ten artifacts after an injected replacement failure", () => {
     const beforeGenerated = snapshotGenerated();
     const beforeTemporary = parityTemporaryEntries();
 
@@ -720,14 +721,14 @@ describe("Phase 2 truthful documentation and closure", () => {
     expect(changelog).toMatch(/keine\s+Modbus-Authentifizierung/u);
   });
 
-  it("keeps exactly seven fixtures plus two documents as nine generated artifacts", () => {
+  it("keeps exactly eight fixtures plus two documents as ten generated artifacts", () => {
     const fixtures = generatedPaths.filter((path) => path.startsWith("test/fixtures/"));
     const documents = generatedPaths.filter((path) => path.startsWith("docs/"));
 
-    expect(fixtures).toHaveLength(7);
+    expect(fixtures).toHaveLength(8);
     expect(documents).toHaveLength(2);
-    expect(generatedPaths).toHaveLength(9);
-    expect(new Set(generatedPaths).size).toBe(9);
+    expect(generatedPaths).toHaveLength(10);
+    expect(new Set(generatedPaths).size).toBe(10);
     for (const relativePath of generatedPaths) {
       expect(existsSync(resolve(root, relativePath)), relativePath).toBe(true);
     }
