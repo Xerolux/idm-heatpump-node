@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready for execution
-stopped_at: Completed 03-04-PLAN.md
-last_updated: "2026-07-17T03:51:10.436Z"
-last_activity: 2026-07-17 -- Phase 03 Plan 04 implemented private transactional write execution and resilience
+stopped_at: Completed 03-05-PLAN.md
+last_updated: "2026-07-17T04:02:10.715Z"
+last_activity: 2026-07-17 -- Phase 03 Plan 05 completed production FC16 mapping and acknowledgement safety
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 27
-  completed_plans: 24
+  completed_plans: 25
   percent: 40
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-07-14)
 ## Current Position
 
 Phase: 3
-Plan: 5 of 7
+Plan: 6 of 7
 Status: Ready for execution
-Last activity: 2026-07-17 -- Phase 03 Plan 04 implemented private transactional write execution and resilience
+Last activity: 2026-07-17 -- Phase 03 Plan 05 completed production FC16 mapping and acknowledgement safety
 
 Milestone progress: [████░░░░░░] 40% (2/5 phases)
 
@@ -36,9 +36,9 @@ Milestone progress: [████░░░░░░] 40% (2/5 phases)
 
 **Velocity:**
 
-- Total plans completed: 24
-- Average duration: 50 min
-- Total execution time: 19h 54m
+- Total plans completed: 25
+- Average duration: 48 min
+- Total execution time: 20h 3m
 
 **By Phase:**
 
@@ -46,12 +46,12 @@ Milestone progress: [████░░░░░░] 40% (2/5 phases)
 | ----- | ----- | ------- | -------- |
 | 01    | 10    | 15h 22m | 92 min   |
 | 02    | 10    | 3h 30m  | 21 min   |
-| 03    | 4     | 1h 2m   | 16 min   |
+| 03    | 5     | 1h 11m  | 14 min   |
 
 **Recent Trend:**
 
-- Last 5 plans: 39 min, 13 min, 29 min, 8 min, 12 min
-- Trend: Phase 3 now has private serialized FC16 execution, exact retries, and success-only safety-state commits
+- Last 5 plans: 13 min, 29 min, 8 min, 12 min, 9 min
+- Trend: Phase 3 now has exact production FC16 provider mapping, acknowledgement validation, and operation-aware Code 2
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |
@@ -78,6 +78,7 @@ _Updated after each plan completion_
 | Phase 03 P02 | 29 min | 2 tasks | 7 files |
 | Phase 03 P03 | 8 min | 2 tasks | 4 files |
 | Phase 03 P04 | 12 min | 2 tasks | 6 files |
+| Phase 03 P05 | 9 min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -126,6 +127,9 @@ Recent decisions affecting current work:
 - [Phase 03]: Keep write execution internal until atomic public promotion — The WeakMap boundary proves future semantics without changing the 22/7 public partition.
 - [Phase 03]: Serialize async writes while synchronous resets remain immediate — One FIFO acquisition prevents EEPROM races, and post-ack success deterministically repopulates reset state.
 - [Phase 03]: Separate write Code 2 from read unsupported state — Ordinary write Code 2 retries as modbus; structured IllegalAddress remains immediate without read-state mutation.
+- [Phase 03]: Merge write into ModbusTransport only after the real adapter and every repository implementer compile together. — This removes runtime capability ambiguity while preserving one provider-neutral Promise<void> contract.
+- [Phase 03]: Require exact integer provider address and length echoes before resolving an FC16 write. — A malformed provider success must not commit EEPROM or cyclic safety state.
+- [Phase 03]: Normalize ordinary provider Code 2 as illegal_address only for reads; writes remain generic retryable modbus failures. — This preserves the pinned Python operation-specific behavior and prevents write failures from polluting unsupported-read state.
 
 ### Pending Todos
 
@@ -144,6 +148,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-17T03:50:57.316Z
-Stopped at: Completed 03-04-PLAN.md
+Last session: 2026-07-17T04:02:10.705Z
+Stopped at: Completed 03-05-PLAN.md
 Resume file: None
