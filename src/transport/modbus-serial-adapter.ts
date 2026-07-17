@@ -3,6 +3,7 @@ import ModbusRTU from "modbus-serial";
 import {
   createModbusFailure,
   createNormalizedTransportFailure,
+  createWriteModbusFailure,
   isKnownTransportFailure,
   NormalizedTransportFailureKind,
   type DiagnosticEndpoint,
@@ -89,7 +90,9 @@ function normalizeAdapterError(
   const record = errorRecord(error);
   const message = errorMessage(error, operation);
   if (typeof record?.modbusCode === "number") {
-    return createModbusFailure(record.modbusCode, message, endpoint);
+    return operation === "write"
+      ? createWriteModbusFailure(message, endpoint)
+      : createModbusFailure(record.modbusCode, message, endpoint);
   }
 
   const code = errorCode(error);
