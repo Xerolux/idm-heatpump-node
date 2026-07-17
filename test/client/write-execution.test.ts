@@ -171,6 +171,36 @@ describe("internal IdmModbusClient write execution", () => {
     expect(writeRequests(transport)[0]?.words).toEqual([1]);
   });
 
+  it("applies detected-model membership only unless custom access is explicit", async () => {
+    const missingProbe = (address: number) => ({
+      kind: "error" as const,
+      error: new IllegalAddressError(`missing detection address ${String(address)}`),
+    });
+    const transport = new FakeModbusTransport(
+      [1_350, 1_352, 2_000, 2_065, 1_850, 1_870, 74, 1_147, 4_108, 4_120].map(missingProbe),
+      { writeResponses: [{ kind: "write_ok" }] },
+    );
+    const { client } = clientFromTransports([transport], new FakeClock());
+    const register = createRegisterDef({
+      address: 4_204,
+      datatype: DataType.UCHAR,
+      name: "synthetic_model_custom",
+      writable: true,
+    });
+
+    await client.detectModel();
+    expect(() => simulateInternalWrite(client, register, 1)).toThrowError(
+      expect.objectContaining({ code: "write_model_unavailable" }),
+    );
+    expect(simulateInternalWrite(client, register, 1, { allowCustomRegister: true }).register).toBe(
+      register,
+    );
+    await expect(
+      writeInternalRegister(client, register, 1, { allowCustomRegister: true }),
+    ).resolves.toBeUndefined();
+    expect(writeRequests(transport)).toHaveLength(1);
+  });
+
   it("serializes two first EEPROM writes from validation through commit", async () => {
     const clock = new FakeClock();
     const transport = new FakeModbusTransport([], {
