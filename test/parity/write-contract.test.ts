@@ -16,6 +16,10 @@ import {
 } from "../../src/client/write-safety.js";
 import { DataType } from "../../src/types.js";
 import { createRegisterDef } from "../../src/registers/definitions.js";
+import {
+  executeWriteBehaviorFixture,
+  executeWriteBehaviorScenario,
+} from "../support/write-scenario-runner.js";
 
 const WRITE_ACTION_KINDS = [
   "simulate_write",
@@ -548,5 +552,42 @@ describe("closed write scenario schema parser", () => {
 
     const fixture = validFixture();
     expect(() => parseWriteBehaviorFixture(JSON.stringify(fixture))).not.toThrow();
+  });
+});
+
+describe("generated executable write parity", () => {
+  const fixture = parseWriteBehaviorFixture(readFileSync(GENERATED_WRITE_FIXTURE, "utf8"));
+
+  it("executes every Python-generated scenario once through the internal client", async () => {
+    const executions = await executeWriteBehaviorFixture(fixture);
+    const parsedNames = fixture.scenarios.map(({ name }) => name);
+    const executedNames = executions.map(({ name }) => name);
+
+    expect(executedNames).toEqual(parsedNames);
+    expect(executedNames).toEqual([...new Set(executedNames)]);
+    expect(executions).toHaveLength(fixture.scenarios.length);
+
+    for (const [index, execution] of executions.entries()) {
+      const scenario = fixture.scenarios[index];
+      if (scenario === undefined) throw new Error(`Missing parsed scenario ${String(index)}`);
+      expect(execution.result, `${scenario.name} result`).toEqual(scenario.expected_result);
+      expect(execution.requests, `${scenario.name} requests`).toEqual(
+        scenario.expected_requests,
+      );
+      expect(execution.clock, `${scenario.name} clock`).toEqual(scenario.clock);
+      expect(execution.state, `${scenario.name} state`).toEqual(scenario.expected_state);
+    }
+  });
+
+  it("executes one parsed scenario without using fixture-owned expected behavior", async () => {
+    const scenario = fixture.scenarios.find(({ name }) => name === "write_fc16_float_low_word_first");
+    if (scenario === undefined) throw new Error("Missing generated Float32 write scenario");
+
+    const execution = await executeWriteBehaviorScenario(scenario);
+    expect(execution.name).toBe(scenario.name);
+    expect(execution.requests).toEqual(scenario.expected_requests);
+    expect(execution.result).toEqual(scenario.expected_result);
+    expect(execution.clock).toEqual(scenario.clock);
+    expect(execution.state).toEqual(scenario.expected_state);
   });
 });
