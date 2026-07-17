@@ -1,6 +1,6 @@
 ---
 phase: 02-modbus-reads-detection-and-resilience
-reviewed: 2026-07-16T23:38:36Z
+reviewed: 2026-07-17T00:24:49Z
 depth: deep
 files_reviewed: 38
 files_reviewed_list:
@@ -43,93 +43,78 @@ files_reviewed_list:
   - test/support/fake-modbus-transport.ts
   - test/transport/modbus-serial-adapter.test.ts
 findings:
-  critical: 2
-  warning: 3
+  critical: 0
+  warning: 0
   info: 0
-  total: 5
-status: issues_found
+  total: 0
+status: clean
 ---
 
 # Phase 2: Code Review Report
 
-**Reviewed:** 2026-07-16T23:38:36Z  
-**Depth:** deep  
-**Files Reviewed:** 38  
-**Status:** issues_found
+**Reviewed:** 2026-07-17T00:24:49Z
+**Depth:** deep
+**Files Reviewed:** 38
+**Status:** clean
 
 ## Narrative Findings (AI reviewer)
 
-The read-side architecture is generally disciplined, but the real transport boundary was not exercised with the callback and response shapes delivered by the pinned dependency. That leaves two release-blocking differences between the passing synthetic suite and actual TCP use. Three additional edge cases weaken the executable parity contract or return incorrect public results.
+No critical, warning, or informational findings remain in the original Phase 2
+review scope. The five atomic fix commits resolve every prior finding without
+introducing a regression in the pinned Python `idm-heatpump-api` 0.7.6 read,
+retry, diagnostics, batching, or transport behavior.
 
-## Summary
+## Prior Finding Resolution
 
-Two blockers must be fixed before Phase 2 can ship: a normal TCP close is treated as an error, and malformed response diagnostics differ between the real adapter path and the pinned Python contract. The warnings cover an accidentally under-specified multi-retry clock trace, unsafe handling of valid register names in batch result objects, and rejection of valid fractional Python timeout values.
+### CR-01: Successful `modbus-serial` close status
 
-## Critical Issues
+Resolved by `230c08e`. The adapter accepts the real dependency's normal
+`false` close-event status while retaining closed normalization for `true` and
+error objects. Boundary and client-level reconnect tests now exercise this
+actual callback shape.
 
-### CR-01: A successful `modbus-serial` TCP close is rejected as a transport failure
+### CR-02: Pinned malformed-response diagnostic
 
-**File:** `src/transport/modbus-serial-adapter.ts:217-229`  
-**Affected:** `src/client/idm-modbus-client.ts:710-719`, `src/client/idm-modbus-client.ts:799-816`, `test/transport/modbus-serial-adapter.test.ts:82-87`
+Resolved by `2d5db12`. The adapter validates the response container and word
+domain but leaves count validation to `IdmModbusClient`, so short and long
+responses preserve the actual word count in the pinned Python-compatible
+diagnostic. The real-adapter integration assertion matches the complete
+`invalid_short_response` result and client error state.
 
-**Issue:** `#invokeLifecycle()` accepts only `undefined` and `null` as successful callback values. The pinned `modbus-serial@8.0.25` TCP port forwards Node's socket `close` event argument to this callback; a normal socket close supplies `hadError === false`. The adapter therefore converts every ordinary TCP close into a `disconnected` failure. Public `disconnect()` rejects even though the socket closed, and the reconnect path aborts at `#closeTransportLocked()` before opening the replacement connection. The test double always calls `callback(undefined)`, so it does not model the installed dependency and cannot reveal the failure.
+### WR-01: Cumulative retry clock trace
 
-**Fix:** Treat the dependency's `false` close status as success while preserving `true`/real error objects as failures, and make the boundary/test double model the actual callback contract. At minimum:
+Resolved by `42f44da`. `FakeClock` now separates requested delays from
+cumulative observation timestamps, and the generated three-attempt scenario
+proves the Python trace `[0.5, 1.5]` for delays of 0.5 and 1.0 seconds.
 
-```ts
-const finish = (error?: unknown): void => {
-  if (settled) return;
-  settled = true;
-  if (error === undefined || error === null || error === false) {
-    resolve();
-  } else {
-    reject(normalizeAdapterError(error, operation, this.#endpoint));
-  }
-};
-```
+### WR-02: Special batch-result keys
 
-Add tests where `close()` calls back with both `false` and `true`, plus a client-level reconnect test using that realistic boundary.
+Resolved by `1bb7fa0`. All grouped, individual-fallback, and top-level batch
+accumulators use `Map` entries and `Object.fromEntries`, preserving own
+enumerable `__proto__`, `constructor`, and `prototype` keys without changing
+the result object's prototype. Result immutability and decoded `null` are also
+covered.
 
-### CR-02: Real-adapter short responses bypass the pinned invalid-response diagnostic
+### WR-03: Fractional probe timeouts
 
-**File:** `src/transport/modbus-serial-adapter.ts:106-127`  
-**Affected:** `src/client/idm-modbus-client.ts:766-777`, `test/fixtures/transport-behavior.json:1219-1265`
+Resolved by `92e438d`. Every finite positive timeout is accepted and converted
+from seconds to bounded milliseconds with binary64 round-half-to-even. Pinned
+generated scenarios cover the fractional tie and smallest positive binary64
+value, while focused tests also cover the even tie and invalid inputs.
 
-**Issue:** The adapter validates response length first and replaces every malformed array with `Invalid Modbus response ... expected exactly N words`, discarding the actual count. The client contains the Python-compatible diagnostic (`Incomplete Modbus response ... got N registers, expected C`), but the real adapter throws before that validation can execute. The generated contract explicitly requires the latter message in both the returned error and `lastError`; the contract runner passes only because its fake transport deliberately permits the short array through to the client. Thus the real package and the executable pinned fixture disagree on an observable diagnostics API.
+## Verification Evidence
 
-**Fix:** Preserve the actual array length at the adapter boundary and emit the same normalized short/long-response diagnostic as the client, or let array-count validation be owned solely by the client while the adapter validates only the response container and word domain. Add an integration assertion that routes a one-word `modbus-serial` boundary response through `IdmModbusClient` and compares the full result/error context with the `invalid_short_response` fixture.
-
-## Warnings
-
-### WR-01: Python and TypeScript give different meanings to multi-retry `clock` traces
-
-**File:** `scripts/generate-python-contract.py:1214-1220`  
-**Affected:** `test/parity/transport-contract.test.ts:977-983`, `test/support/fake-clock.ts:20-27`
-
-**Issue:** Python appends cumulative elapsed times, while the TypeScript runner returns the individual sleep durations. Existing generated scenarios contain only one sleep, so both happen to produce `[0.5]`. With three attempts, correct backoff produces Python `[0.5, 1.5]` but TypeScript `[0.5, 1]`. The cross-repository gate therefore does not currently prove retry timing beyond the first delay and will fail for the wrong reason as soon as such a scenario is added.
-
-**Fix:** Define `clock` consistently as cumulative observation times (matching the current pinned generator), expose those observations from `FakeClock`, and add a generated three-attempt scenario that requires `0.5` then `1.0` seconds of backoff and compares the resulting `[0.5, 1.5]` trace.
-
-### WR-02: Valid `__proto__` register names disappear from batch results
-
-**File:** `src/client/idm-modbus-client.ts:554-563`  
-**Affected:** `src/client/idm-modbus-client.ts:587-609`, `src/client/idm-modbus-client.ts:612-654`
-
-**Issue:** Public `RegisterDef` values permit arbitrary string names, including `__proto__`, and Python dictionaries preserve that key. The batch paths accumulate results in ordinary `{}` objects using indexed assignment and `Object.assign`. On such objects, `data["__proto__"] = decodedPrimitive` invokes the legacy prototype setter instead of creating an own result property, so the successfully decoded value is silently omitted. A decoded `null` can additionally change the result object's prototype. This is both a parity defect for custom registers and an unsafe object-key boundary.
-
-**Fix:** Accumulate dynamic keys in a `Map` and materialize them with `Object.fromEntries`, or use null-prototype records plus `Object.defineProperty`/safe entry copying. Apply the same mechanism to every batch/group/fallback accumulator. Add custom-register tests for `__proto__`, `constructor`, and `prototype`, asserting own enumerable properties and an unchanged prototype.
-
-### WR-03: `probeRegister` rejects fractional timeouts accepted by Python
-
-**File:** `src/client/idm-modbus-client.ts:178-189`  
-**Affected:** `src/transport/types.ts:73-79`
-
-**Issue:** Python's public `probe_register(timeout: float | None)` forwards any positive fractional seconds value to `asyncio.wait_for`. TypeScript rejects the same value whenever seconds multiplied by 1000 is not an integer (for example `0.0015`). Whole-millisecond resolution is neither an audited normalization nor part of the public contract, so valid upstream calls can fail before any Modbus request.
-
-**Fix:** Specify an explicit cross-language timeout conversion and implement it consistently in the generator and client (for example the generator's bounded half-even millisecond rounding), or allow finite positive fractional milliseconds through the transport request if the adapter supports them. Add pinned scenarios for a non-whole-millisecond timeout and the lower positive boundary so acceptance and request shape cannot drift.
+- `npm run parity:check` passed against Python package `0.7.6`, tag `v0.7.6`,
+  commit `ad121ebf34a5f5e37204371c026927d77efcd15c`: seven fixtures, two generated
+  documents, and nine generated artifacts are byte-stable.
+- Focused re-review execution passed 87 tests across the real adapter,
+  batching, resilience, generated transport contract, and generator suites.
+- The fix workflow's full `npm run check` evidence remains green: 392 tests,
+  coverage gates, build, and exact 15-file package smoke.
+- `git diff --check` passed.
 
 ---
 
-_Reviewed: 2026-07-16T23:38:36Z_  
-_Reviewer: the agent (gsd-code-reviewer)_  
+_Reviewed: 2026-07-17T00:24:49Z_
+_Reviewer: the agent (gsd-code-reviewer)_
 _Depth: deep_
