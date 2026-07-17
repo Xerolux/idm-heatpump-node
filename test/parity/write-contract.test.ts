@@ -255,6 +255,27 @@ describe("closed write scenario schema parser", () => {
     for (const action of cases) {
       const fixture = validFixture();
       operationOf(fixture).actions = [action];
+      const expected = firstScenario(fixture).expected_result as Record<string, unknown>;
+      const steps = expected.steps as Record<string, unknown>[];
+      const step = steps[0] as Record<string, unknown>;
+      const kind = action.kind;
+      if (kind === "simulate_write" || kind === "set_value") {
+        step.result = {
+          kind: "value",
+          value: {
+            dryRun: action.dryRun,
+            encodedRegisters: [1],
+            register: { address: 74, name: "system_mode" },
+            requestedValue: action.value,
+          },
+        };
+      } else if (kind === "get_active_cyclic_writes") {
+        step.result = { kind: "value", value: {} };
+      } else if (kind === "get_expired_cyclic_writes") {
+        step.result = { kind: "value", value: [] };
+      } else {
+        step.result = { kind: "value", value: null };
+      }
       expect(() => parseWriteBehaviorFixture(fixture), JSON.stringify(action)).not.toThrow();
     }
 
@@ -348,6 +369,7 @@ describe("closed write scenario schema parser", () => {
         },
       },
     ];
+    firstScenario(valid).transport_responses = [{ address: 1_696, count: 2, kind: "ack" }];
     expect(() => parseWriteBehaviorFixture(valid)).not.toThrow();
 
     for (const request of [
@@ -496,7 +518,7 @@ describe("closed write scenario schema parser", () => {
     }
   });
 
-  it("keeps synthetic values only in reviewed fixture fields and closes forbidden sinks", () => {
+  it("rejects write payload leaks from forbidden sinks", () => {
     const parsed = parseWriteBehaviorFixture(readFileSync(GENERATED_WRITE_FIXTURE, "utf8"));
     const forbiddenKeys = new Set(["cause", "payload", "providerResult", "rawPayload"]);
     const inspect = (value: unknown, path: string): void => {

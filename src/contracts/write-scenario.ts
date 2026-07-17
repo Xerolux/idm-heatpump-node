@@ -784,7 +784,7 @@ function validateAction(value: ParsedContractValue, index: number): void {
   }
 }
 
-function validateOperation(value: ParsedContractValue): number {
+function validateOperation(value: ParsedContractValue): readonly ParsedRecord[] {
   const operation = requireRecord(value, "operation must be an object");
   requireExactFields(operation, ["actions", "kind"], "operation");
   if (requiredField(operation, "kind") !== "sequence") {
@@ -798,7 +798,7 @@ function validateOperation(value: ParsedContractValue): number {
     failScenario("operation.actions must contain a bounded non-empty collection");
   }
   for (const [index, action] of actions.entries()) validateAction(action, index);
-  return actions.length;
+  return actions as readonly ParsedRecord[];
 }
 
 function validateDiagnostic(
@@ -970,18 +970,109 @@ function validateState(
   validateLastError(requiredField(state, "lastError"), `${path}.lastError`, endpoints);
 }
 
+function contractValuesEqual(left: ParsedContractValue, right: ParsedContractValue): boolean {
+  if (Object.is(left, right)) return true;
+  if (Array.isArray(left) || Array.isArray(right)) {
+    return (
+      Array.isArray(left) &&
+      Array.isArray(right) &&
+      left.length === right.length &&
+      left.every((item, index) => contractValuesEqual(item, right[index] as ParsedContractValue))
+    );
+  }
+  if (!isRecord(left) || !isRecord(right)) return false;
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+  return (
+    leftKeys.length === rightKeys.length &&
+    leftKeys.every(
+      (key) =>
+        Object.prototype.hasOwnProperty.call(right, key) &&
+        contractValuesEqual(left[key] as ParsedContractValue, right[key] as ParsedContractValue),
+    )
+  );
+}
+
+function validatePlanResult(value: ParsedContractValue, action: ParsedRecord, path: string): void {
+  const plan = requireRecord(value, `${path}.value must be a write plan`);
+  requireExactFields(
+    plan,
+    ["dryRun", "encodedRegisters", "register", "requestedValue"],
+    `${path}.value`,
+  );
+  const dryRun = requireBoolean(requiredField(plan, "dryRun"), `${path}.value.dryRun`);
+  if (dryRun !== requiredField(action, "dryRun")) {
+    failScenario(`${path}.value.dryRun must equal the action dryRun flag`);
+  }
+  const words = requireArray(
+    requiredField(plan, "encodedRegisters"),
+    `${path}.value.encodedRegisters must be an array`,
+  );
+  if (words.length === 0 || words.length > WRITE_SCENARIO_LIMITS.maxWords) {
+    failScenario(`${path}.value.encodedRegisters must contain a bounded FC16 payload`);
+  }
+  for (const [index, word] of words.entries()) {
+    requireInteger(word, 0, 65_535, `${path}.value.encodedRegisters[${index}]`);
+  }
+  const register = requireRecord(
+    requiredField(plan, "register"),
+    `${path}.value.register must be an object`,
+  );
+  requireExactFields(register, ["address", "name"], `${path}.value.register`);
+  requireInteger(
+    requiredField(register, "address"),
+    MODBUS_WRITE_LIMITS.minimumAddress,
+    MODBUS_WRITE_LIMITS.maximumAddress,
+    `${path}.value.register.address`,
+  );
+  requireBoundedString(requiredField(register, "name"), `${path}.value.register.name`);
+  if (!contractValuesEqual(requiredField(plan, "requestedValue"), requiredField(action, "value"))) {
+    failScenario(`${path}.value.requestedValue must equal the action value`);
+  }
+}
+
+function validateValueResult(value: ParsedContractValue, action: ParsedRecord, path: string): void {
+  const actionKind = requiredField(action, "kind");
+  if (
+    actionKind === WriteScenarioActionKind.SIMULATE_WRITE ||
+    actionKind === WriteScenarioActionKind.SET_VALUE
+  ) {
+    validatePlanResult(value, action, path);
+    return;
+  }
+  if (actionKind === WriteScenarioActionKind.GET_ACTIVE_CYCLIC_WRITES) {
+    validateTimestampRecord(value, `${path}.value`);
+    return;
+  }
+  if (actionKind === WriteScenarioActionKind.GET_EXPIRED_CYCLIC_WRITES) {
+    validateStringArray(value, `${path}.value`);
+    return;
+  }
+  if (value !== null) failScenario(`${path}.value must be null for action ${String(actionKind)}`);
+}
+
 function validateResult(
   value: ParsedContractValue,
   path: string,
   endpoints: readonly string[],
+  action: ParsedRecord,
 ): void {
   const result = requireRecord(value, `${path} must be an object`);
   const kind = requiredField(result, "kind");
   if (kind === "value") {
     requireExactFields(result, ["kind", "value"], path);
+    validateValueResult(requiredField(result, "value"), action, path);
     return;
   }
   if (kind !== "error") failScenario(`${path}.kind must be value or error`);
+  const actionKind = requiredField(action, "kind");
+  if (
+    actionKind !== WriteScenarioActionKind.SIMULATE_WRITE &&
+    actionKind !== WriteScenarioActionKind.WRITE_REGISTER &&
+    actionKind !== WriteScenarioActionKind.SET_VALUE
+  ) {
+    failScenario(`${path} cannot be an error for action ${String(actionKind)}`);
+  }
   const category = requiredField(result, "category");
   if (category === "validation") {
     requireExactFields(result, ["category", "code", "diagnostic", "kind"], path);
@@ -993,6 +1084,12 @@ function validateResult(
     return;
   }
   if (category === "transport") {
+    if (
+      actionKind === WriteScenarioActionKind.SIMULATE_WRITE ||
+      (actionKind === WriteScenarioActionKind.SET_VALUE && requiredField(action, "dryRun") === true)
+    ) {
+      failScenario(`${path} cannot be a transport error for a no-traffic action`);
+    }
     requireExactFields(result, ["category", "errorType", "kind", "message"], path);
     const errorType = requiredField(result, "errorType");
     if (typeof errorType !== "string" || !NORMALIZED_ERROR_TYPES.has(errorType)) {
@@ -1006,7 +1103,7 @@ function validateResult(
 
 function validateExpectedResult(
   value: ParsedContractValue,
-  actionCount: number,
+  actions: readonly ParsedRecord[],
   endpoints: readonly string[],
 ): void {
   const expected = requireRecord(value, "expected_result must be an object");
@@ -1015,18 +1112,68 @@ function validateExpectedResult(
     requiredField(expected, "steps"),
     "expected_result.steps must be an array",
   );
-  if (steps.length !== actionCount) {
+  if (steps.length !== actions.length) {
     failScenario("expected_result.steps must contain exactly one entry per action");
   }
   for (const [index, item] of steps.entries()) {
+    const action = actions[index];
+    if (action === undefined) failScenario(`expected_result.steps[${index}] has no action`);
     const step = requireRecord(item, `expected_result.steps[${index}] must be an object`);
     requireExactFields(step, ["result", "state"], `expected_result.steps[${index}]`);
     validateResult(
       requiredField(step, "result"),
       `expected_result.steps[${index}].result`,
       endpoints,
+      action,
     );
     validateState(requiredField(step, "state"), `expected_result.steps[${index}].state`, endpoints);
+  }
+}
+
+function validateResponseRequestCorrelation(
+  responsesValue: ParsedContractValue,
+  requestsValue: ParsedContractValue,
+): void {
+  const responses = requireArray(responsesValue, "transport_responses must be an array");
+  const requests = requireArray(requestsValue, "expected_requests must be an array");
+  const writes = requests.filter(
+    (request) => isRecord(request) && request.kind === "write",
+  ) as readonly ParsedRecord[];
+  if (responses.length !== writes.length) {
+    failScenario("transport_responses must contain exactly one script per expected FC16 request");
+  }
+  for (const [index, responseValue] of responses.entries()) {
+    const response = requireRecord(
+      responseValue,
+      `transport_responses[${index}] must be an object`,
+    );
+    if (response.kind !== "ack") continue;
+    const event = writes[index];
+    if (event === undefined) failScenario(`transport_responses[${index}] has no FC16 request`);
+    const request = requireRecord(
+      requiredField(event, "request"),
+      `expected_requests write ${index} must contain a request`,
+    );
+    if (response.address !== request.address || response.count !== request.count) {
+      failScenario(`transport_responses[${index}] acknowledgement does not match its FC16 request`);
+    }
+  }
+}
+
+function validateFinalStateMatchesLastStep(
+  expectedResultValue: ParsedContractValue,
+  expectedState: ParsedContractValue,
+): void {
+  const expectedResult = requireRecord(expectedResultValue, "expected_result must be an object");
+  const steps = requireArray(
+    requiredField(expectedResult, "steps"),
+    "expected_result.steps must be an array",
+  );
+  const last = steps.at(-1);
+  if (last === undefined) failScenario("expected_result.steps cannot be empty");
+  const step = requireRecord(last, "expected_result final step must be an object");
+  if (!contractValuesEqual(requiredField(step, "state"), expectedState)) {
+    failScenario("expected_state must equal the final action state snapshot");
   }
 }
 
@@ -1061,10 +1208,18 @@ function validateScenario(value: ParsedContractValue, names: Set<string>): void 
   const endpoints = validateConfiguration(requiredField(scenario, "configuration"));
   validateTransportResponses(requiredField(scenario, "transport_responses"), endpoints);
   validateClock(requiredField(scenario, "clock"));
-  const actionCount = validateOperation(requiredField(scenario, "operation"));
-  validateExpectedResult(requiredField(scenario, "expected_result"), actionCount, endpoints);
+  const actions = validateOperation(requiredField(scenario, "operation"));
+  validateExpectedResult(requiredField(scenario, "expected_result"), actions, endpoints);
   validateExpectedRequests(requiredField(scenario, "expected_requests"));
   validateState(requiredField(scenario, "expected_state"), "expected_state", endpoints);
+  validateResponseRequestCorrelation(
+    requiredField(scenario, "transport_responses"),
+    requiredField(scenario, "expected_requests"),
+  );
+  validateFinalStateMatchesLastStep(
+    requiredField(scenario, "expected_result"),
+    requiredField(scenario, "expected_state"),
+  );
 }
 
 function parseSource(value: unknown): unknown {
