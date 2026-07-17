@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready for execution
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-07-17T03:34:53.275Z"
-last_activity: 2026-07-17 -- Phase 03 Plan 03 implemented pure write planning and deterministic safety state
+stopped_at: Completed 03-04-PLAN.md
+last_updated: "2026-07-17T03:51:10.436Z"
+last_activity: 2026-07-17 -- Phase 03 Plan 04 implemented private transactional write execution and resilience
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 27
-  completed_plans: 23
+  completed_plans: 24
   percent: 40
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-07-14)
 ## Current Position
 
 Phase: 3
-Plan: 4 of 7
+Plan: 5 of 7
 Status: Ready for execution
-Last activity: 2026-07-17 -- Phase 03 Plan 03 implemented pure write planning and deterministic safety state
+Last activity: 2026-07-17 -- Phase 03 Plan 04 implemented private transactional write execution and resilience
 
 Milestone progress: [████░░░░░░] 40% (2/5 phases)
 
@@ -36,9 +36,9 @@ Milestone progress: [████░░░░░░] 40% (2/5 phases)
 
 **Velocity:**
 
-- Total plans completed: 23
-- Average duration: 51 min
-- Total execution time: 19h 42m
+- Total plans completed: 24
+- Average duration: 50 min
+- Total execution time: 19h 54m
 
 **By Phase:**
 
@@ -46,12 +46,12 @@ Milestone progress: [████░░░░░░] 40% (2/5 phases)
 | ----- | ----- | ------- | -------- |
 | 01    | 10    | 15h 22m | 92 min   |
 | 02    | 10    | 3h 30m  | 21 min   |
-| 03    | 3     | 50 min  | 17 min   |
+| 03    | 4     | 1h 2m   | 16 min   |
 
 **Recent Trend:**
 
-- Last 5 plans: 17 min, 39 min, 13 min, 29 min, 8 min
-- Trend: Phase 3 now has immutable FC16 evidence, pinned Python scenarios, and deterministic pure write safety state
+- Last 5 plans: 39 min, 13 min, 29 min, 8 min, 12 min
+- Trend: Phase 3 now has private serialized FC16 execution, exact retries, and success-only safety-state commits
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |
@@ -77,6 +77,7 @@ _Updated after each plan completion_
 | Phase 03 P01 | 13 min | 2 tasks | 6 files |
 | Phase 03 P02 | 29 min | 2 tasks | 7 files |
 | Phase 03 P03 | 8 min | 2 tasks | 4 files |
+| Phase 03 P04 | 12 min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -85,11 +86,6 @@ _Updated after each plan completion_
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [Initialization]: Existing package/tooling is delivered foundation; roadmap phases cover remaining parity implementation.
-- [Initialization]: The pinned stable Python tag and full SHA remain the behavioral authority.
-- [Initialization]: `private: true` remains until complete parity and every release gate pass.
-- [Phase 01]: Admit and import only the exact clean pinned Python identity in a sanitized environment.
-- [Phase 01]: Keep generated fixtures and API documents byte-authoritative, transactional, and separate from TypeScript mappings.
 - [Phase 01]: Preserve pinned Python immutability, exceptional-number, validation, and exact CPython rounding semantics.
 - [Phase 01]: Preserve documented register starts and official logical overlaps through the sole validated register factory.
 - [Phase 01]: Expose only 53 evidenced Phase-1 mappings, leave 36 later mappings planned, and retain the private release block.
@@ -127,6 +123,9 @@ Recent decisions affecting current work:
 - [Phase 03]: Keep write planning provider-neutral and pass model/state authorities explicitly without transport imports. — Planning remains unable to connect or send and is reusable inside the later FIFO transaction.
 - [Phase 03]: Mutate EEPROM and cyclic state only through recordSuccessfulWrite. — One later post-acknowledgement call becomes the sole safety-state commit point.
 - [Phase 03]: Format EEPROM remaining time from exact binary64 with half-even rounding. — This preserves CPython one-decimal diagnostics at halfway cases.
+- [Phase 03]: Keep write execution internal until atomic public promotion — The WeakMap boundary proves future semantics without changing the 22/7 public partition.
+- [Phase 03]: Serialize async writes while synchronous resets remain immediate — One FIFO acquisition prevents EEPROM races, and post-ack success deterministically repopulates reset state.
+- [Phase 03]: Separate write Code 2 from read unsupported state — Ordinary write Code 2 retries as modbus; structured IllegalAddress remains immediate without read-state mutation.
 
 ### Pending Todos
 
@@ -145,6 +144,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-17T03:34:53.264Z
-Stopped at: Completed 03-03-PLAN.md
+Last session: 2026-07-17T03:50:57.316Z
+Stopped at: Completed 03-04-PLAN.md
 Resume file: None
