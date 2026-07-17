@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  SemanticValidationError,
+  type SemanticValidationErrorCode,
+} from "../../src/errors.js";
+import {
   createModbusFailure,
   createNormalizedTransportFailure,
   IllegalAddressError,
@@ -12,6 +16,22 @@ import { quietPymodbusLogging, registerPymodbusLoggingHook } from "../../src/tra
 
 const ENDPOINT = Object.freeze({ host: "example.invalid", port: 502 });
 
+const WRITE_VALIDATION_CODES = Object.freeze([
+  "write_unknown_register",
+  "write_read_only",
+  "write_model_unavailable",
+  "write_boolean_required",
+  "write_boolean_for_numeric",
+  "write_not_numeric",
+  "write_nonfinite",
+  "write_integer_required",
+  "write_excluded",
+  "write_below_minimum",
+  "write_above_maximum",
+  "write_enum_unsupported",
+  "write_eeprom_throttled",
+] as const satisfies readonly SemanticValidationErrorCode[]);
+
 function semanticOwnProperties(error: Error): readonly string[] {
   return Object.freeze(
     Object.getOwnPropertyNames(error)
@@ -19,6 +39,22 @@ function semanticOwnProperties(error: Error): readonly string[] {
       .sort(),
   );
 }
+
+describe("write semantic validation failures", () => {
+  it("keeps the reviewed thirteen-code vocabulary structured and finite", () => {
+    expect(WRITE_VALIDATION_CODES).toHaveLength(13);
+    expect(new Set(WRITE_VALIDATION_CODES).size).toBe(13);
+
+    for (const code of WRITE_VALIDATION_CODES) {
+      const error = new SemanticValidationError(code, `synthetic ${code}`);
+      expect(error).toMatchObject({
+        category: "validation",
+        code,
+        diagnostic: `synthetic ${code}`,
+      });
+    }
+  });
+});
 
 describe("normalized transport failures", () => {
   it("creates the six retryable closed kinds without retaining raw adapter state", () => {
