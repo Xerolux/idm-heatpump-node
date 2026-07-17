@@ -2762,8 +2762,13 @@ async def _execute_write_action(
         return _write_plan_result(
             await client.set_value(action["key"], action["value"], dry_run=action["dryRun"])
         )
-    register = _write_resolve_register(client_module, registers, client, action["register"])
     if kind == "simulate_write":
+        operand = action["register"]
+        register = (
+            operand
+            if isinstance(operand, str)
+            else _write_python_register(client_module, operand)
+        )
         return _write_plan_result(
             client.simulate_write(
                 register,
@@ -2773,6 +2778,12 @@ async def _execute_write_action(
             )
         )
     if kind == "write_register":
+        register = _write_resolve_register(
+            client_module,
+            registers,
+            client,
+            action["register"],
+        )
         await client.write_register(
             register,
             action["value"],
@@ -3061,6 +3072,42 @@ def _write_fixture(manifest: Mapping[str, Any], client_module: Any, constants: A
         actions=[simulate(custom_float, "not-numeric")],
         validation_codes=["write_not_numeric"],
     )
+    add(
+        name="write_numeric_string_empty_rejected",
+        actions=[simulate(custom_float, "")],
+        validation_codes=["write_not_numeric"],
+    )
+    add(
+        name="write_numeric_string_integer_simulate",
+        actions=[simulate("dhw_setpoint", "40")],
+    )
+    add(
+        name="write_numeric_string_float_simulate",
+        actions=[simulate(custom_float, "42.5")],
+    )
+    add(
+        name="write_numeric_string_exponent_simulate",
+        actions=[simulate(custom_float, "4.25e1")],
+    )
+    add(
+        name="write_numeric_string_whitespace_set_value_dry_run",
+        actions=[{"dryRun": True, "key": "dhw_setpoint", "kind": "set_value", "value": " \t40\n"}],
+    )
+    add(
+        name="write_numeric_string_underscore_real_fc16",
+        actions=[write("dhw_setpoint", "4_0")],
+        scripts=[ack()],
+    )
+    for suffix, value in (
+        ("nan", "nan"),
+        ("positive_infinity", "+inf"),
+        ("negative_infinity", "-Infinity"),
+    ):
+        add(
+            name=f"write_numeric_string_nonfinite_{suffix}",
+            actions=[simulate(custom_float, value)],
+            validation_codes=["write_nonfinite"],
+        )
     for suffix, value in (("nan", float("nan")), ("positive_infinity", float("inf")), ("negative_infinity", float("-inf"))):
         add(
             name=f"write_validation_nonfinite_{suffix}",

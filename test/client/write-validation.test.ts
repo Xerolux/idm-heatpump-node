@@ -184,6 +184,49 @@ describe("write plan validation", () => {
     expect(result.register.registerType).toBe("input");
   });
 
+  it.each([
+    ["40", DataType.UCHAR, [40]],
+    ["42.5", DataType.FLOAT, [0, 16_938]],
+    ["4.25e1", DataType.FLOAT, [0, 16_938]],
+    [" \t40\n", DataType.UCHAR, [40]],
+    ["4_0", DataType.UCHAR, [40]],
+    ["٤٢.٥", DataType.FLOAT, [0, 16_938]],
+  ] as const)(
+    "accepts the pinned Python numeric-string domain for %j",
+    (value, datatype, expectedWords) => {
+      const register = createRegisterDef({
+        address: 4_240,
+        datatype,
+        name: `numeric_string_${datatype}`,
+        writable: true,
+      });
+
+      const result = createWritePlan({ register, value });
+
+      expect(result.requestedValue).toBe(value);
+      expect(result.encodedRegisters).toEqual(expectedWords);
+    },
+  );
+
+  it.each([
+    ["", "write_not_numeric"],
+    ["not-numeric", "write_not_numeric"],
+    ["nan", "write_nonfinite"],
+    ["+inf", "write_nonfinite"],
+    ["-Infinity", "write_nonfinite"],
+  ] as const)("rejects %j at the pinned %s stage", (value, code) => {
+    const register = createRegisterDef({
+      address: 4_242,
+      datatype: DataType.FLOAT,
+      name: "numeric_string_rejection",
+      writable: true,
+    });
+
+    expect(() => createWritePlan({ register, value })).toThrowError(
+      expect.objectContaining({ code }),
+    );
+  });
+
   it("matches every generated pure simulation validation and plan case", () => {
     const fixture = parseWriteBehaviorFixture(readFileSync(GENERATED_WRITE_FIXTURE, "utf8"));
     const scenarios = fixture.scenarios.filter(

@@ -171,6 +171,44 @@ describe("internal IdmModbusClient write execution", () => {
     expect(writeRequests(transport)[0]?.words).toEqual([1]);
   });
 
+  it("preserves numeric-string identity across simulation, dry-run setValue, and a fake real write", async () => {
+    const simulatedClient = clientFromTransports([], new FakeClock()).client;
+    const simulated = simulatedClient.simulateWrite("dhw_setpoint", "40");
+    const dryRun = await simulatedClient.setValue("dhw_setpoint", " \t4.0e1\n", {
+      dryRun: true,
+    });
+
+    expect(simulated.requestedValue).toBe("40");
+    expect(simulated.encodedRegisters).toEqual([40]);
+    expect(dryRun.requestedValue).toBe(" \t4.0e1\n");
+    expect(dryRun.encodedRegisters).toEqual([40]);
+    expect(simulatedClient.isConnected).toBe(false);
+
+    const transport = new FakeModbusTransport([], {
+      writeResponses: [{ kind: "write_ok" }],
+    });
+    const realClient = clientFromTransports([transport], new FakeClock()).client;
+    const register = createRegisterDef({
+      address: 4_204,
+      datatype: DataType.UCHAR,
+      name: "synthetic_numeric_string",
+      writable: true,
+    });
+
+    await realClient.writeRegister(register, "4_0");
+
+    expect(writeRequests(transport)).toEqual([
+      {
+        unitId: 1,
+        registerType: RegisterType.HOLDING,
+        functionCode: 16,
+        address: 4_204,
+        count: 1,
+        words: [40],
+      },
+    ]);
+  });
+
   it("applies detected-model membership only unless custom access is explicit", async () => {
     const missingProbe = (address: number) => ({
       kind: "error" as const,

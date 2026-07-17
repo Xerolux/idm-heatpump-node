@@ -21,6 +21,31 @@ const INTEGER_WRITE_TYPES: ReadonlySet<DataTypeValue> = new Set([
   DataType.BITFLAG,
 ]);
 
+// Python 3.12 accepts every Unicode ``Nd`` digit in float strings.  Keep the
+// exact zero code points for those ten-code-point decimal runs so the public
+// TypeScript domain does not silently narrow the pinned ``float(value)``
+// behavior to ASCII-only input.
+const PYTHON_DECIMAL_ZERO_CODE_POINTS = Object.freeze([
+  0x30, 0x660, 0x6f0, 0x7c0, 0x966, 0x9e6, 0xa66, 0xae6, 0xb66, 0xbe6, 0xc66, 0xce6, 0xd66, 0xde6,
+  0xe50, 0xed0, 0xf20, 0x1040, 0x1090, 0x17e0, 0x1810, 0x1946, 0x19d0, 0x1a80, 0x1a90, 0x1b50,
+  0x1bb0, 0x1c40, 0x1c50, 0xa620, 0xa8d0, 0xa900, 0xa9d0, 0xa9f0, 0xaa50, 0xabf0, 0xff10, 0x104a0,
+  0x10d30, 0x11066, 0x110f0, 0x11136, 0x111d0, 0x112f0, 0x11450, 0x114d0, 0x11650, 0x116c0, 0x11730,
+  0x118e0, 0x11950, 0x11c50, 0x11d50, 0x11da0, 0x11f50, 0x16a60, 0x16ac0, 0x16b50, 0x1d7ce, 0x1d7d8,
+  0x1d7e2, 0x1d7ec, 0x1d7f6, 0x1e140, 0x1e2f0, 0x1e4f0, 0x1e950, 0x1fbf0,
+] as const);
+const PYTHON_DECIMAL_DIGITS = new Map<number, string>();
+for (const zero of PYTHON_DECIMAL_ZERO_CODE_POINTS) {
+  for (let digit = 0; digit <= 9; digit += 1) {
+    PYTHON_DECIMAL_DIGITS.set(zero + digit, String(digit));
+  }
+}
+const PYTHON_FLOAT_DIGIT_PART = "[0-9](?:_?[0-9])*";
+const PYTHON_FLOAT_STRING_PATTERN = new RegExp(
+  `^[+-]?(?:(?:${PYTHON_FLOAT_DIGIT_PART}(?:\\.(?:${PYTHON_FLOAT_DIGIT_PART})?)?|\\.${PYTHON_FLOAT_DIGIT_PART})(?:[eE][+-]?${PYTHON_FLOAT_DIGIT_PART})?|inf(?:inity)?|nan)$`,
+  "iu",
+);
+const UNICODE_WHITE_SPACE_PATTERN = /^\p{White_Space}$/u;
+
 export interface WriteSafetyResultInput {
   readonly register: RegisterDef;
   readonly requestedValue: unknown;
@@ -122,6 +147,35 @@ function pythonRepr(value: unknown): string {
 
 function pythonValueText(value: unknown): string {
   return typeof value === "number" ? pythonNumberText(value) : String(value);
+}
+
+function parsePythonFloatString(value: string): number | undefined {
+  const characters: string[] = [];
+  for (const character of value) {
+    const codePoint = character.codePointAt(0);
+    if (codePoint === undefined) return undefined;
+    characters.push(PYTHON_DECIMAL_DIGITS.get(codePoint) ?? character);
+  }
+  const isPythonWhitespace = (character: string): boolean => {
+    const codePoint = character.codePointAt(0);
+    return (
+      UNICODE_WHITE_SPACE_PATTERN.test(character) ||
+      (codePoint !== undefined && codePoint >= 0x1c && codePoint <= 0x1f)
+    );
+  };
+  let start = 0;
+  let end = characters.length;
+  while (start < end && isPythonWhitespace(characters[start] as string)) start += 1;
+  while (end > start && isPythonWhitespace(characters[end - 1] as string)) end -= 1;
+  const normalized = characters.slice(start, end).join("");
+  if (!PYTHON_FLOAT_STRING_PATTERN.test(normalized)) return undefined;
+
+  const unsigned = normalized.replace(/^[+-]/u, "").toLowerCase();
+  if (unsigned === "nan") return Number.NaN;
+  if (unsigned === "inf" || unsigned === "infinity") {
+    return normalized.startsWith("-") ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY;
+  }
+  return Number(normalized.replaceAll("_", ""));
 }
 
 function requireMonotonicSeconds(value: number, field: string): void {
@@ -297,7 +351,7 @@ function resolveRegister(
   try {
     return getRegister(register, { modelInfo });
   } catch {
-    reject("write_unknown_register", `Register '${register}' not found.`);
+    reject("write_unknown_register", pythonRepr(`Unknown IDM register key: ${register}`));
   }
 }
 
@@ -336,19 +390,25 @@ function assertWriteValue(register: RegisterDef, value: unknown): number {
       `Boolean value is not valid for numeric register '${register.name}'`,
     );
   }
-  if (typeof value !== "number") {
+  const numericValue =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? parsePythonFloatString(value)
+        : undefined;
+  if (numericValue === undefined) {
     reject("write_not_numeric", `Value ${pythonRepr(value)} for '${register.name}' is not numeric`);
   }
-  if (!Number.isFinite(value)) {
+  if (!Number.isFinite(numericValue)) {
     reject("write_nonfinite", `Value ${pythonRepr(value)} for '${register.name}' must be finite`);
   }
-  if (INTEGER_WRITE_TYPES.has(register.datatype) && !Number.isInteger(value)) {
+  if (INTEGER_WRITE_TYPES.has(register.datatype) && !Number.isInteger(numericValue)) {
     reject(
       "write_integer_required",
       `Value ${pythonRepr(value)} for '${register.name}' must be an integer`,
     );
   }
-  return value;
+  return numericValue;
 }
 
 function assertWriteMetadata(register: RegisterDef, value: unknown, comparableValue: number): void {
@@ -412,7 +472,7 @@ export function createWritePlan(input: WritePlanInput): WriteSafetyResult {
   return WriteSafetyResult.create({
     register,
     requestedValue: input.value,
-    encodedRegisters: encodeValue(input.value, register),
+    encodedRegisters: encodeValue(comparableValue, register),
     dryRun: input.dryRun ?? true,
   });
 }

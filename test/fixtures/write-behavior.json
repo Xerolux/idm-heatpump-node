@@ -415,7 +415,7 @@
             "result": {
               "category": "validation",
               "code": "write_unknown_register",
-              "diagnostic": "Register 'not_a_register' not found.",
+              "diagnostic": "'Unknown IDM register key: not_a_register'",
               "kind": "error"
             },
             "state": {
@@ -1619,6 +1619,774 @@
               "writable": true
             },
             "value": "not-numeric"
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_not_numeric",
+              "diagnostic": "Value '' for 'synthetic_float' is not numeric",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_numeric_string_empty_rejected",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": ""
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": true,
+                "encodedRegisters": [
+                  40
+                ],
+                "register": {
+                  "address": 1032,
+                  "name": "dhw_setpoint"
+                },
+                "requestedValue": "40"
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_numeric_string_integer_simulate",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": "dhw_setpoint",
+            "value": "40"
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": true,
+                "encodedRegisters": [
+                  0,
+                  16938
+                ],
+                "register": {
+                  "address": 4200,
+                  "name": "synthetic_float"
+                },
+                "requestedValue": "42.5"
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_numeric_string_float_simulate",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": "42.5"
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": true,
+                "encodedRegisters": [
+                  0,
+                  16938
+                ],
+                "register": {
+                  "address": 4200,
+                  "name": "synthetic_float"
+                },
+                "requestedValue": "4.25e1"
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_numeric_string_exponent_simulate",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": "4.25e1"
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": {
+                "dryRun": true,
+                "encodedRegisters": [
+                  40
+                ],
+                "register": {
+                  "address": 1032,
+                  "name": "dhw_setpoint"
+                },
+                "requestedValue": " \t40\n"
+              }
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_numeric_string_whitespace_set_value_dry_run",
+      "operation": {
+        "actions": [
+          {
+            "dryRun": true,
+            "key": "dhw_setpoint",
+            "kind": "set_value",
+            "value": " \t40\n"
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "write",
+          "request": {
+            "address": 1032,
+            "count": 1,
+            "functionCode": 16,
+            "registerType": "holding",
+            "unitId": 1,
+            "words": [
+              40
+            ]
+          }
+        }
+      ],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "kind": "value",
+              "value": null
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 1,
+              "unsupportedRegisters": [],
+              "writeThrottle": {
+                "dhw_setpoint": 0.0
+              }
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "unsupportedRegisters": [],
+        "writeThrottle": {
+          "dhw_setpoint": 0.0
+        }
+      },
+      "name": "write_numeric_string_underscore_real_fc16",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "kind": "write_register",
+            "register": "dhw_setpoint",
+            "value": "4_0"
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": [
+        {
+          "address": 1032,
+          "count": 1,
+          "kind": "ack"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_nonfinite",
+              "diagnostic": "Value 'nan' for 'synthetic_float' must be finite",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_numeric_string_nonfinite_nan",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": "nan"
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_nonfinite",
+              "diagnostic": "Value '+inf' for 'synthetic_float' must be finite",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_numeric_string_nonfinite_positive_infinity",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": "+inf"
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": null,
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 4200,
+            "datatype": "FLOAT",
+            "name": "synthetic_float",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_nonfinite",
+              "diagnostic": "Value '-Infinity' for 'synthetic_float' must be finite",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_numeric_string_nonfinite_negative_infinity",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 4200,
+              "datatype": "FLOAT",
+              "name": "synthetic_float",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": "-Infinity"
           }
         ],
         "kind": "sequence"
