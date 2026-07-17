@@ -1,23 +1,43 @@
 import {
   attachInternalModbusTransport,
+  getInternalActiveCyclicWrites,
   getInternalClientSnapshot,
+  getInternalExpiredCyclicWrites,
+  getInternalWriteStateSnapshot,
   IdmModbusClient,
   readInternalModbusRegisters,
+  resetInternalCyclicWriteState,
+  resetInternalWriteThrottle,
   seedInternalReadState,
+  seedInternalWriteState,
+  setInternalValue,
+  simulateInternalWrite,
+  writeInternalRegister,
   type IdmModbusClientOptions,
   type InternalClientDependencies,
   type InternalClientSnapshot,
   type InternalReadRegistersOptions,
   type InternalReadStateSeed,
   type InternalTransportFactoryConfiguration,
+  type InternalWriteStateSeed,
+  type InternalWriteStateSnapshot,
   withInternalClientDependencies,
 } from "./idm-modbus-client.js";
 
 export {
   attachInternalModbusTransport,
+  getInternalActiveCyclicWrites,
   getInternalClientSnapshot,
+  getInternalExpiredCyclicWrites,
+  getInternalWriteStateSnapshot,
   readInternalModbusRegisters,
+  resetInternalCyclicWriteState,
+  resetInternalWriteThrottle,
   seedInternalReadState,
+  seedInternalWriteState,
+  setInternalValue,
+  simulateInternalWrite,
+  writeInternalRegister,
 };
 export type {
   InternalClientDependencies,
@@ -25,6 +45,8 @@ export type {
   InternalReadRegistersOptions,
   InternalReadStateSeed,
   InternalTransportFactoryConfiguration,
+  InternalWriteStateSeed,
+  InternalWriteStateSnapshot,
 };
 
 export function createInternalIdmModbusClient(

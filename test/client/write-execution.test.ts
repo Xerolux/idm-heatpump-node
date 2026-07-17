@@ -19,7 +19,6 @@ import {
   type InternalClientDependencies,
 } from "../../src/client/internal-create.js";
 import { createRegisterDef, type RegisterDef } from "../../src/registers/definitions.js";
-import { getRegister } from "../../src/registers/registry.js";
 import {
   createNormalizedTransportFailure,
   IllegalAddressError,
@@ -325,7 +324,7 @@ describe("internal IdmModbusClient write execution", () => {
     const clock = new FakeClock();
     const failure = createNormalizedTransportFailure(
       NormalizedTransportFailureKind.MODBUS,
-      "write value 42.5 at example.invalid:502 failed",
+      "write at example.invalid:502 failed",
     );
     const transport = new FakeModbusTransport([], {
       writeResponses: [
@@ -345,7 +344,7 @@ describe("internal IdmModbusClient write execution", () => {
       count: 2,
       registerType: "holding",
       errorType: "modbus",
-      message: "write value 42.5 at <endpoint> failed",
+      message: "write at <endpoint> failed",
       attempt: 1,
     });
     await writeInternalRegister(client, register, 43);

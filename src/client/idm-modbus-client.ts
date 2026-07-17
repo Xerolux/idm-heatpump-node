@@ -28,9 +28,12 @@ import {
 import { createModbusSerialTransport } from "../transport/modbus-serial-adapter.js";
 import {
   createModbusReadRequest,
+  createModbusWriteRequest,
   MODBUS_READ_LIMITS,
   type ModbusReadRequest,
   type ModbusTransport,
+  type ModbusWriteRequest,
+  type ModbusWriteTransport,
   validateModbusWords,
 } from "../transport/types.js";
 import { RegisterType, type IdmModelInfo } from "../types.js";
@@ -42,6 +45,16 @@ import type {
 import { detectModel, type DetectModelOptions } from "./detection.js";
 import { FifoGate } from "./fifo-gate.js";
 import { groupRegisters } from "./read-groups.js";
+import {
+  createWritePlan,
+  WriteSafetyState,
+  type InternalWriteSafetyStateSeed,
+  type InternalWriteSafetyStateSnapshot,
+  type SetValueOptions,
+  type SimulateWriteOptions,
+  type WriteRegisterOptions,
+  type WriteSafetyResult,
+} from "./write-safety.js";
 
 const DEFAULT_MAX_GROUP_SIZE = 40;
 const PERMANENT_FAILURE_THRESHOLD = 3;
@@ -105,11 +118,35 @@ export interface InternalReadRegistersOptions {
   readonly timeout?: number;
 }
 
+export type InternalWriteStateSeed = InternalWriteSafetyStateSeed;
+export type InternalWriteStateSnapshot = InternalWriteSafetyStateSnapshot;
+
 interface InternalTestControl {
   readonly attachTransport: (transport: ModbusTransport) => void;
+  readonly getActiveCyclicWrites: () => Readonly<Record<string, number>>;
+  readonly getExpiredCyclicWrites: () => ReadonlySet<string>;
   readonly readRegisters: (options: InternalReadRegistersOptions) => Promise<readonly number[]>;
+  readonly resetCyclicWriteState: (register?: RegisterDef | null) => void;
+  readonly resetWriteThrottle: (register?: RegisterDef | null) => void;
   readonly seedReadState: (seed: InternalReadStateSeed) => void;
+  readonly seedWriteState: (seed: InternalWriteStateSeed) => void;
+  readonly setValue: (
+    key: string,
+    value: unknown,
+    options?: SetValueOptions,
+  ) => Promise<WriteSafetyResult>;
+  readonly simulateWrite: (
+    register: RegisterDef | string,
+    value: unknown,
+    options?: SimulateWriteOptions,
+  ) => WriteSafetyResult;
   readonly snapshot: () => InternalClientSnapshot;
+  readonly writeRegister: (
+    register: RegisterDef,
+    value: unknown,
+    options?: WriteRegisterOptions,
+  ) => Promise<void>;
+  readonly writeStateSnapshot: () => InternalWriteStateSnapshot;
 }
 
 const internalTestControls = new WeakMap<IdmModbusClient, InternalTestControl>();
@@ -259,6 +296,70 @@ export async function readInternalModbusRegisters(
   return requireInternalTestControl(client).readRegisters(options);
 }
 
+export function simulateInternalWrite(
+  client: IdmModbusClient,
+  register: RegisterDef | string,
+  value: unknown,
+  options?: SimulateWriteOptions,
+): WriteSafetyResult {
+  return requireInternalTestControl(client).simulateWrite(register, value, options);
+}
+
+export async function writeInternalRegister(
+  client: IdmModbusClient,
+  register: RegisterDef,
+  value: unknown,
+  options?: WriteRegisterOptions,
+): Promise<void> {
+  await requireInternalTestControl(client).writeRegister(register, value, options);
+}
+
+export async function setInternalValue(
+  client: IdmModbusClient,
+  key: string,
+  value: unknown,
+  options?: SetValueOptions,
+): Promise<WriteSafetyResult> {
+  return requireInternalTestControl(client).setValue(key, value, options);
+}
+
+export function resetInternalWriteThrottle(
+  client: IdmModbusClient,
+  register: RegisterDef | null = null,
+): void {
+  requireInternalTestControl(client).resetWriteThrottle(register);
+}
+
+export function getInternalActiveCyclicWrites(
+  client: IdmModbusClient,
+): Readonly<Record<string, number>> {
+  return requireInternalTestControl(client).getActiveCyclicWrites();
+}
+
+export function getInternalExpiredCyclicWrites(client: IdmModbusClient): ReadonlySet<string> {
+  return requireInternalTestControl(client).getExpiredCyclicWrites();
+}
+
+export function resetInternalCyclicWriteState(
+  client: IdmModbusClient,
+  register: RegisterDef | null = null,
+): void {
+  requireInternalTestControl(client).resetCyclicWriteState(register);
+}
+
+export function seedInternalWriteState(
+  client: IdmModbusClient,
+  seed: InternalWriteStateSeed,
+): void {
+  requireInternalTestControl(client).seedWriteState(seed);
+}
+
+export function getInternalWriteStateSnapshot(
+  client: IdmModbusClient,
+): InternalWriteStateSnapshot {
+  return requireInternalTestControl(client).writeStateSnapshot();
+}
+
 export class IdmModbusClient {
   readonly #gate = new FifoGate();
   readonly #host: string;
@@ -278,6 +379,7 @@ export class IdmModbusClient {
   readonly #unsupportedRegisters = new Set<string>();
   readonly #batchUnsafeRegisters = new Set<string>();
   readonly #registerFailures = new Map<string, number>();
+  readonly #writeSafetyState = new WriteSafetyState();
 
   public constructor(host: string, options: IdmModbusClientOptions = {}) {
     if (typeof host !== "string" || host.length === 0) {
@@ -317,6 +419,10 @@ export class IdmModbusClient {
         attachTransport: (transport: ModbusTransport): void => {
           this.#transport = transport;
         },
+        getActiveCyclicWrites: (): Readonly<Record<string, number>> =>
+          this.#writeSafetyState.getActiveCyclicWrites(this.#dependencies.now()),
+        getExpiredCyclicWrites: (): ReadonlySet<string> =>
+          this.#writeSafetyState.getExpiredCyclicWrites(this.#dependencies.now()),
         readRegisters: async (
           readOptions: InternalReadRegistersOptions,
         ): Promise<readonly number[]> => {
@@ -343,6 +449,12 @@ export class IdmModbusClient {
             );
           });
         },
+        resetCyclicWriteState: (register: RegisterDef | null = null): void => {
+          this.#writeSafetyState.resetCyclicWriteState(register);
+        },
+        resetWriteThrottle: (register: RegisterDef | null = null): void => {
+          this.#writeSafetyState.resetWriteThrottle(register);
+        },
         seedReadState: (seed: InternalReadStateSeed): void => {
           for (const register of seed.batchUnsafeRegisters ?? []) {
             this.#batchUnsafeRegisters.add(register);
@@ -358,6 +470,32 @@ export class IdmModbusClient {
             this.#registerFailures.set(register, failures);
           }
         },
+        seedWriteState: (seed: InternalWriteStateSeed): void => {
+          this.#writeSafetyState.seed(seed);
+        },
+        setValue: async (
+          key: string,
+          value: unknown,
+          setOptions?: SetValueOptions,
+        ): Promise<WriteSafetyResult> =>
+          this.#gate.runExclusive(async () => {
+            const plan = this.#createWritePlan(key, value, {
+              dryRun: setOptions?.dryRun ?? false,
+            });
+            if (!plan.dryRun) {
+              await this.#executeWritePlanLocked(plan);
+            }
+            return plan;
+          }),
+        simulateWrite: (
+          register: RegisterDef | string,
+          value: unknown,
+          simulateOptions?: SimulateWriteOptions,
+        ): WriteSafetyResult =>
+          this.#createWritePlan(register, value, {
+            dryRun: simulateOptions?.dryRun ?? true,
+            allowCustomRegister: simulateOptions?.allowCustomRegister ?? false,
+          }),
         snapshot: (): InternalClientSnapshot => {
           const transientFailures: Record<string, number> = {};
           for (const [register, failures] of [...this.#registerFailures].sort(([left], [right]) =>
@@ -379,6 +517,21 @@ export class IdmModbusClient {
             transientFailures: Object.freeze(transientFailures),
           });
         },
+        writeRegister: async (
+          register: RegisterDef,
+          value: unknown,
+          writeOptions?: WriteRegisterOptions,
+        ): Promise<void> => {
+          await this.#gate.runExclusive(async () => {
+            const plan = this.#createWritePlan(register, value, {
+              dryRun: false,
+              allowCustomRegister: writeOptions?.allowCustomRegister ?? false,
+            });
+            await this.#executeWritePlanLocked(plan);
+          });
+        },
+        writeStateSnapshot: (): InternalWriteStateSnapshot =>
+          this.#writeSafetyState.snapshot(this.#dependencies.now()),
       }),
     );
   }
@@ -839,6 +992,78 @@ export class IdmModbusClient {
     throw new Error("Unreachable retry state");
   }
 
+  #createWritePlan(
+    register: RegisterDef | string,
+    value: unknown,
+    options: SimulateWriteOptions,
+  ): WriteSafetyResult {
+    return createWritePlan({
+      register,
+      value,
+      dryRun: options.dryRun ?? true,
+      allowCustomRegister: options.allowCustomRegister ?? false,
+      modelInfo: this.#modelInfo,
+      ...(this.#registerMap === null ? {} : { modelRegisterMap: this.#registerMap }),
+      writeSafetyState: this.#writeSafetyState,
+      now: this.#dependencies.now(),
+    });
+  }
+
+  async #executeWritePlanLocked(plan: WriteSafetyResult): Promise<void> {
+    await this.#ensureConnectedLocked();
+    const request = createModbusWriteRequest({
+      unitId: this.#slaveId,
+      registerType: RegisterType.HOLDING,
+      functionCode: 16,
+      address: plan.register.address,
+      count: plan.encodedRegisters.length,
+      words: plan.encodedRegisters,
+    });
+    await this.#retryWriteLocked(request, this.#maxRetries);
+    this.#writeSafetyState.recordSuccessfulWrite(plan.register, this.#dependencies.now());
+  }
+
+  async #retryWriteLocked(request: ModbusWriteRequest, retries: number): Promise<void> {
+    for (let attemptIndex = 0; attemptIndex < retries; attemptIndex += 1) {
+      try {
+        await this.#requireWriteTransportLocked().write(request);
+        this.#connectionSuspect = false;
+        return;
+      } catch (error) {
+        const attempt = attemptIndex + 1;
+        if (error instanceof IllegalAddressError) {
+          this.#recordWriteErrorContext(request, error, attempt);
+          throw error;
+        }
+        if (!(error instanceof NormalizedTransportFailure)) {
+          throw error;
+        }
+
+        this.#recordWriteErrorContext(request, error, attempt);
+        const reconnect = reconnectFailureKinds.has(error.kind);
+        if (reconnect) {
+          this.#connectionSuspect = true;
+        }
+        if (attempt === retries) {
+          throw error;
+        }
+        if (reconnect) {
+          await this.#tryReconnectLocked();
+        }
+        await this.#dependencies.sleep(RETRY_BACKOFF_BASE * 2 ** attemptIndex);
+      }
+    }
+    throw new Error("Unreachable retry state");
+  }
+
+  #requireWriteTransportLocked(): ModbusWriteTransport {
+    const transport = this.#requireTransportLocked();
+    if (!("write" in transport) || typeof transport.write !== "function") {
+      throw new TypeError("Connected Modbus transport does not support writes");
+    }
+    return transport as ModbusWriteTransport;
+  }
+
   async #tryReconnectLocked(): Promise<void> {
     await this.#closeTransportLocked();
     try {
@@ -861,6 +1086,25 @@ export class IdmModbusClient {
       address: request.address,
       count: request.count,
       registerType: request.registerType,
+      errorType:
+        error instanceof IllegalAddressError
+          ? NormalizedTransportFailureKind.ILLEGAL_ADDRESS
+          : error.kind,
+      message: redactDiagnosticMessage(error.message, this.#endpoint),
+      attempt,
+    });
+  }
+
+  #recordWriteErrorContext(
+    request: ModbusWriteRequest,
+    error: IllegalAddressError | NormalizedTransportFailure,
+    attempt: number,
+  ): void {
+    this.#lastErrorContext = ModbusErrorContext.create({
+      operation: "write",
+      address: request.address,
+      count: request.count,
+      registerType: RegisterType.HOLDING,
       errorType:
         error instanceof IllegalAddressError
           ? NormalizedTransportFailureKind.ILLEGAL_ADDRESS

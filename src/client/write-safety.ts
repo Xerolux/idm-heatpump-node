@@ -35,6 +35,19 @@ export interface WriteSafetyResult {
   readonly dryRun: boolean;
 }
 
+export interface SimulateWriteOptions {
+  readonly dryRun?: boolean;
+  readonly allowCustomRegister?: boolean;
+}
+
+export interface WriteRegisterOptions {
+  readonly allowCustomRegister?: boolean;
+}
+
+export interface SetValueOptions {
+  readonly dryRun?: boolean;
+}
+
 function ownEncodedWords(words: readonly number[]): readonly number[] {
   const owned = [...words];
   for (const word of owned) {
