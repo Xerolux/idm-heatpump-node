@@ -9,6 +9,9 @@ import {
   WriteScenarioContractError,
   parseWriteBehaviorFixture,
 } from "../../src/contracts/write-scenario.js";
+import { WriteSafetyResult, createWritePlan } from "../../src/client/write-safety.js";
+import { DataType } from "../../src/types.js";
+import { createRegisterDef } from "../../src/registers/definitions.js";
 
 const WRITE_ACTION_KINDS = [
   "simulate_write",
@@ -123,6 +126,26 @@ function expectFixtureError(callback: () => unknown): void {
 }
 
 describe("closed write scenario schema parser", () => {
+  it("uses the immutable domain plan for the generated low-word-first identity", () => {
+    const register = createRegisterDef({
+      address: 1_696,
+      datatype: DataType.FLOAT,
+      name: "fixture_identity",
+      writable: true,
+    });
+    const plan = createWritePlan({ register, value: 42.5 });
+
+    expect(plan).toEqual(
+      WriteSafetyResult.create({
+        register,
+        requestedValue: 42.5,
+        encodedRegisters: [0, 16_938],
+        dryRun: true,
+      }),
+    );
+    expect(Object.isFrozen(plan.encodedRegisters)).toBe(true);
+  });
+
   it("parses the pinned generated write matrix with unique complete categories", () => {
     const parsed = parseWriteBehaviorFixture(readFileSync(GENERATED_WRITE_FIXTURE, "utf8"));
     expect(parsed.operation_kinds).toEqual(WRITE_ACTION_KINDS);
