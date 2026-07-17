@@ -152,6 +152,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | ------------------------------------------ | -------------- | ----------- | ---------- |
 | 1. Reproducible Semantic Contract          | 10/10          | Complete    | 2026-07-16 |
 | 2. Modbus Reads, Detection, and Resilience | 10/10          | Complete    | 2026-07-17 |
-| 3. Safe Write Parity                       | 2/7            | In Progress |            |
+| 3. Safe Write Parity                       | 3/7            | In Progress |            |
 | 4. Optional Read-Only Web Parity           | 0/TBD          | Not started | -          |
 | 5. Parity Closure and Release Assurance    | 0/TBD          | Not started | -          |
