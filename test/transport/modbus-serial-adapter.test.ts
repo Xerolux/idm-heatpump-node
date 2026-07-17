@@ -191,7 +191,7 @@ afterEach(() => {
 });
 
 describe("audited modbus-serial runtime dependency", () => {
-  it("keeps the package private with exactly modbus-serial 8.0.25 as a direct dependency", async () => {
+  it("keeps the release package public with exactly modbus-serial 8.0.25 as a direct dependency", async () => {
     const packagePath = fileURLToPath(new URL("../../package.json", import.meta.url));
     const lockPath = fileURLToPath(new URL("../../package-lock.json", import.meta.url));
     const packageJson = JSON.parse(await readFile(packagePath, "utf8")) as {
@@ -202,7 +202,7 @@ describe("audited modbus-serial runtime dependency", () => {
       readonly packages?: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
     };
 
-    expect(packageJson.private).toBe(true);
+    expect(packageJson.private).toBe(false);
     expect(packageJson.dependencies).toEqual({ "modbus-serial": "8.0.25" });
     expect(packageLock.packages?.["node_modules/modbus-serial"]).toMatchObject({
       version: "8.0.25",

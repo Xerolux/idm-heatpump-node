@@ -14,10 +14,10 @@ vorgesehene Paketname ist:
 Python-Referenz ist implementiert und maschinengeprüft: Modbus Read/Write,
 Erkennung, Fehlerverhalten und das optionale read-only Web-Supplement.**
 
-`package.json` bleibt absichtlich auf `private: true`. Das optionale
-Paket wird mit diesem Git-Push noch nicht auf npm veröffentlicht. Vor einer
-späteren npm-Veröffentlichung muss dieselbe Freshness- und Paritätsprüfung
-erneut erfolgreich laufen.
+`package.json` ist für das erste öffentliche Paket bewusst auf `private: false`
+gesetzt. Version `0.1.0` wird unter `@xerolux/idm-heatpump` veröffentlicht.
+Vor jeder späteren Version muss dieselbe Freshness- und Paritätsprüfung erneut
+erfolgreich laufen.
 
 Die exakt geprüfte Python-Baseline ist:
 

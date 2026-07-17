@@ -39,6 +39,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Provision exact Python contract source
+        shell: bash
+        run: |
+          set -euo pipefail
+          commit="$(node -p "require('./UPSTREAM-PARITY.json').git_commit")"
+          git clone --no-checkout --no-single-branch https://github.com/Xerolux/idm-heatpump-api.git ../idm-heatpump-api
+          git -C ../idm-heatpump-api checkout --detach "$commit"
+
       - name: Validate package
         run: npm run check
 

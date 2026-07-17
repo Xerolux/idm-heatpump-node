@@ -4,7 +4,7 @@
   "description": "Unofficial Node.js client for IDM Navigator heat pumps over Modbus TCP",
   "license": "MIT",
   "author": "Basti (Xerolux)",
-  "private": true,
+  "private": false,
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

@@ -5,6 +5,8 @@ dokumentiert.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-07-17
+
 ### Added
 
 - Reproduzierbarer Semantik- und Laufzeitvertrag gegen
@@ -45,10 +47,10 @@ dokumentiert.
 
 ### Release status
 
-- Das Paket bleibt mit `private: true` unveröffentlicht und nicht
-  auf npm publiziert. Die geprüfte Baseline und alle 89 API-Zuordnungen stehen
-  auf `complete`; vor einer Veröffentlichung ist die Freshness-Prüfung erneut
-  auszuführen.
+- Das erste öffentliche Paket ist mit `private: false` als Version `0.1.0`
+  freigegeben. Die geprüfte Baseline und alle 89 API-Zuordnungen stehen auf
+  `complete`; vor jeder weiteren Veröffentlichung ist die Freshness-Prüfung
+  erneut auszuführen.
 - Navigator 1.0/1.7 bleibt als separate Protokollfamilie ausgeschlossen.
 - Modbus TCP bietet keine integrierte TLS-Verschlüsselung und keine
   Modbus-Authentifizierung; vorgesehen ist ausschließlich ein

@@ -97,11 +97,11 @@ describe("repository bootstrap contracts", () => {
     },
   );
 
-  it("blocks publication while parity is incomplete", () => {
+  it("exposes the release package only after parity is complete", () => {
     const manifest = readJson<PackageManifest>("package.json");
 
     expect(manifest.name).toBe("@xerolux/idm-heatpump");
-    expect(manifest.private).toBe(true);
+    expect(manifest.private).toBe(false);
     expect(manifest.engines.node).toBe(">=22");
     expect(Object.keys(manifest.exports).sort()).toEqual([".", "./package.json", "./web"]);
   });

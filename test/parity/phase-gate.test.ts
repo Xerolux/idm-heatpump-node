@@ -379,7 +379,7 @@ describe.sequential("parity orchestrator phase gate", () => {
   });
 });
 
-describe("npm parity entry points and private package boundary", () => {
+describe("npm parity entry points and release package boundary", () => {
   it("keeps the complete Phase-4 mapping behind the non-mutating Python fixture check", () => {
     const packageJson = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as {
       readonly scripts?: Readonly<Record<string, string>>;
@@ -423,7 +423,7 @@ describe("npm parity entry points and private package boundary", () => {
     expect(packageJson.scripts?.["parity:generate"]).toBe("node scripts/check-parity.mjs generate");
     expect(packageJson.scripts?.["parity:api"]).toBe("node scripts/generate-api-parity.mjs");
     expect(packageJson.scripts?.["parity:check"]).toBe("node scripts/check-parity.mjs check");
-    expect(packageJson.private).toBe(true);
+    expect(packageJson.private).toBe(false);
   });
 
   it("keeps package exports behind complete checked mapping and generated documentation", () => {
@@ -466,7 +466,7 @@ describe("npm parity entry points and private package boundary", () => {
       readonly private?: boolean;
       readonly scripts?: Readonly<Record<string, string>>;
     };
-    expect(packageJson.private).toBe(true);
+    expect(packageJson.private).toBe(false);
     expect(packageJson.dependencies ?? {}).toEqual({ "modbus-serial": "8.0.25" });
     expect(packageJson.files).toEqual(["dist"]);
     expect(packageJson.devDependencies).not.toHaveProperty("pymodbus");
@@ -652,11 +652,11 @@ describe("GitHub Actions workflow contract", () => {
 });
 
 describe("Phase 4 truthful documentation and closure", () => {
-  it("README documents complete private Modbus and web parity plus the risk boundary", () => {
+  it("README documents complete public Modbus and web parity plus the risk boundary", () => {
     const readme = readFileSync(resolve(root, "README.md"), "utf8");
 
     expect(readme).toMatch(/vollständige öffentliche Funktionsumfang[\s\S]*implementiert/u);
-    expect(readme).toContain("private: true");
+    expect(readme).toContain("private: false");
     expect(readme).toContain("89");
     expect(readme).toContain("complete");
     expect(readme).toContain("0.8.0");
@@ -697,7 +697,7 @@ describe("Phase 4 truthful documentation and closure", () => {
     expect(readme).toMatch(/vertrauenswürdigen\s+lokalen Netzwerk/u);
     expect(readme).toMatch(/Keine\s+Node-Hardwarevalidierung\s+durchgeführt/u);
     expect(readme).not.toMatch(/noch keinen Modbus-Transport|Phase 3[^\n]*(?:geplant|Writes)/u);
-    expect(readme).toMatch(/nicht (?:auf npm )?veröffentlicht/u);
+    expect(readme).toContain("Version `0.1.0`");
   });
 
   it("README register examples use canonical keys exposed by the public API", () => {
@@ -723,7 +723,7 @@ describe("Phase 4 truthful documentation and closure", () => {
     expect(changelog).toContain("0.8.0");
     expect(changelog).toContain(pinnedTag);
     expect(changelog).toContain(pinnedCommit);
-    expect(changelog).toContain("private: true");
+    expect(changelog).toContain("private: false");
     expect(changelog).toContain("Keine Node-Hardwarevalidierung durchgeführt.");
     expect(changelog).toContain("ModbusTransport");
     expect(changelog).toMatch(/FC03[\s\S]*FC04/u);
@@ -755,7 +755,7 @@ describe("Phase 4 truthful documentation and closure", () => {
     }
   });
 
-  it("closes Phase 4 web parity without claiming npm publication", () => {
+  it("closes Phase 4 web parity before the explicit npm release", () => {
     const requirements = readFileSync(resolve(root, ".planning/REQUIREMENTS.md"), "utf8");
     const roadmap = readFileSync(resolve(root, ".planning/ROADMAP.md"), "utf8");
     const checked = (id: string): boolean => {
@@ -806,7 +806,7 @@ describe("Phase 4 truthful documentation and closure", () => {
     );
   });
 
-  it("full gate keeps the package private, web-complete, covered, packaged, and parity-checked", () => {
+  it("full gate keeps the package public, web-complete, covered, packaged, and parity-checked", () => {
     const packageJson = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as {
       readonly files?: readonly string[];
       readonly private?: boolean;
@@ -847,7 +847,7 @@ describe("Phase 4 truthful documentation and closure", () => {
     const plannedRows = mapping.mappings.filter(({ status }) => status === "planned");
     const partialRows = mapping.mappings.filter(({ status }) => status === "partial");
 
-    expect(packageJson.private).toBe(true);
+    expect(packageJson.private).toBe(false);
     expect(packageJson.files).toEqual(["dist"]);
     expect(packageJson.scripts?.check).toBe(
       "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm run pack:check",
