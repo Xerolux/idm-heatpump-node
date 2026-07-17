@@ -33,6 +33,7 @@ const FIXTURE_NAMES = [
   "behavior-contract.json",
   "web-contract.json",
   "transport-behavior.json",
+  "write-behavior.json",
 ] as const;
 
 const temporaryDirectories: string[] = [];
@@ -216,7 +217,7 @@ afterEach(() => {
 }, 60_000);
 
 describe("verified Python contract generator", () => {
-  it("keeps a fixed allowlist of seven fixtures, two generated documents, and nine generated artifacts", () => {
+  it("keeps a fixed allowlist of eight fixtures, two generated documents, and ten generated artifacts", () => {
     const source = readFileSync(ORCHESTRATOR, "utf8");
     const generatedPathsBlock = source.match(
       /const GENERATED_PATHS = Object\.freeze\(\[(?<paths>[\s\S]*?)\]\);/u,
@@ -234,12 +235,13 @@ describe("verified Python contract generator", () => {
       "test/fixtures/behavior-contract.json",
       "test/fixtures/web-contract.json",
       "test/fixtures/transport-behavior.json",
+      "test/fixtures/write-behavior.json",
       "docs/API-PARITY.md",
       "docs/BASELINE.md",
     ]);
-    expect(source).toContain("seven fixtures");
+    expect(source).toContain("eight fixtures");
     expect(source).toContain("two generated documents");
-    expect(source).toContain("nine generated artifacts");
+    expect(source).toContain("ten generated artifacts");
     expect(source).toContain("IDM_PARITY_TEST_FAIL_AFTER_REPLACE");
     expect(source).toContain("IDM_PARITY_TEST_EXTRA_ARTIFACT");
     expect(source).toMatch(/lstatSync\(committedPath\)[\s\S]*isSymbolicLink/u);
@@ -731,6 +733,55 @@ describe("verified Python contract generator", () => {
     expect(transportText).not.toMatch(
       /Navigator 1\.[07]|(?:10|127|169\.254|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}|"(?:pin|serial_number|device_id|raw_capture)"\s*:/iu,
     );
+
+    const write = fixtures["write-behavior.json"] as TransportScenarioFixture;
+    expect(write.operation_kinds).toEqual([
+      "simulate_write",
+      "write_register",
+      "set_value",
+      "advance_time",
+      "reset_write_throttle",
+      "get_active_cyclic_writes",
+      "get_expired_cyclic_writes",
+      "reset_cyclic_write_state",
+    ]);
+    const writeNames = write.scenarios.map(({ name }) => name);
+    expect(writeNames).toEqual([...new Set(writeNames)]);
+    expect(writeNames).toEqual(
+      expect.arrayContaining([
+        "simulate_one_word_default",
+        "simulate_float_low_word_first",
+        "set_value_dry_run_no_traffic",
+        "write_validation_unknown_key",
+        "write_validation_model_unavailable",
+        "write_validation_custom_bypass",
+        "write_validation_boolean_required",
+        "write_validation_nonfinite_nan",
+        "write_validation_integer_required",
+        "write_validation_excluded_precedence",
+        "write_validation_below_minimum",
+        "write_validation_above_maximum",
+        "write_validation_enum_unsupported",
+        "write_fc16_one_word",
+        "write_fc16_float_low_word_first",
+        "eeprom_exact_60_second_boundary",
+        "eeprom_reset_scopes",
+        "cyclic_default_ttl_boundary",
+        "cyclic_custom_ttl_refresh_and_resets",
+        "write_retry_modbus_eventual_success",
+        "write_retry_code_2_is_modbus",
+        "write_retry_transport_reconnect",
+        "write_retry_exhaustion_rollback",
+        "write_failed_cyclic_refresh_preserves_deadline",
+        "write_diagnostics_redacted_and_last_error_retained",
+        "write_fifo_ordering",
+      ]),
+    );
+    expect(write.scenarios.length).toBeGreaterThanOrEqual(26);
+    for (const scenario of write.scenarios) {
+      expect(Object.keys(scenario).sort()).toEqual(transportScenarioFields);
+      expect(scenario.configuration).toMatchObject({ host: "example.invalid" });
+    }
   }, 120_000);
 
   it("is deterministic and keeps check mode byte- and mtime-non-mutating", () => {
@@ -774,7 +825,7 @@ describe("verified Python contract generator", () => {
     }
   }, 120_000);
 
-  it("provides transactional rollback for every prior fixture when replacement fails", () => {
+  it("provides transactional rollback for all ten artifacts when replacement fails", () => {
     const checkout = createExactCheckout();
     requireSuccess(runGenerator(checkout), "initial fixture generation");
     for (const name of FIXTURE_NAMES) {

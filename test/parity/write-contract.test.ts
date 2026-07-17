@@ -21,6 +21,8 @@ const WRITE_ACTION_KINDS = [
   "reset_cyclic_write_state",
 ] as const;
 
+const GENERATED_WRITE_FIXTURE = resolve(import.meta.dirname, "../fixtures/write-behavior.json");
+
 const EMPTY_STATE = Object.freeze({
   activeCyclicWrites: Object.freeze({}),
   connected: false,
@@ -121,6 +123,14 @@ function expectFixtureError(callback: () => unknown): void {
 }
 
 describe("closed write scenario schema parser", () => {
+  it("parses the pinned generated write matrix with unique complete categories", () => {
+    const parsed = parseWriteBehaviorFixture(readFileSync(GENERATED_WRITE_FIXTURE, "utf8"));
+    expect(parsed.operation_kinds).toEqual(WRITE_ACTION_KINDS);
+    expect(parsed.scenarios.length).toBeGreaterThanOrEqual(26);
+    const names = parsed.scenarios.map(({ name }) => name);
+    expect(names).toEqual([...new Set(names)]);
+  });
+
   it("parses a minimal canonical synthetic fixture to a newly owned deeply immutable graph", () => {
     const raw = validFixture();
     const first = parseWriteBehaviorFixture(raw);
