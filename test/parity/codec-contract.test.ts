@@ -129,7 +129,7 @@ function runPrimitiveCase(testCase: CodecCase): unknown {
 describe("pinned primitive codec golden contract", () => {
   it("is bound to the exact Python baseline and closed primitive case inventory", () => {
     expect(fixture.schema_version).toBe(1);
-    expect(fixture.baseline.git_commit).toBe("ad121ebf34a5f5e37204371c026927d77efcd15c");
+    expect(fixture.baseline.git_commit).toBe("a5d44ed06e5bd317946ca41720f37151631bc9c6");
     expect(fixture.layers.primitive.cases).toHaveLength(19);
     expect(new Set(fixture.layers.primitive.cases.map(({ id }) => id))).toHaveLength(19);
   });

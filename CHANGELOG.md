@@ -8,12 +8,12 @@ dokumentiert.
 ### Added
 
 - Reproduzierbarer Semantik- und Laufzeitvertrag gegen
-  `idm-heatpump-api` `0.7.6`, Tag `v0.7.6`, vollständiger Commit
-  `ad121ebf34a5f5e37204371c026927d77efcd15c`.
+  `idm-heatpump-api` `0.8.0`, Tag `v0.8.0`, vollständiger Commit
+  `a5d44ed06e5bd317946ca41720f37151631bc9c6`.
 - Strikte Baseline-Prüfung vor jedem Import aus der Python-Referenz sowie acht
   deterministische Golden Fixtures und zwei generierte Dokumente als zehn
   transaktional geprüfte Paritätsartefakte.
-- 59 vollständige und 30 geplante API-Zuordnungen für exakt 89 öffentliche
+- 89 vollständige API-Zuordnungen für exakt 89 öffentliche
   Python-Symbole; `IdmModbusClient` ist mit allen 29 öffentlichen Lese-,
   Diagnose- und Write-Mitgliedern vollständig abgebildet.
 - Öffentliche additive TypeScript-Schnittstelle `ModbusTransport` mit einem
@@ -37,17 +37,18 @@ dokumentiert.
 - Kontrollierter npm-Tarball mit exakter Dist-Allowlist, ESM-, CommonJS- und
   Declaration-Smoke sowie sauberer Installation und struktureller
   `ModbusTransport`-Implementierung ohne Verbindungsaufbau.
-
-### Not yet implemented
-
-- Phase 4: optionales read-only Web-Supplement.
-- Phase 5: Veröffentlichung, vollständige Gesamtparität,
-  Upstream-Freshness, Hardwarevalidierungsnachweis und sämtliche Release-Gates.
+- Optionales read-only Web-Supplement über `@xerolux/idm-heatpump/web` für
+  Navigator 10 WebSocket und Navigator 2.0 HTTP mit Login/CSRF, Cache,
+  Notifications, Statistics, Capabilities, Diagnostik und Fehlerhierarchie.
+- Python-0.8.0-Parität für die vollständige A–G-Heizkreiserkennung mit
+  Durchfluss- und Active-Mode-Signal sowie Navigator-10-Web-Mappings B–G.
 
 ### Release status
 
 - Das Paket bleibt mit `private: true` unveröffentlicht und nicht
-  releasebereit; bekannte Teilstände werden nicht publiziert.
+  auf npm publiziert. Die geprüfte Baseline und alle 89 API-Zuordnungen stehen
+  auf `complete`; vor einer Veröffentlichung ist die Freshness-Prüfung erneut
+  auszuführen.
 - Navigator 1.0/1.7 bleibt als separate Protokollfamilie ausgeschlossen.
 - Modbus TCP bietet keine integrierte TLS-Verschlüsselung und keine
   Modbus-Authentifizierung; vorgesehen ist ausschließlich ein

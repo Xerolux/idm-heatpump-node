@@ -20,6 +20,8 @@ import { DataType, IdmModelInfo, type IdmModelInfo as IdmModelInfoValue } from "
 const HEATING_CIRCUIT_BASE = 1_350;
 const HEATING_CIRCUIT_STEP = 2;
 const HEATING_CIRCUIT_UNAVAILABLE = -1;
+const HEATING_CIRCUIT_ACTIVE_MODE_BASE = 1_498;
+const HEATING_CIRCUIT_ACTIVE_MODE_UNAVAILABLE = 0xff;
 const ZONE_MODULE_BASE = 2_000;
 const ZONE_MODULE_STEP = 65;
 const EMPTY_SLOT_STOP_THRESHOLD = 2;
@@ -90,23 +92,19 @@ export async function detectModel(
   options: DetectModelOptions = {},
 ): Promise<IdmModelInfoValue> {
   const activeHeatingCircuits: string[] = [];
-  let missingCircuitSlots = 0;
   for (let index = 0; index < MAX_HEATING_CIRCUITS; index += 1) {
     const response = await probe(HEATING_CIRCUIT_BASE + index * HEATING_CIRCUIT_STEP, 2);
     const exact = exactWords(response, 2);
     const value = probeFloat(exact, -50, 80);
     const unavailable = value === HEATING_CIRCUIT_UNAVAILABLE;
-    if ((value !== null && !unavailable) || (exact !== null && !unavailable)) {
+    const mode = exactWords(await probe(HEATING_CIRCUIT_ACTIVE_MODE_BASE + index, 1), 1);
+    const modeConfigured =
+      mode !== null && ((mode[0] as number) & 0xff) !== HEATING_CIRCUIT_ACTIVE_MODE_UNAVAILABLE;
+    if ((value !== null && !unavailable) || modeConfigured || (exact !== null && !unavailable)) {
       const circuit = HEATING_CIRCUIT_LETTERS[index];
       if (circuit !== undefined) {
         activeHeatingCircuits.push(circuit);
       }
-      missingCircuitSlots = 0;
-    } else {
-      missingCircuitSlots += 1;
-    }
-    if (missingCircuitSlots >= EMPTY_SLOT_STOP_THRESHOLD) {
-      break;
     }
   }
 

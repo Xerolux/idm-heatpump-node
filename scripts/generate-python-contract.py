@@ -34,9 +34,9 @@ EXPECTED_BASELINE = {
     "schema_version": 1,
     "repository": "https://github.com/Xerolux/idm-heatpump-api",
     "python_package": "idm-heatpump-api",
-    "python_version": "0.7.6",
-    "git_tag": "v0.7.6",
-    "git_commit": "ad121ebf34a5f5e37204371c026927d77efcd15c",
+    "python_version": "0.8.0",
+    "git_tag": "v0.8.0",
+    "git_commit": "a5d44ed06e5bd317946ca41720f37151631bc9c6",
 }
 EXPECTED_MANIFEST_FIELDS = {
     "schema_version",
@@ -2211,51 +2211,59 @@ def _transport_fixture(
         )
 
     missing = lambda: _runtime_error("numeric_modbus_exception_code_2")
+
+    def heating_detection_scripts(
+        configured: Mapping[int, tuple[Mapping[str, Any], Mapping[str, Any]]] | None = None,
+    ) -> list[Mapping[str, Any]]:
+        configured = configured or {}
+        result: list[Mapping[str, Any]] = []
+        for index in range(7):
+            pair = configured.get(index)
+            result.extend(pair if pair is not None else (missing(), missing()))
+        return result
+
     scenarios.extend(
         [
             detection_scenario(
                 "detect_unknown",
-                [missing() for _ in range(10)],
+                [*heating_detection_scripts(), *[missing() for _ in range(8)]],
                 include_firmware=True,
             ),
             detection_scenario(
                 "detect_navigator_20",
                 [
-                    _runtime_words(codec.encode_float32(25.0)),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
+                    *heating_detection_scripts(
+                        {
+                            0: (
+                                _runtime_words(codec.encode_float32(25.0)),
+                                _runtime_words([0]),
+                            )
+                        }
+                    ),
+                    *[missing() for _ in range(7)],
                 ],
                 include_firmware=False,
             ),
             detection_scenario(
                 "detect_navigator_pro",
                 [
-                    missing(),
-                    missing(),
+                    *heating_detection_scripts(),
                     _runtime_words([1]),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
+                    *[missing() for _ in range(7)],
                 ],
                 include_firmware=False,
             ),
             detection_scenario(
                 "detect_navigator_10_full",
                 [
-                    _runtime_words(codec.encode_float32(25.0)),
-                    missing(),
-                    missing(),
+                    *heating_detection_scripts(
+                        {
+                            0: (
+                                _runtime_words(codec.encode_float32(25.0)),
+                                _runtime_words([0]),
+                            )
+                        }
+                    ),
                     _runtime_words([1]),
                     missing(),
                     missing(),
@@ -2271,9 +2279,21 @@ def _transport_fixture(
             detection_scenario(
                 "detect_unavailable_slots_and_cascade_sentinel",
                 [
-                    _runtime_words(codec.encode_float32(25.0)),
-                    _runtime_words(codec.encode_float32(-1.0)),
-                    _runtime_words(codec.encode_float32(-1.0)),
+                    *heating_detection_scripts(
+                        {
+                            0: (
+                                _runtime_words(codec.encode_float32(25.0)),
+                                _runtime_words([0]),
+                            ),
+                            **{
+                                index: (
+                                    _runtime_words(codec.encode_float32(-1.0)),
+                                    _runtime_words([0xFFFF]),
+                                )
+                                for index in range(1, 7)
+                            },
+                        }
+                    ),
                     missing(),
                     missing(),
                     _runtime_words(codec.encode_float32(float("nan"))),
@@ -2379,24 +2399,24 @@ WRITE_ACTION_KINDS = (
     "reset_cyclic_write_state",
 )
 
-# Exact structural rejection origins in the pinned Python 0.7.6 client.  The
+# Exact structural rejection origins in the pinned Python 0.8.0 client.  The
 # generator does not infer semantic equality from exception messages: every
 # reviewed validation code must match both its closed exception family and the
 # terminal traceback location of the guard that rejected the value.
 WRITE_VALIDATION_REJECTION_SPECS = {
-    "write_unknown_register": (KeyError, "_get_register_by_key", 1245),
-    "write_read_only": (ValueError, "simulate_write", 1215),
-    "write_model_unavailable": (ValueError, "_validate_model_availability", 1328),
-    "write_boolean_required": (ValueError, "_validate_write_allowed", 1260),
-    "write_boolean_for_numeric": (ValueError, "_validate_write_allowed", 1265),
-    "write_not_numeric": (ValueError, "_validate_write_allowed", 1269),
-    "write_nonfinite": (ValueError, "_validate_write_allowed", 1271),
-    "write_integer_required": (ValueError, "_validate_write_allowed", 1284),
-    "write_excluded": (ValueError, "_validate_write_allowed", 1288),
-    "write_below_minimum": (ValueError, "_validate_write_allowed", 1293),
-    "write_above_maximum": (ValueError, "_validate_write_allowed", 1295),
-    "write_enum_unsupported": (ValueError, "_validate_write_allowed", 1300),
-    "write_eeprom_throttled": (ValueError, "_validate_write_allowed", 1312),
+    "write_unknown_register": (KeyError, "_get_register_by_key", 1280),
+    "write_read_only": (ValueError, "simulate_write", 1250),
+    "write_model_unavailable": (ValueError, "_validate_model_availability", 1363),
+    "write_boolean_required": (ValueError, "_validate_write_allowed", 1295),
+    "write_boolean_for_numeric": (ValueError, "_validate_write_allowed", 1300),
+    "write_not_numeric": (ValueError, "_validate_write_allowed", 1304),
+    "write_nonfinite": (ValueError, "_validate_write_allowed", 1306),
+    "write_integer_required": (ValueError, "_validate_write_allowed", 1319),
+    "write_excluded": (ValueError, "_validate_write_allowed", 1323),
+    "write_below_minimum": (ValueError, "_validate_write_allowed", 1328),
+    "write_above_maximum": (ValueError, "_validate_write_allowed", 1330),
+    "write_enum_unsupported": (ValueError, "_validate_write_allowed", 1335),
+    "write_eeprom_throttled": (ValueError, "_validate_write_allowed", 1347),
 }
 
 
@@ -3260,6 +3280,126 @@ def _write_fixture(manifest: Mapping[str, Any], client_module: Any, constants: A
     return _fixture_root(manifest, operation_kinds=list(WRITE_ACTION_KINDS), scenarios=cases)
 
 
+def _web_fixture(manifest: Mapping[str, Any], web_module: Any) -> dict[str, Any]:
+    """Generate read-only web parser/value evidence from the pinned implementation."""
+    html = (
+        "<table>"
+        "<tr><td>B32</td><td>Outside</td><td>21.7°C</td></tr>"
+        "<tr><td>B2</td><td>Flow</td><td>12.5</td><td>l/min</td></tr>"
+        "<tr><td>Modell</td><td></td><td>iDM ALM 6-15</td></tr>"
+        "</table>"
+    )
+
+    def value_map(values: Mapping[str, Any]) -> dict[str, Any]:
+        return {name: dataclasses.asdict(value) for name, value in sorted(values.items())}
+
+    setting_raw = json.dumps(
+        {"settingDetail": {"id": "4768", "name": "N2_SENSORS", "value": html}},
+        separators=(",", ":"),
+    )
+    statistic_raw = json.dumps(
+        {
+            "statisticDetail": {
+                "data": {
+                    "total": {"heating": 142.98},
+                    "yearly": [{"date": "2026", "idx": 1, "heating": 12.0}],
+                }
+            }
+        },
+        separators=(",", ":"),
+    )
+    notification_raw = json.dumps(
+        {
+            "notification": {
+                "current": [
+                    {
+                        "code": "E123",
+                        "textEnum": "RD_EXAMPLE",
+                        "dateTime": 1783032856000,
+                        "type": "danger",
+                        "quitType": 1,
+                        "deferrable": True,
+                    }
+                ]
+            }
+        },
+        separators=(",", ":"),
+    )
+    parsed_values = web_module.parse_idm_html_table_values(html)
+    data = web_module.IdmWebData(model="Navigator 10 Web", values=parsed_values)
+    scenarios = [
+        {
+            "name": "web_pin_configuration",
+            "operation": "web_pin_configured",
+            "input": {"pins": [None, "", "   ", " 1234 "]},
+            "expected_result": [
+                web_module.web_pin_configured(pin) for pin in (None, "", "   ", " 1234 ")
+            ],
+        },
+        {
+            "name": "web_html_table_values",
+            "operation": "parse_html_table",
+            "input": {"html": html},
+            "expected_result": value_map(parsed_values),
+        },
+        {
+            "name": "navigator10_setting",
+            "operation": "parse_navigator10_setting",
+            "input": {"raw_response": setting_raw},
+            "expected_result": value_map(web_module.parse_navigator_setting_response(setting_raw)),
+        },
+        {
+            "name": "navigator10_statistics",
+            "operation": "parse_navigator10_statistics",
+            "input": {"raw_response": statistic_raw, "prefix": "runtime"},
+            "expected_result": value_map(
+                web_module.parse_navigator_statistic_response(statistic_raw, "runtime")
+            ),
+        },
+        {
+            "name": "navigator10_notifications",
+            "operation": "parse_navigator10_notifications",
+            "input": {"raw_response": notification_raw, "include_raw": True},
+            "expected_result": dataclasses.asdict(
+                web_module.parse_navigator_notifications_response(
+                    notification_raw, include_raw=True
+                )
+            ),
+        },
+        {
+            "name": "web_data_helpers",
+            "operation": "web_data_helpers",
+            "input": {"model": data.model, "values": value_map(parsed_values)},
+            "expected_result": {
+                "simple_values": data.simple_values,
+                "navigator_version": data.navigator_version,
+                "software_version": data.software_version,
+                "heatpump_model": data.heatpump_model,
+                "flowmeter": data.get_numeric("flowmeter"),
+                "missing": data.get_value("missing", "fallback"),
+            },
+        },
+        {
+            "name": "web_public_constants",
+            "operation": "web_constants",
+            "input": {},
+            "expected_result": {
+                "recommended_scan_interval": web_module.RECOMMENDED_WEB_SCAN_INTERVAL,
+                "value_descriptions": {
+                    key: dataclasses.asdict(value)
+                    for key, value in sorted(web_module.WEB_VALUE_DESCRIPTIONS.items())
+                },
+            },
+        },
+    ]
+    return _fixture_root(
+        manifest,
+        evidence_kind="web_behavior",
+        operation_kinds=sorted({case["operation"] for case in scenarios}),
+        scenarios=scenarios,
+    )
+
+
 def generate_fixtures(manifest: Mapping[str, Any], checkout: Path) -> dict[Path, bytes]:
     # This is the first upstream execution point. Every caller reaches it only
     # after ``verify_checkout`` and output-root validation have succeeded.
@@ -3269,6 +3409,7 @@ def generate_fixtures(manifest: Mapping[str, Any], checkout: Path) -> dict[Path,
         from idm_heatpump import client as client_module  # type: ignore[import-not-found]
         from idm_heatpump import const as constants  # type: ignore[import-not-found]
         from idm_heatpump import registers  # type: ignore[import-not-found]
+        from idm_heatpump import web as web_module  # type: ignore[import-not-found]
 
         public_api, public_classes = _public_fixtures(manifest, checkout, idm_heatpump)
         fixtures = {
@@ -3277,14 +3418,7 @@ def generate_fixtures(manifest: Mapping[str, Any], checkout: Path) -> dict[Path,
             OUTPUT_PATHS[2]: _codec_fixture(manifest, client_module),
             OUTPUT_PATHS[3]: _register_fixture(manifest, checkout, client_module, constants, registers),
             OUTPUT_PATHS[4]: _behavior_fixture(manifest, client_module, registers),
-            OUTPUT_PATHS[5]: _fixture_root(
-                manifest,
-                evidence_kind="deferred_marker",
-                deferred_to_phase=4,
-                release_blocking=True,
-                reason="Navigator 10 WebSocket and Navigator 2.0 HTTP parity require Phase 4 executable evidence",
-                scenarios=[],
-            ),
+            OUTPUT_PATHS[5]: _web_fixture(manifest, web_module),
             OUTPUT_PATHS[6]: _transport_fixture(
                 manifest,
                 client_module,

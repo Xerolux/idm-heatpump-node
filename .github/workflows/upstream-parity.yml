@@ -1,0 +1,59 @@
+name: Upstream parity
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  repository_dispatch:
+    types:
+      - idm-heatpump-api-release
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  latest-stable:
+    name: Latest stable Python parity
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository with full tag history
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Reject a stale Python baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          pinned="$(node -p "require('./UPSTREAM-PARITY.json').git_tag")"
+          latest="$(
+            git ls-remote --tags --refs https://github.com/Xerolux/idm-heatpump-api.git 'refs/tags/v[0-9]*' |
+              awk '{ sub("refs/tags/", "", $2); print $2 }' |
+              sort -V |
+              tail -n 1
+          )"
+          test -n "$latest"
+          if [[ "$latest" != "$pinned" ]]; then
+            echo "Stale baseline: pinned $pinned, latest stable $latest" >&2
+            exit 1
+          fi
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify exact behavioral parity
+        run: npm run parity:check

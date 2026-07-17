@@ -1,15 +1,15 @@
 ---
 phase: 03
 slug: safe-write-parity
-status: draft
+status: complete
 nyquist_compliant: true
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-07-17
 ---
 
 # Phase 03 — Validation Strategy
 
-> Per-phase validation contract for exact Python `idm-heatpump-api` v0.7.6
+> Per-phase validation contract for exact Python `idm-heatpump-api` v0.8.0
 > write planning, safety state, FC16 transport, and generated parity.
 
 ---
@@ -42,24 +42,24 @@ created: 2026-07-17
 
 ## Per-Task Verification Map
 
-| Task ID  | Plan | Wave | Requirement                      | Threat Ref                       | Secure Behavior                                                                                           | Test Type         | Automated Command                                                                                                                        | File Exists | Status     |
-| -------- | ---- | ---- | -------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ---------- |
-| 03-01-01 | 01   | 1    | WRT-01, TRN-03W, ERR-01W         | T-03-02, T-03-04, T-03-06        | Closed write codes plus frozen bounded FC16 request and narrow transport refinement                       | unit              | `npm test -- test/transport/write-request.test.ts test/client/errors.test.ts`                                                            | ❌ W0       | ⬜ pending |
-| 03-01-02 | 01   | 1    | TRN-03W                          | T-03-04, T-03-07                 | Fake refinement records exact immutable writes without changing read-only implementers                    | unit              | `npm test -- test/transport/write-request.test.ts -t "fake"`                                                                             | ❌ W0       | ⬜ pending |
-| 03-02-01 | 02   | 2    | WRT-01, WRT-02, CTR-01           | T-03-01, T-03-05, T-03-08        | Closed bounded parser uses exact pinned Git objects and detached-checkout authority                       | contract          | `npm test -- test/parity/write-contract.test.ts -t "schema"`                                                                             | ❌ W0       | ⬜ pending |
-| 03-02-02 | 02   | 2    | WRT-01, WRT-02, TRN-03W, CTR-01  | T-03-05, T-03-08                 | Eighth fixture is generated transactionally while all prior fixture bytes remain governed                 | contract          | `npm run parity:generate && npm run parity:check && npm test -- test/parity/generator.test.ts -t "rollback"`                             | ❌ W0       | ⬜ pending |
-| 03-03-01 | 03   | 3    | WRT-01, WRT-02                   | T-03-01, T-03-02, T-03-03        | Immutable plan preserves exact lookup, validation order, membership-only custom bypass, and codec use     | unit/contract     | `npm test -- test/client/write-validation.test.ts`                                                                                       | ❌ W0       | ⬜ pending |
-| 03-03-02 | 03   | 3    | WRT-02                           | T-03-03, T-03-04                 | Exact EEPROM/cyclic boundaries, resets, projections, and no premature mutation                            | unit              | `npm test -- test/client/write-state.test.ts`                                                                                            | ❌ W0       | ⬜ pending |
-| 03-04-01 | 04   | 4    | WRT-01, WRT-02, TRN-03W          | T-03-03, T-03-04, T-03-06        | Private async transactions use one FIFO; synchronous reset is immediate and later success repopulates     | unit              | `npm test -- test/client/write-execution.test.ts test/client/write-state.test.ts`                                                        | ❌ W0       | ⬜ pending |
-| 03-04-02 | 04   | 4    | TRN-03W, ERR-01W                 | T-03-03, T-03-04, T-03-06        | Exact retry/reconnect/backoff, Code-2 separation, rollback, and redacted context                          | unit              | `npm test -- test/client/write-execution.test.ts test/client/resilience.test.ts -t "retry"`                                              | ❌ W0       | ⬜ pending |
-| 03-05-01 | 05   | 5    | TRN-03W, ERR-01W                 | T-03-04, T-03-06, T-03-07        | Provider FC16 mapping and exact echo land before refinement merges into every transport implementer       | unit              | `npm test -- test/transport/modbus-serial-adapter.test.ts test/parity/transport-contract.test.ts && npm run typecheck`                   | ✅/❌ W0    | ⬜ pending |
-| 03-05-02 | 05   | 5    | TRN-03W, ERR-01W                 | T-03-04, T-03-06                 | Malformed acknowledgement and provider failures never commit state or create read unsupported state       | unit              | `npm test -- test/transport/modbus-serial-adapter.test.ts test/client/write-execution.test.ts -t "malformed"`                            | ✅/❌ W0    | ⬜ pending |
-| 03-06-01 | 06   | 6    | WRT-01, WRT-02, TRN-03W, ERR-01W | T-03-01 through T-03-08          | Every generated Python scenario is consumed once through private controls with exact result/request/state | contract          | `npm test -- test/parity/write-contract.test.ts && npm run parity:check`                                                                 | ❌ W0       | ⬜ pending |
-| 03-06-02 | 06   | 6    | ERR-01W, CTR-01                  | T-03-05, T-03-06, T-03-08        | Scoped secrecy allows fixture values/words but forbids them in errors, diagnostics, logs, docs, and packs | security/contract | `npm test -- test/parity/write-contract.test.ts test/parity/generator.test.ts -t "mutation"`                                             | ❌ W0       | ⬜ pending |
-| 03-07-01 | 07   | 7    | WRT-01, WRT-02, PAR-01           | T-03-05, T-03-08                 | Seven public wrappers, mappings, declarations, exports, and package smoke promote atomically after parity | integration       | `npm test -- test/parity/api-parity.test.ts test/parity/phase-gate.test.ts && npm run parity:api && npm run build && npm run pack:check` | ✅/❌ W0    | ⬜ pending |
-| 03-07-02 | 07   | 7    | WRT-01, WRT-02, TRN-03W, ERR-01W | T-03-01 through T-03-08, T-03-SC | Full private phase gate passes while Phase-4/5 release mode remains fail closed                           | integration       | `npm run check && npm run parity:check && npm audit --omit=dev && ! node scripts/generate-api-parity.mjs --release`                      | ✅/❌ W0    | ⬜ pending |
+| Task ID  | Plan | Wave | Requirement                      | Threat Ref                       | Secure Behavior                                                                                           | Test Type         | Automated Command                                                                                                                        | File Exists | Status   |
+| -------- | ---- | ---- | -------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------- | -------- |
+| 03-01-01 | 01   | 1    | WRT-01, TRN-03W, ERR-01W         | T-03-02, T-03-04, T-03-06        | Closed write codes plus frozen bounded FC16 request and narrow transport refinement                       | unit              | `npm test -- test/transport/write-request.test.ts test/client/errors.test.ts`                                                            | ✅          | ✅ green |
+| 03-01-02 | 01   | 1    | TRN-03W                          | T-03-04, T-03-07                 | Fake refinement records exact immutable writes without changing read-only implementers                    | unit              | `npm test -- test/transport/write-request.test.ts -t "fake"`                                                                             | ✅          | ✅ green |
+| 03-02-01 | 02   | 2    | WRT-01, WRT-02, CTR-01           | T-03-01, T-03-05, T-03-08        | Closed bounded parser uses exact pinned Git objects and detached-checkout authority                       | contract          | `npm test -- test/parity/write-contract.test.ts -t "schema"`                                                                             | ✅          | ✅ green |
+| 03-02-02 | 02   | 2    | WRT-01, WRT-02, TRN-03W, CTR-01  | T-03-05, T-03-08                 | Eighth fixture is generated transactionally while all prior fixture bytes remain governed                 | contract          | `npm run parity:generate && npm run parity:check && npm test -- test/parity/generator.test.ts -t "rollback"`                             | ✅          | ✅ green |
+| 03-03-01 | 03   | 3    | WRT-01, WRT-02                   | T-03-01, T-03-02, T-03-03        | Immutable plan preserves exact lookup, validation order, membership-only custom bypass, and codec use     | unit/contract     | `npm test -- test/client/write-validation.test.ts`                                                                                       | ✅          | ✅ green |
+| 03-03-02 | 03   | 3    | WRT-02                           | T-03-03, T-03-04                 | Exact EEPROM/cyclic boundaries, resets, projections, and no premature mutation                            | unit              | `npm test -- test/client/write-state.test.ts`                                                                                            | ✅          | ✅ green |
+| 03-04-01 | 04   | 4    | WRT-01, WRT-02, TRN-03W          | T-03-03, T-03-04, T-03-06        | Private async transactions use one FIFO; synchronous reset is immediate and later success repopulates     | unit              | `npm test -- test/client/write-execution.test.ts test/client/write-state.test.ts`                                                        | ✅          | ✅ green |
+| 03-04-02 | 04   | 4    | TRN-03W, ERR-01W                 | T-03-03, T-03-04, T-03-06        | Exact retry/reconnect/backoff, Code-2 separation, rollback, and redacted context                          | unit              | `npm test -- test/client/write-execution.test.ts test/client/resilience.test.ts -t "retry"`                                              | ✅          | ✅ green |
+| 03-05-01 | 05   | 5    | TRN-03W, ERR-01W                 | T-03-04, T-03-06, T-03-07        | Provider FC16 mapping and exact echo land before refinement merges into every transport implementer       | unit              | `npm test -- test/transport/modbus-serial-adapter.test.ts test/parity/transport-contract.test.ts && npm run typecheck`                   | ✅/✅       | ✅ green |
+| 03-05-02 | 05   | 5    | TRN-03W, ERR-01W                 | T-03-04, T-03-06                 | Malformed acknowledgement and provider failures never commit state or create read unsupported state       | unit              | `npm test -- test/transport/modbus-serial-adapter.test.ts test/client/write-execution.test.ts -t "malformed"`                            | ✅/✅       | ✅ green |
+| 03-06-01 | 06   | 6    | WRT-01, WRT-02, TRN-03W, ERR-01W | T-03-01 through T-03-08          | Every generated Python scenario is consumed once through private controls with exact result/request/state | contract          | `npm test -- test/parity/write-contract.test.ts && npm run parity:check`                                                                 | ✅          | ✅ green |
+| 03-06-02 | 06   | 6    | ERR-01W, CTR-01                  | T-03-05, T-03-06, T-03-08        | Scoped secrecy allows fixture values/words but forbids them in errors, diagnostics, logs, docs, and packs | security/contract | `npm test -- test/parity/write-contract.test.ts test/parity/generator.test.ts -t "mutation"`                                             | ✅          | ✅ green |
+| 03-07-01 | 07   | 7    | WRT-01, WRT-02, PAR-01           | T-03-05, T-03-08                 | Seven public wrappers, mappings, declarations, exports, and package smoke promote atomically after parity | integration       | `npm test -- test/parity/api-parity.test.ts test/parity/phase-gate.test.ts && npm run parity:api && npm run build && npm run pack:check` | ✅/✅       | ✅ green |
+| 03-07-02 | 07   | 7    | WRT-01, WRT-02, TRN-03W, ERR-01W | T-03-01 through T-03-08, T-03-SC | Full private phase gate passes while Phase-4/5 release mode remains fail closed                           | integration       | `npm run check && npm run parity:check && npm audit --omit=dev && ! node scripts/generate-api-parity.mjs --release`                      | ✅/✅       | ✅ green |
 
-_Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky_
+_Status: ✅ green · ✅ green · ❌ red · ⚠️ flaky_
 
 ---
 
@@ -81,16 +81,16 @@ _Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky_
 
 ## Wave 0 Requirements
 
-- [ ] `test/transport/write-request.test.ts` and fake FC16 transport events.
-- [ ] `src/contracts/write-scenario.ts` with bounded closed parsing.
-- [ ] `test/parity/write-contract.test.ts` and generated
+- [x] `test/transport/write-request.test.ts` and fake FC16 transport events.
+- [x] `src/contracts/write-scenario.ts` with bounded closed parsing.
+- [x] `test/parity/write-contract.test.ts` and generated
       `test/fixtures/write-behavior.json`.
-- [ ] `test/client/write-validation.test.ts`,
+- [x] `test/client/write-validation.test.ts`,
       `test/client/write-state.test.ts`, and
       `test/client/write-execution.test.ts`.
-- [ ] Mocked provider write acknowledgements/errors in
+- [x] Mocked provider write acknowledgements/errors in
       `test/transport/modbus-serial-adapter.test.ts`.
-- [ ] Generator rollback, old-artifact byte preservation, mapping-count, and
+- [x] Generator rollback, old-artifact byte preservation, mapping-count, and
       release-fail-closed assertions.
 
 ---

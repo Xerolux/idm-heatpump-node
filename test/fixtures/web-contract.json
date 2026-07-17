@@ -1,17 +1,295 @@
 {
   "baseline": {
-    "git_commit": "ad121ebf34a5f5e37204371c026927d77efcd15c",
-    "git_tag": "v0.7.6",
+    "git_commit": "a5d44ed06e5bd317946ca41720f37151631bc9c6",
+    "git_tag": "v0.8.0",
     "parity_schema_version": 1,
     "python_package": "idm-heatpump-api",
-    "python_version": "0.7.6",
+    "python_version": "0.8.0",
     "repository": "https://github.com/Xerolux/idm-heatpump-api"
   },
-  "deferred_to_phase": 4,
-  "evidence_kind": "deferred_marker",
+  "evidence_kind": "web_behavior",
   "generator_version": "1",
-  "reason": "Navigator 10 WebSocket and Navigator 2.0 HTTP parity require Phase 4 executable evidence",
-  "release_blocking": true,
-  "scenarios": [],
+  "operation_kinds": [
+    "parse_html_table",
+    "parse_navigator10_notifications",
+    "parse_navigator10_setting",
+    "parse_navigator10_statistics",
+    "web_constants",
+    "web_data_helpers",
+    "web_pin_configured"
+  ],
+  "scenarios": [
+    {
+      "expected_result": [
+        false,
+        false,
+        false,
+        true
+      ],
+      "input": {
+        "pins": [
+          null,
+          "",
+          "   ",
+          " 1234 "
+        ]
+      },
+      "name": "web_pin_configuration",
+      "operation": "web_pin_configured"
+    },
+    {
+      "expected_result": {
+        "flowmeter": {
+          "name": "flowmeter",
+          "numeric_value": 12.5,
+          "raw_description": "Flow",
+          "raw_key": "B2",
+          "unit": "l/min",
+          "value": "12.5l/min"
+        },
+        "heatpump_model": {
+          "name": "heatpump_model",
+          "numeric_value": null,
+          "raw_description": "",
+          "raw_key": "Modell",
+          "unit": null,
+          "value": "iDM ALM 6-15"
+        },
+        "outside_air_temperature": {
+          "name": "outside_air_temperature",
+          "numeric_value": 21.7,
+          "raw_description": "Outside",
+          "raw_key": "B32",
+          "unit": "°C",
+          "value": "21.7°C"
+        }
+      },
+      "input": {
+        "html": "<table><tr><td>B32</td><td>Outside</td><td>21.7°C</td></tr><tr><td>B2</td><td>Flow</td><td>12.5</td><td>l/min</td></tr><tr><td>Modell</td><td></td><td>iDM ALM 6-15</td></tr></table>"
+      },
+      "name": "web_html_table_values",
+      "operation": "parse_html_table"
+    },
+    {
+      "expected_result": {
+        "flowmeter": {
+          "name": "flowmeter",
+          "numeric_value": 12.5,
+          "raw_description": "Flow",
+          "raw_key": "B2",
+          "unit": "l/min",
+          "value": "12.5l/min"
+        },
+        "heatpump_model": {
+          "name": "heatpump_model",
+          "numeric_value": null,
+          "raw_description": "",
+          "raw_key": "Modell",
+          "unit": null,
+          "value": "iDM ALM 6-15"
+        },
+        "outside_air_temperature": {
+          "name": "outside_air_temperature",
+          "numeric_value": 21.7,
+          "raw_description": "Outside",
+          "raw_key": "B32",
+          "unit": "°C",
+          "value": "21.7°C"
+        }
+      },
+      "input": {
+        "raw_response": "{\"settingDetail\":{\"id\":\"4768\",\"name\":\"N2_SENSORS\",\"value\":\"<table><tr><td>B32</td><td>Outside</td><td>21.7\\u00b0C</td></tr><tr><td>B2</td><td>Flow</td><td>12.5</td><td>l/min</td></tr><tr><td>Modell</td><td></td><td>iDM ALM 6-15</td></tr></table>\"}}"
+      },
+      "name": "navigator10_setting",
+      "operation": "parse_navigator10_setting"
+    },
+    {
+      "expected_result": {
+        "runtime_current_year_heating": {
+          "name": "runtime_current_year_heating",
+          "numeric_value": null,
+          "raw_description": "",
+          "raw_key": "heating",
+          "unit": null,
+          "value": "12.0"
+        },
+        "runtime_total_heating": {
+          "name": "runtime_total_heating",
+          "numeric_value": null,
+          "raw_description": "",
+          "raw_key": "heating",
+          "unit": null,
+          "value": "142.98"
+        }
+      },
+      "input": {
+        "prefix": "runtime",
+        "raw_response": "{\"statisticDetail\":{\"data\":{\"total\":{\"heating\":142.98},\"yearly\":[{\"date\":\"2026\",\"idx\":1,\"heating\":12.0}]}}}"
+      },
+      "name": "navigator10_statistics",
+      "operation": "parse_navigator10_statistics"
+    },
+    {
+      "expected_result": {
+        "current": [
+          {
+            "code": "E123",
+            "deferrable": true,
+            "message": "RD_EXAMPLE",
+            "quit_type": 1,
+            "raw": {
+              "code": "E123",
+              "dateTime": 1783032856000,
+              "deferrable": true,
+              "quitType": 1,
+              "textEnum": "RD_EXAMPLE",
+              "type": "danger"
+            },
+            "severity": "danger",
+            "timestamp": 1783032856000
+          }
+        ],
+        "raw_response": "{\"notification\":{\"current\":[{\"code\":\"E123\",\"textEnum\":\"RD_EXAMPLE\",\"dateTime\":1783032856000,\"type\":\"danger\",\"quitType\":1,\"deferrable\":true}]}}"
+      },
+      "input": {
+        "include_raw": true,
+        "raw_response": "{\"notification\":{\"current\":[{\"code\":\"E123\",\"textEnum\":\"RD_EXAMPLE\",\"dateTime\":1783032856000,\"type\":\"danger\",\"quitType\":1,\"deferrable\":true}]}}"
+      },
+      "name": "navigator10_notifications",
+      "operation": "parse_navigator10_notifications"
+    },
+    {
+      "expected_result": {
+        "flowmeter": 12.5,
+        "heatpump_model": "iDM ALM 6-15",
+        "missing": "fallback",
+        "navigator_version": "Navigator 10",
+        "simple_values": {
+          "flowmeter": "12.5l/min",
+          "heatpump_model": "iDM ALM 6-15",
+          "outside_air_temperature": "21.7°C"
+        },
+        "software_version": null
+      },
+      "input": {
+        "model": "Navigator 10 Web",
+        "values": {
+          "flowmeter": {
+            "name": "flowmeter",
+            "numeric_value": 12.5,
+            "raw_description": "Flow",
+            "raw_key": "B2",
+            "unit": "l/min",
+            "value": "12.5l/min"
+          },
+          "heatpump_model": {
+            "name": "heatpump_model",
+            "numeric_value": null,
+            "raw_description": "",
+            "raw_key": "Modell",
+            "unit": null,
+            "value": "iDM ALM 6-15"
+          },
+          "outside_air_temperature": {
+            "name": "outside_air_temperature",
+            "numeric_value": 21.7,
+            "raw_description": "Outside",
+            "raw_key": "B32",
+            "unit": "°C",
+            "value": "21.7°C"
+          }
+        }
+      },
+      "name": "web_data_helpers",
+      "operation": "web_data_helpers"
+    },
+    {
+      "expected_result": {
+        "recommended_scan_interval": 30.0,
+        "value_descriptions": {
+          "battery_voltage_central_unit": {
+            "device_class": "voltage",
+            "enabled_by_default": true,
+            "key": "battery_voltage_central_unit",
+            "preferred_unit": "V",
+            "state_class": "measurement"
+          },
+          "board_temperature": {
+            "device_class": "temperature",
+            "enabled_by_default": true,
+            "key": "board_temperature",
+            "preferred_unit": "°C",
+            "state_class": "measurement"
+          },
+          "condenser_pressure": {
+            "device_class": "pressure",
+            "enabled_by_default": true,
+            "key": "condenser_pressure",
+            "preferred_unit": "bar",
+            "state_class": "measurement"
+          },
+          "flowmeter": {
+            "device_class": null,
+            "enabled_by_default": true,
+            "key": "flowmeter",
+            "preferred_unit": "l/min",
+            "state_class": "measurement"
+          },
+          "heatpump_model": {
+            "device_class": null,
+            "enabled_by_default": true,
+            "key": "heatpump_model",
+            "preferred_unit": null,
+            "state_class": null
+          },
+          "hotgas_temperature": {
+            "device_class": "temperature",
+            "enabled_by_default": true,
+            "key": "hotgas_temperature",
+            "preferred_unit": "°C",
+            "state_class": "measurement"
+          },
+          "hotwater_circulation_heat_quantity": {
+            "device_class": "energy",
+            "enabled_by_default": true,
+            "key": "hotwater_circulation_heat_quantity",
+            "preferred_unit": "kWh",
+            "state_class": "total"
+          },
+          "hotwater_tapping_heat_quantity": {
+            "device_class": "energy",
+            "enabled_by_default": true,
+            "key": "hotwater_tapping_heat_quantity",
+            "preferred_unit": "kWh",
+            "state_class": "total"
+          },
+          "myidm_id": {
+            "device_class": null,
+            "enabled_by_default": false,
+            "key": "myidm_id",
+            "preferred_unit": null,
+            "state_class": null
+          },
+          "software_version": {
+            "device_class": null,
+            "enabled_by_default": true,
+            "key": "software_version",
+            "preferred_unit": null,
+            "state_class": null
+          },
+          "verdamper_pressure": {
+            "device_class": "pressure",
+            "enabled_by_default": true,
+            "key": "verdamper_pressure",
+            "preferred_unit": "bar",
+            "state_class": "measurement"
+          }
+        }
+      },
+      "input": {},
+      "name": "web_public_constants",
+      "operation": "web_constants"
+    }
+  ],
   "schema_version": 1
 }

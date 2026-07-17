@@ -118,6 +118,9 @@ assert(implementedMembers.length === 29, "IdmModbusClient must expose exactly 29
 const expectedRuntimeExports = mapping.mappings
   .filter(({ export_path: exportPath, status }) => exportPath === "." && status === "complete")
   .map(({ typescript_symbol: typescriptSymbol }) => typescriptSymbol);
+const expectedWebRuntimeExports = mapping.mappings
+  .filter(({ export_path: exportPath, status }) => exportPath === "./web" && status === "complete")
+  .map(({ typescript_symbol: typescriptSymbol }) => typescriptSymbol);
 for (const symbol of PHASE_3_RUNTIME_SYMBOLS) {
   assert(
     expectedRuntimeExports.includes(symbol),
@@ -154,11 +157,22 @@ import {
 } from "@xerolux/idm-heatpump";
 
 const expectedExports = ${JSON.stringify(expectedRuntimeExports.sort())};
+const expectedWebExports = ${JSON.stringify(expectedWebRuntimeExports.sort())};
 const expectedMembers = ${JSON.stringify([...implementedMembers].sort())};
 if (JSON.stringify(Object.keys(packageRoot).sort()) !== JSON.stringify(expectedExports)) {
   throw new Error("ESM root export closure failed");
 }
-if (Object.keys(webRoot).length !== 0) throw new Error("Phase-3 web root must remain empty");
+if (JSON.stringify(Object.keys(webRoot).sort()) !== JSON.stringify(expectedWebExports)) {
+  throw new Error("ESM web export closure failed");
+}
+const webValue = webRoot.IdmWebValue.create({ name: "flowmeter", value: "1.2", rawKey: "B2", numericValue: 1.2 });
+const webData = webRoot.IdmWebData.create({ model: "Navigator 10 Web", values: { flowmeter: webValue } });
+if (!Object.isFrozen(webData) || webData.getNumeric("flowmeter") !== 1.2 || !webRoot.webPinConfigured(" 1234 ")) {
+  throw new Error("ESM read-only web data smoke failed");
+}
+if (webRoot.createOptionalNavigator10WebClient("host.invalid", "") !== null || webRoot.createOptionalNavigator20WebClient("host.invalid", "") !== null) {
+  throw new Error("ESM optional web factory boundary failed");
+}
 const client = new IdmModbusClient("heatpump.example.invalid");
 if (client.host !== "heatpump.example.invalid" || client.port !== 502) {
   throw new Error("ESM IdmModbusClient defaults failed");
@@ -218,10 +232,18 @@ const {
 
 async function runSmoke() {
 const expectedExports = ${JSON.stringify(expectedRuntimeExports.sort())};
+const expectedWebExports = ${JSON.stringify(expectedWebRuntimeExports.sort())};
 if (JSON.stringify(Object.keys(packageRoot).sort()) !== JSON.stringify(expectedExports)) {
   throw new Error("CommonJS root export closure failed");
 }
-if (Object.keys(webRoot).length !== 0) throw new Error("Phase-3 web root must remain empty");
+if (JSON.stringify(Object.keys(webRoot).sort()) !== JSON.stringify(expectedWebExports)) {
+  throw new Error("CommonJS web export closure failed");
+}
+const webValue = webRoot.IdmWebValue.create({ name: "flowmeter", value: "1.2", rawKey: "B2", numericValue: 1.2 });
+const webData = webRoot.IdmWebData.create({ model: "Navigator 10 Web", values: { flowmeter: webValue } });
+if (!Object.isFrozen(webData) || webData.getNumeric("flowmeter") !== 1.2 || !webRoot.webPinConfigured(" 1234 ")) {
+  throw new Error("CommonJS read-only web data smoke failed");
+}
 const client = new IdmModbusClient("heatpump.example.invalid");
 const diagnostics = IdmClientDiagnostics.create({ navigatorType: client.modelName, modbusConnected: false });
 const context = ModbusErrorContext.create({ operation: "read", address: 0, count: 1, registerType: "input", errorType: "timeout", message: "synthetic", attempt: 1 });

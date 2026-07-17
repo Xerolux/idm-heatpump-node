@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready for planning
-stopped_at: Completed 03-07-PLAN.md
-last_updated: "2026-07-17T05:08:56.211Z"
-last_activity: 2026-07-17 -- Phase 03 completed public safe-write parity and private release closure
+stopped_at: Completed Phase 04 web parity
+last_updated: "2026-07-16T08:45:00.000Z"
+last_activity: 2026-07-16 -- Phase 04 completed optional read-only web parity
 progress:
   total_phases: 5
-  completed_phases: 3
-  total_plans: 27
-  completed_plans: 27
-  percent: 60
+  completed_phases: 4
+  total_plans: 28
+  completed_plans: 28
+  percent: 80
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-14)
 
 **Core value:** Complete semantic and behavioral parity with the latest stable pinned `Xerolux/idm-heatpump-api` release, proven by cross-repository contracts and all release gates.
-**Current focus:** Phase 04 — optional-read-only-web-parity
+**Current focus:** Phase 05 — release assurance (npm publication remains intentionally disabled)
 
 ## Current Position
 
-Phase: 4
+Phase: 5
 Plan: Not planned
 Status: Ready for planning
-Last activity: 2026-07-17 -- Phase 03 completed public safe-write parity and private release closure
+Last activity: 2026-07-16 -- Phase 04 completed optional read-only web parity
 
-Milestone progress: [██████░░░░] 60% (3/5 phases)
+Milestone progress: [████████░░] 80% (4/5 phases)
 
 ## Performance Metrics
 
@@ -51,7 +51,7 @@ Milestone progress: [██████░░░░] 60% (3/5 phases)
 **Recent Trend:**
 
 - Last 5 plans: 8 min, 12 min, 9 min, 24 min, 27 min
-- Trend: Phase 3 is complete with exact private-package read/write parity; Phase 4 web planning is next
+- Trend: Phase 4 is complete with exact private-package read/write/web parity; npm publication remains intentionally disabled
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |

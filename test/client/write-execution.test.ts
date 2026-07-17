@@ -215,7 +215,17 @@ describe("internal IdmModbusClient write execution", () => {
       error: new IllegalAddressError(`missing detection address ${String(address)}`),
     });
     const transport = new FakeModbusTransport(
-      [1_350, 1_352, 2_000, 2_065, 1_850, 1_870, 74, 1_147, 4_108, 4_120].map(missingProbe),
+      [
+        ...Array.from({ length: 7 }, (_, index) => [1_350 + index * 2, 1_498 + index]).flat(),
+        2_000,
+        2_065,
+        1_850,
+        1_870,
+        74,
+        1_147,
+        4_108,
+        4_120,
+      ].map(missingProbe),
       { writeResponses: [{ kind: "write_ok" }] },
     );
     const { client } = clientFromTransports([transport], new FakeClock());

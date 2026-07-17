@@ -10,25 +10,26 @@ vorgesehene Paketname ist:
 
 ## Status
 
-**Phase 3 ist implementiert und maschinengeprüft. Der Modbus-Lesepfad sowie
-die sicherheitskritischen Write-Pfade sind nutzbar; das Gesamtprojekt ist noch
-nicht fertig und nicht auf npm veröffentlicht.**
+**Der vollständige öffentliche Funktionsumfang der aktuell neuesten stabilen
+Python-Referenz ist implementiert und maschinengeprüft: Modbus Read/Write,
+Erkennung, Fehlerverhalten und das optionale read-only Web-Supplement.**
 
 `package.json` bleibt absichtlich auf `private: true`. Das optionale
-Web-Supplement, die Veröffentlichung und die vollständige Gesamtparität folgen
-in den Phasen 4 und 5. Bis dahin darf dieses Repository nicht als vollständiger,
-funktionsgleicher Gesamtport veröffentlicht werden.
+Paket wird mit diesem Git-Push noch nicht auf npm veröffentlicht. Vor einer
+späteren npm-Veröffentlichung muss dieselbe Freshness- und Paritätsprüfung
+erneut erfolgreich laufen.
 
 Die exakt geprüfte Python-Baseline ist:
 
-- Paketversion: `0.7.6`
-- Git-Tag: `v0.7.6`
-- vollständiger Commit: `ad121ebf34a5f5e37204371c026927d77efcd15c`
+- Paketversion: `0.8.0`
+- Git-Tag: `v0.8.0`
+- vollständiger Commit: `a5d44ed06e5bd317946ca41720f37151631bc9c6`
 
-`UPSTREAM-PARITY.json` behält deshalb den Gesamtstatus `planned`. Keine
-Node-Hardwarevalidierung durchgeführt.
+`UPSTREAM-PARITY.json` steht auf `complete`. Keine Node-Hardwarevalidierung
+durchgeführt; sämtliche Prüfungen verwenden reproduzierbare Fake-Transporte,
+Fake-Zeit und Antworten der Python-Referenz.
 
-## Bis einschließlich Phase 3 nachgewiesen
+## Nachgewiesener Funktionsumfang
 
 Der Paket-Root stellt den vollständigen Semantik-Kern aus Phase 1 sowie den
 evidenzbasierten Lesepfad aus Phase 2 bereit:
@@ -63,9 +64,14 @@ evidenzbasierten Lesepfad aus Phase 2 bereit:
   erfolgreicher Zustandsänderung erst nach bestätigtem Transporterfolg;
 - acht exakt gepinnte Golden Fixtures und zwei generierte Dokumente als zehn
   transaktional geprüfte Paritätsartefakte.
+- read-only Navigator-10-WebSocket und Navigator-2.0-HTTP mit PIN-Prüfung,
+  Login/CSRF, Cache, Notifications, Statistics, Capabilities, Diagnostik und
+  geschlossener Fehlerhierarchie über den separaten Export `./web`;
+- vollständige Erkennung nicht zusammenhängender Heizkreise A–G über
+  Durchfluss- und Active-Mode-Signale entsprechend Python `0.8.0`.
 
-Die Paritätsmatrix enthält weiterhin exakt 89 öffentliche Python-Symbole. 59
-Zuordnungen sind `complete` und 30 Web-Zuordnungen bleiben `planned`;
+Die Paritätsmatrix enthält exakt 89 öffentliche Python-Symbole. Alle 89
+Zuordnungen sind `complete` (59 Paket-Root, 30 Web);
 `IdmModbusClient` ist mit allen 29 öffentlichen Mitgliedern vollständig
 abgebildet.
 `ModbusTransport` ist separat als vollständige additive TypeScript-Erweiterung
@@ -73,7 +79,9 @@ dokumentiert.
 
 Die exakte Zuordnung, Repräsentation und Testevidenz steht in
 [docs/API-PARITY.md](docs/API-PARITY.md). Der Exportpfad
-`@xerolux/idm-heatpump/web` bleibt bis Phase 4 absichtlich leer.
+`@xerolux/idm-heatpump/web` enthält ausschließlich optionale read-only
+Web-Funktionen. Fehlende oder leere PINs liefern über die Factory-Funktionen
+`null` und erhalten damit den Modbus-only-Betrieb.
 
 ## Verwendung des Lesepfads
 
@@ -141,13 +149,25 @@ Navigator 1.0/1.7 ist eine andere, nicht unterstützte und ausdrücklich
 ausgeschlossene Protokollfamilie. Dieses Paket übernimmt keine Adressen dieser
 Familie in die Navigator-2.0/Pro/10-Registerkarte.
 
-## Noch ausstehend
+## Optionales read-only Web-Supplement
 
-- **Phase 4 – optionales read-only Web-Supplement:** Navigator-10-WebSocket
-  und Navigator-2.0-HTTP.
-- **Phase 5 – Veröffentlichung und Gesamtparität:** vollständige
-  Cross-Repository-Matrix, Prüfung gegen das dann neueste stabile Upstream,
-  dokumentierte Hardwarevalidierung und alle npm-Release-Gates.
+```ts
+import { createOptionalNavigator10WebClient } from "@xerolux/idm-heatpump/web";
+
+const web = createOptionalNavigator10WebClient("heatpump.example.invalid", process.env.IDM_PIN);
+if (web !== null) {
+  await web.connect();
+  try {
+    const data = await web.readData();
+    console.log(data.simpleValues);
+  } finally {
+    await web.close();
+  }
+}
+```
+
+Das Web-Supplement bietet bewusst keinen Write-Pfad, keine Browser-Zusage und
+keine Telemetrie.
 
 ## Entwicklung und Paritätsprüfung
 

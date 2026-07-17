@@ -71,9 +71,9 @@ const PHASE_ONE_OPERATION_KINDS = Object.freeze([
 const EXPECTED_BASELINE = Object.freeze({
   repository: "https://github.com/Xerolux/idm-heatpump-api",
   python_package: "idm-heatpump-api",
-  python_version: "0.7.6",
-  git_tag: "v0.7.6",
-  git_commit: "ad121ebf34a5f5e37204371c026927d77efcd15c",
+  python_version: "0.8.0",
+  git_tag: "v0.8.0",
+  git_commit: "a5d44ed06e5bd317946ca41720f37151631bc9c6",
   parity_schema_version: 1,
 } as const);
 

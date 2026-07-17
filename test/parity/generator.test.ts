@@ -1,5 +1,4 @@
 import {
-  copyFileSync,
   existsSync,
   mkdtempSync,
   mkdirSync,
@@ -24,7 +23,7 @@ const PYTHON =
   (process.platform === "win32" && process.env.LOCALAPPDATA !== undefined
     ? join(process.env.LOCALAPPDATA, "Programs/Python/Python313/python.exe")
     : "python3.12");
-const PINNED_COMMIT = "ad121ebf34a5f5e37204371c026927d77efcd15c";
+const PINNED_COMMIT = "a5d44ed06e5bd317946ca41720f37151631bc9c6";
 const CANONICAL_ORIGIN = "https://github.com/Xerolux/idm-heatpump-api";
 const FIXTURE_NAMES = [
   "public-api.json",
@@ -410,21 +409,8 @@ describe("verified Python contract generator", () => {
 
   it("generates complete fixtures with exact API, class, codec, schema, read, and write facts", () => {
     const checkout = createExactCheckout();
-    const oldFixtureNames = FIXTURE_NAMES.filter((name) => name !== "write-behavior.json");
-    mkdirSync(join(checkout.output, "test/fixtures"), { recursive: true });
-    for (const name of oldFixtureNames) {
-      copyFileSync(resolve(ROOT, "test/fixtures", name), fixturePath(checkout, name));
-    }
-    const oldFixtureBytes = Object.fromEntries(
-      oldFixtureNames.map((name) => [name, readFileSync(fixturePath(checkout, name))]),
-    );
     const result = runGenerator(checkout);
     requireSuccess(result, "fixture generation");
-    for (const name of oldFixtureNames) {
-      const previous = oldFixtureBytes[name];
-      if (previous === undefined) throw new Error(`Missing old fixture snapshot: ${name}`);
-      expect(readFileSync(fixturePath(checkout, name)).equals(previous)).toBe(true);
-    }
 
     const fixtures = Object.fromEntries(
       FIXTURE_NAMES.map((name) => [name, readJson<FixtureRoot>(fixturePath(checkout, name))]),
@@ -436,8 +422,8 @@ describe("verified Python contract generator", () => {
       expect(fixture.baseline).toEqual({
         repository: CANONICAL_ORIGIN,
         python_package: "idm-heatpump-api",
-        python_version: "0.7.6",
-        git_tag: "v0.7.6",
+        python_version: "0.8.0",
+        git_tag: "v0.8.0",
         git_commit: PINNED_COMMIT,
         parity_schema_version: 1,
       });
@@ -621,9 +607,16 @@ describe("verified Python contract generator", () => {
     expect(allFixtureText).not.toMatch(/Navigator 1\.[07]/u);
 
     expect(fixtures["web-contract.json"]).toMatchObject({
-      release_blocking: true,
-      deferred_to_phase: 4,
-      evidence_kind: "deferred_marker",
+      evidence_kind: "web_behavior",
+      operation_kinds: [
+        "parse_html_table",
+        "parse_navigator10_notifications",
+        "parse_navigator10_setting",
+        "parse_navigator10_statistics",
+        "web_constants",
+        "web_data_helpers",
+        "web_pin_configured",
+      ],
     });
 
     const transport = fixtures["transport-behavior.json"] as TransportScenarioFixture;

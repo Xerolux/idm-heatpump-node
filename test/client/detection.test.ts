@@ -55,6 +55,19 @@ function expectedProbe(address: number, count: number): ModbusReadRequest {
   });
 }
 
+function heatingCircuitResponses(
+  slots: Readonly<
+    Record<number, { readonly flow: FakeModbusResponse; readonly mode: FakeModbusResponse }>
+  > = {},
+): readonly FakeModbusResponse[] {
+  return Array.from({ length: 7 }, (_, index) => {
+    const slot = slots[index];
+    return slot === undefined
+      ? [missing(1_350 + index * 2), missing(1_498 + index)]
+      : [slot.flow, slot.mode];
+  }).flat();
+}
+
 function clientWithResponses(responses: readonly FakeModbusResponse[]) {
   const transport = new FakeModbusTransport(responses, { initiallyConnected: true });
   const client = createInternalIdmModbusClient(
@@ -77,8 +90,7 @@ function featureNames(features: ReadonlySet<string>): readonly string[] {
 describe("ordered IDM model detection", () => {
   it("uses one two-second attempt in exact order and preserves read-failure state", async () => {
     const responses = [
-      missing(1_350),
-      missing(1_352),
+      ...heatingCircuitResponses(),
       missing(2_000),
       missing(2_065),
       missing(1_850),
@@ -114,8 +126,10 @@ describe("ordered IDM model detection", () => {
     expect(featureNames(info.features)).toEqual([]);
     expect(client.modelName).toBe(MODEL_NAVIGATOR_20);
     expect(readRequests(transport.events)).toEqual([
-      expectedProbe(1_350, 2),
-      expectedProbe(1_352, 2),
+      ...Array.from({ length: 7 }, (_, index) => [
+        expectedProbe(1_350 + index * 2, 2),
+        expectedProbe(1_498 + index, 1),
+      ]).flat(),
       expectedProbe(2_000, 1),
       expectedProbe(2_065, 1),
       expectedProbe(1_850, 2),
@@ -135,9 +149,9 @@ describe("ordered IDM model detection", () => {
 
   it("detects Navigator 10 with every capability, firmware, and exact model map", async () => {
     const responses = [
-      words(ModbusCodec.encodeFloat32(25)),
-      missing(1_352),
-      missing(1_354),
+      ...heatingCircuitResponses({
+        0: { flow: words(ModbusCodec.encodeFloat32(25)), mode: words([0]) },
+      }),
       words([1]),
       missing(2_065),
       missing(2_130),
@@ -192,9 +206,10 @@ describe("ordered IDM model detection", () => {
     ).toBe(false);
     expect([...map.keys()].some((name) => /navigator.?1/iu.test(name))).toBe(false);
     expect(readRequests(transport.events)).toEqual([
-      expectedProbe(1_350, 2),
-      expectedProbe(1_352, 2),
-      expectedProbe(1_354, 2),
+      ...Array.from({ length: 7 }, (_, index) => [
+        expectedProbe(1_350 + index * 2, 2),
+        expectedProbe(1_498 + index, 1),
+      ]).flat(),
       expectedProbe(2_000, 1),
       expectedProbe(2_065, 1),
       expectedProbe(2_130, 1),
@@ -210,10 +225,15 @@ describe("ordered IDM model detection", () => {
 
   it("treats exact undecodable/out-of-range circuit pairs as active and -1 as missing", async () => {
     const responses = [
-      words([0, 32_704]),
-      words(ModbusCodec.encodeFloat32(123.5)),
-      words(ModbusCodec.encodeFloat32(-1)),
-      words(ModbusCodec.encodeFloat32(-1)),
+      ...heatingCircuitResponses({
+        0: { flow: words([0, 32_704]), mode: missing(1_498) },
+        1: { flow: words(ModbusCodec.encodeFloat32(123.5)), mode: missing(1_499) },
+        2: { flow: words(ModbusCodec.encodeFloat32(-1)), mode: words([0xffff]) },
+        3: { flow: words(ModbusCodec.encodeFloat32(-1)), mode: words([0xffff]) },
+        4: { flow: words(ModbusCodec.encodeFloat32(-1)), mode: words([0xffff]) },
+        5: { flow: words(ModbusCodec.encodeFloat32(-1)), mode: words([0xffff]) },
+        6: { flow: words(ModbusCodec.encodeFloat32(-1)), mode: words([0xffff]) },
+      }),
       missing(2_000),
       missing(2_065),
       words([0, 32_704]),
@@ -243,19 +263,19 @@ describe("ordered IDM model detection", () => {
       FEATURE_SOLAR,
     ]);
     const requests = readRequests(transport.events);
-    expect(requests.map(({ address }) => address)).toEqual([
-      1_350, 1_352, 1_354, 1_356, 2_000, 2_065, 1_850, 1_870, 74, 1_147, 4_108,
-    ]);
-    expect(requests.some(({ address }) => address === 1_358)).toBe(false);
+    expect(requests.slice(0, 14).map(({ address }) => address)).toEqual(
+      Array.from({ length: 7 }, (_, index) => [1_350 + index * 2, 1_498 + index]).flat(),
+    );
+    expect(requests.some(({ address }) => address === 1_362)).toBe(true);
     expect(requests.some(({ address }) => address === 4_120)).toBe(false);
     transport.assertResponsesConsumed();
   });
 
   it("gives zone evidence Navigator Pro priority over heating-circuit evidence", async () => {
     const responses = [
-      words(ModbusCodec.encodeFloat32(25)),
-      missing(1_352),
-      missing(1_354),
+      ...heatingCircuitResponses({
+        0: { flow: words(ModbusCodec.encodeFloat32(25)), mode: words([0]) },
+      }),
       words([1]),
       missing(2_065),
       missing(2_130),
@@ -277,10 +297,39 @@ describe("ordered IDM model detection", () => {
     transport.assertResponsesConsumed();
   });
 
+  it("detects non-contiguous circuits through the active-mode fallback", async () => {
+    const unavailable = words(ModbusCodec.encodeFloat32(-1));
+    const responses = [
+      ...heatingCircuitResponses({
+        0: { flow: words(ModbusCodec.encodeFloat32(25)), mode: words([0]) },
+        1: { flow: unavailable, mode: words([0xffff]) },
+        2: { flow: unavailable, mode: words([0xffff]) },
+        3: { flow: unavailable, mode: words([2]) },
+        4: { flow: unavailable, mode: words([0xffff]) },
+        5: { flow: unavailable, mode: words([0xffff]) },
+        6: { flow: unavailable, mode: words([0xffff]) },
+      }),
+      missing(2_000),
+      missing(2_065),
+      missing(1_850),
+      missing(1_870),
+      missing(74),
+      missing(1_147),
+      missing(4_108),
+    ];
+    const { client, transport } = clientWithResponses(responses);
+
+    const info = await client.detectModel({ readFirmware: false });
+
+    expect(info.activeHeatingCircuits).toEqual(["A", "D"]);
+    expect(info.features.has(FEATURE_HEATING_CIRCUITS)).toBe(true);
+    expect(readRequests(transport.events).some(({ address }) => address === 1_504)).toBe(true);
+    transport.assertResponsesConsumed();
+  });
+
   it("returns null for non-finite firmware and emits no firmware request when disabled", async () => {
     const invalidFirmware = [
-      missing(1_350),
-      missing(1_352),
+      ...heatingCircuitResponses(),
       missing(2_000),
       missing(2_065),
       missing(1_850),

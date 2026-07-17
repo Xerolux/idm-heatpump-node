@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Reproducible Semantic Contract** - The pinned Python public API, codecs, registers, and contract artifacts have exact TypeScript counterparts. (completed 2026-07-15)
 - [x] **Phase 2: Modbus Reads, Detection, and Resilience** - Consumers receive Python-equivalent requests, values, capabilities, state, diagnostics, and recovery from the Modbus path. (completed 2026-07-17)
 - [x] **Phase 3: Safe Write Parity** - Consumers can plan, validate, dry-run, and execute writes with the same safety and time-dependent behavior as Python. (completed 2026-07-17)
-- [ ] **Phase 4: Optional Read-Only Web Parity** - Consumers can opt into equivalent Navigator 10 WebSocket and Navigator 2.0 HTTP data without changing the Modbus baseline.
+- [x] **Phase 4: Optional Read-Only Web Parity** - Consumers can opt into equivalent Navigator 10 WebSocket and Navigator 2.0 HTTP data without changing the Modbus baseline. (completed 2026-07-16)
 - [ ] **Phase 5: Parity Closure and Release Assurance** - The complete standalone package proves latest-stable parity and satisfies every gate for `0.1.0` publication.
 
 ## Phase Details
@@ -136,7 +136,11 @@ Plans:
 4. Web factories and PIN checks never expose a write path, and the optional web supplement remains read-only with Modbus as the baseline.
 5. Package consumers see no browser-support promise and no telemetry behavior from either export path.
 
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+
+- [x] 04-01 — Implement, contract-test, package, and document the complete read-only Web supplement.
 
 ### Phase 5: Parity Closure and Release Assurance
 
@@ -163,5 +167,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Reproducible Semantic Contract          | 10/10          | Complete    | 2026-07-16 |
 | 2. Modbus Reads, Detection, and Resilience | 10/10          | Complete    | 2026-07-17 |
 | 3. Safe Write Parity                       | 7/7            | Complete    | 2026-07-17 |
-| 4. Optional Read-Only Web Parity           | 0/TBD          | Not started | -          |
+| 4. Optional Read-Only Web Parity           | 1/1            | Complete    | 2026-07-16 |
 | 5. Parity Closure and Release Assurance    | 0/TBD          | Not started | -          |

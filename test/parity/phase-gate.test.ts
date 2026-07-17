@@ -24,8 +24,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const orchestrator = resolve(root, "scripts/check-parity.mjs");
 const upstreamSource = resolve(root, "../idm-heatpump-api");
 const canonicalRepository = "https://github.com/Xerolux/idm-heatpump-api";
-const pinnedCommit = "ad121ebf34a5f5e37204371c026927d77efcd15c";
-const pinnedTag = "v0.7.6";
+const pinnedCommit = "a5d44ed06e5bd317946ca41720f37151631bc9c6";
+const pinnedTag = "v0.8.0";
 const temporaryPrefix = "idm-heatpump-contract-";
 const phase3RuntimeSymbols = [
   "IdmClientDiagnostics",
@@ -380,7 +380,7 @@ describe.sequential("parity orchestrator phase gate", () => {
 });
 
 describe("npm parity entry points and private package boundary", () => {
-  it("keeps Phase-3 mapping promotion API-only before the non-mutating Python fixture check", () => {
+  it("keeps the complete Phase-4 mapping behind the non-mutating Python fixture check", () => {
     const packageJson = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as {
       readonly scripts?: Readonly<Record<string, string>>;
     };
@@ -388,6 +388,7 @@ describe("npm parity entry points and private package boundary", () => {
       readFileSync(resolve(root, "contracts/api-mapping.json"), "utf8"),
     ) as {
       readonly mappings: readonly {
+        readonly export_path: string;
         readonly owner_phase: number;
         readonly python_symbol: string;
         readonly status: string;
@@ -399,16 +400,17 @@ describe("npm parity entry points and private package boundary", () => {
 
     expect(packageJson.scripts?.["parity:api"]).toBe("node scripts/generate-api-parity.mjs");
     expect(packageJson.scripts?.["parity:check"]).toBe("node scripts/check-parity.mjs check");
-    expect(completeRows).toHaveLength(59);
+    expect(completeRows).toHaveLength(89);
     expect(completeRows.filter(({ owner_phase }) => owner_phase === 1)).toHaveLength(53);
     expect(completeRows.filter(({ owner_phase }) => owner_phase === 2)).toHaveLength(5);
     expect(completeRows.filter(({ owner_phase }) => owner_phase === 3)).toHaveLength(1);
+    expect(completeRows.filter(({ owner_phase }) => owner_phase === 4)).toHaveLength(30);
     for (const row of completeRows) {
       expect(apiDocument, row.python_symbol).toContain(
-        `| \`${row.python_symbol}\` | \`${row.typescript_symbol}\` | \`.\` | ${String(row.owner_phase)} | \`complete\` |`,
+        `| \`${row.python_symbol}\` | \`${row.typescript_symbol}\` | \`${row.export_path}\` | ${String(row.owner_phase)} | \`complete\` |`,
       );
     }
-    expect(mapping.mappings.filter(({ status }) => status === "planned")).toHaveLength(30);
+    expect(mapping.mappings.filter(({ status }) => status === "planned")).toHaveLength(0);
     expect(mapping.mappings.filter(({ status }) => status === "partial")).toHaveLength(0);
   });
 
@@ -443,14 +445,14 @@ describe("npm parity entry points and private package boundary", () => {
       const documentedStatus = `| \`${row.python_symbol}\` | \`${row.typescript_symbol}\` | \`${row.export_path}\` |`;
       expect(apiDocument, row.python_symbol).toContain(documentedStatus);
       if (row.status === "complete") {
-        expect(row.export_path, row.python_symbol).toBe(".");
-        expect(rootSource, row.typescript_symbol).toContain(row.typescript_symbol);
+        const source = row.export_path === "." ? rootSource : webSource;
+        expect(source, row.typescript_symbol).toContain(row.typescript_symbol);
       } else {
         expect(rootSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
         expect(webSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
       }
     }
-    expect(webSource).toMatch(/export \{\};/u);
+    expect(webSource).toContain("IdmNavigator10WebClient");
     expect(rootSource).not.toMatch(
       /createRegisterDef|decodeValue|encodeValue|serializeRegisterDef|getCommonRegisters/u,
     );
@@ -629,7 +631,7 @@ describe("GitHub Actions workflow contract", () => {
     const parityJob = workflow.match(/^\s{2}parity:\s*$([\s\S]*)/mu)?.[1] ?? "";
 
     expect(manifest).toMatchObject({
-      python_version: "0.7.6",
+      python_version: "0.8.0",
       git_tag: pinnedTag,
       git_commit: pinnedCommit,
     });
@@ -649,13 +651,15 @@ describe("GitHub Actions workflow contract", () => {
   });
 });
 
-describe("Phase 3 truthful documentation and closure", () => {
-  it("README documents the exact private Phase 3 safe-write scope and risk boundary", () => {
+describe("Phase 4 truthful documentation and closure", () => {
+  it("README documents complete private Modbus and web parity plus the risk boundary", () => {
     const readme = readFileSync(resolve(root, "README.md"), "utf8");
 
-    expect(readme).toMatch(/Phase 3[\s\S]*(?:implementiert|abgeschlossen)/u);
+    expect(readme).toMatch(/vollständige öffentliche Funktionsumfang[\s\S]*implementiert/u);
     expect(readme).toContain("private: true");
-    expect(readme).toContain("0.7.6");
+    expect(readme).toContain("89");
+    expect(readme).toContain("complete");
+    expect(readme).toContain("0.8.0");
     expect(readme).toContain(pinnedTag);
     expect(readme).toContain(pinnedCommit);
     expect(readme).toContain("npm run parity:check");
@@ -673,11 +677,11 @@ describe("Phase 3 truthful documentation and closure", () => {
       "Dry-run",
       "EEPROM",
       "Cyclic",
+      "Web-Supplement",
+      "WebSocket",
+      "CSRF",
     ]) {
       expect(readme, implementedArea).toContain(implementedArea);
-    }
-    for (const pendingArea of ["Web-Supplement", "Veröffentlichung", "Gesamtparität"]) {
-      expect(readme, pendingArea).toContain(pendingArea);
     }
     expect(readme).toMatch(/ein- und zwei(?:-| )Wort/u);
     expect(readme).toMatch(/planen[\s\S]*simulieren[\s\S]*Dry-run/u);
@@ -691,7 +695,7 @@ describe("Phase 3 truthful documentation and closure", () => {
     expect(readme).toContain("keine integrierte TLS-Verschlüsselung");
     expect(readme).toContain("keine Modbus-Authentifizierung");
     expect(readme).toMatch(/vertrauenswürdigen\s+lokalen Netzwerk/u);
-    expect(readme).toMatch(/Keine\s+Node-Hardwarevalidierung durchgeführt\./u);
+    expect(readme).toMatch(/Keine\s+Node-Hardwarevalidierung\s+durchgeführt/u);
     expect(readme).not.toMatch(/noch keinen Modbus-Transport|Phase 3[^\n]*(?:geplant|Writes)/u);
     expect(readme).toMatch(/nicht (?:auf npm )?veröffentlicht/u);
   });
@@ -710,13 +714,13 @@ describe("Phase 3 truthful documentation and closure", () => {
     }
   });
 
-  it("CHANGELOG records exact Phase 3 write evidence, pending scope, and no hardware claim", () => {
+  it("CHANGELOG records exact complete Modbus/web evidence and no hardware claim", () => {
     const changelogPath = resolve(root, "CHANGELOG.md");
     expect(existsSync(changelogPath)).toBe(true);
     const changelog = readFileSync(changelogPath, "utf8");
 
     expect(changelog).toContain("## [Unreleased]");
-    expect(changelog).toContain("0.7.6");
+    expect(changelog).toContain("0.8.0");
     expect(changelog).toContain(pinnedTag);
     expect(changelog).toContain(pinnedCommit);
     expect(changelog).toContain("private: true");
@@ -731,7 +735,8 @@ describe("Phase 3 truthful documentation and closure", () => {
     expect(changelog).toMatch(/EEPROM[\s\S]*Cyclic/u);
     expect(changelog).toMatch(/Write-Fehler|fehlgeschlagene Writes/u);
     expect(changelog).toMatch(/Web-Supplement[\s\S]*Veröffentlichung/u);
-    expect(changelog).toContain("Gesamtparität");
+    expect(changelog).toContain("89 vollständige API-Zuordnungen");
+    expect(changelog).toContain("Python-0.8.0-Parität");
     expect(changelog).toContain("Navigator 1.0/1.7");
     expect(changelog).toContain("keine integrierte TLS-Verschlüsselung");
     expect(changelog).toMatch(/keine\s+Modbus-Authentifizierung/u);
@@ -750,7 +755,7 @@ describe("Phase 3 truthful documentation and closure", () => {
     }
   });
 
-  it("closes Phase 3 write clauses and their completed umbrellas without closing later phases", () => {
+  it("closes Phase 4 web parity without claiming npm publication", () => {
     const requirements = readFileSync(resolve(root, ".planning/REQUIREMENTS.md"), "utf8");
     const roadmap = readFileSync(resolve(root, ".planning/ROADMAP.md"), "utf8");
     const checked = (id: string): boolean => {
@@ -778,7 +783,10 @@ describe("Phase 3 truthful documentation and closure", () => {
     ]) {
       expect(checked(id), id).toBe(true);
     }
-    for (const id of ["CTR-02", "PAR-02", "WEB-01", "WEB-02", "REL-01"]) {
+    for (const id of ["PKG-04", "WEB-01", "WEB-02"]) {
+      expect(checked(id), id).toBe(true);
+    }
+    for (const id of ["CTR-02", "PAR-02", "REL-01"]) {
       expect(checked(id), id).toBe(false);
     }
     expect(requirements).toContain("| TRN-03R     | Phase 2  | Complete");
@@ -790,14 +798,15 @@ describe("Phase 3 truthful documentation and closure", () => {
     expect(roadmap).toContain("**Requirements**: TRN-01, TRN-02, TRN-03R, DET-01, DET-02, ERR-01R");
     expect(roadmap).toContain("**Requirements**: WRT-01, WRT-02, TRN-03W, ERR-01W");
     expect(roadmap).toMatch(/\[x\] \*\*Phase 3: Safe Write Parity\*\*/u);
+    expect(roadmap).toMatch(/\[x\] \*\*Phase 4: Optional Read-Only Web Parity\*\*/u);
     expect(roadmap).toMatch(/3\. Safe Write Parity\s*\| 7\/7\s*\| Complete/u);
-    expect(roadmap).toMatch(/4\. Optional Read-Only Web Parity\s*\| 0\/TBD\s*\| Not started/u);
+    expect(roadmap).toMatch(/4\. Optional Read-Only Web Parity\s*\| 1\/1\s*\| Complete/u);
     expect(roadmap).toMatch(
       /5\. Parity Closure and Release Assurance\s*\| 0\/TBD\s*\| Not started/u,
     );
   });
 
-  it("full gate keeps the package private, web-empty, covered, packaged, and parity-checked", () => {
+  it("full gate keeps the package private, web-complete, covered, packaged, and parity-checked", () => {
     const packageJson = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as {
       readonly files?: readonly string[];
       readonly private?: boolean;
@@ -848,12 +857,15 @@ describe("Phase 3 truthful documentation and closure", () => {
     for (const threshold of ["branches", "functions", "lines", "statements"]) {
       expect(coverageConfig).toMatch(new RegExp("\\b" + threshold + ":\\s*80\\b", "u"));
     }
-    expect(completeRows).toHaveLength(59);
+    expect(completeRows).toHaveLength(89);
     expect(
-      completeRows.every(({ export_path, owner_phase }) => export_path === "." && owner_phase <= 3),
+      completeRows.every(
+        ({ export_path, owner_phase }) =>
+          (export_path === "." && owner_phase <= 3) ||
+          (export_path === "./web" && owner_phase === 4),
+      ),
     ).toBe(true);
-    expect(plannedRows).toHaveLength(30);
-    expect(plannedRows.every(({ owner_phase }) => owner_phase === 4)).toBe(true);
+    expect(plannedRows).toHaveLength(0);
     expect(partialRows).toEqual([]);
     const clientMapping = mapping.mappings.find(
       ({ python_symbol: pythonSymbol }) => pythonSymbol === "IdmModbusClient",
@@ -919,12 +931,14 @@ describe("Phase 3 truthful documentation and closure", () => {
     ]) {
       expect(rootSource, internalName).not.toContain(internalName);
     }
-    expect(webSource).toMatch(/export \{\};/u);
-    expect(webSource).not.toMatch(/export\s+(?:const|class|function|type)\b/u);
+    expect(webSource).toContain("IdmNavigator10WebClient");
+    expect(webSource).toContain("IdmNavigator20WebClient");
+    expect(webSource).toContain("createOptionalNavigator10WebClient");
+    expect(webSource).toContain("createOptionalNavigator20WebClient");
+    expect(webSource).not.toMatch(/\bwrite(?:Value|Register)?\b/u);
     expect(workflow).toContain("run: npm run check");
     expect(workflow).toContain("run: npm run parity:check");
     const releaseGate = run(process.execPath, ["scripts/generate-api-parity.mjs", "--release"]);
-    expect(releaseGate.status).not.toBe(0);
-    expect(releaseGate.stderr).toContain("mapping_release_status_incomplete");
+    expect(releaseGate.status, releaseGate.stderr).toBe(0);
   });
 });

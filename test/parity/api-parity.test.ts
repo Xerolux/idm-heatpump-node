@@ -38,6 +38,7 @@ const GENERATOR_INPUTS = [
   "test/client/diagnostics.test.ts",
   "test/client/errors.test.ts",
   "test/parity/transport-contract.test.ts",
+  "test/parity/web-contract.test.ts",
   "test/parity/write-contract.test.ts",
   "UPSTREAM-PARITY.json",
 ] as const;
@@ -535,7 +536,7 @@ describe("API mapping inventory", () => {
     }
   });
 
-  it("mapping promotion completes the exact fully evidenced Phase-1 through Phase-3 surface", () => {
+  it("mapping promotion completes the exact fully evidenced Phase-1 through Phase-4 surface", () => {
     const allowedNormalizations = new Set([
       "diagnostic_message_redaction",
       "enum_to_const_union",
@@ -555,15 +556,15 @@ describe("API mapping inventory", () => {
     const counterpartKeys = new Set<string>();
     const completedRows = apiMapping.mappings.filter(({ status }) => status === "complete");
 
-    expect(completedRows).toHaveLength(59);
+    expect(completedRows).toHaveLength(89);
     expect(completedRows.map(({ python_symbol }) => python_symbol)).toEqual(
       apiMapping.mappings
-        .filter(({ owner_phase }) => owner_phase <= 3)
+        .filter(({ owner_phase }) => owner_phase <= 4)
         .map(({ python_symbol }) => python_symbol),
     );
 
     for (const row of apiMapping.mappings) {
-      const expectedStatus = row.owner_phase <= 3 ? "complete" : "planned";
+      const expectedStatus = "complete";
       expect(row.status, row.python_symbol).toBe(expectedStatus);
       expect(row.typescript_symbol, row.python_symbol).toMatch(/^[A-Za-z][A-Za-z0-9_]*$/);
       expect([1, 2, 3, 4], row.python_symbol).toContain(row.owner_phase);
@@ -730,16 +731,17 @@ describe("Phase-1 class representation mapping", () => {
     }
   });
 
-  it("Phase-4 runtime classes remain planned and absent from package entry points", () => {
+  it("routes the completed Phase-4 surface only through the optional web entry point", () => {
     const rootSource = readFileSync(resolve(ROOT, "src/index.ts"), "utf8");
     const webSource = readFileSync(resolve(ROOT, "src/web/index.ts"), "utf8");
-    const laterRows = apiMapping.mappings.filter(({ owner_phase }) => owner_phase > 3);
+    const webRows = apiMapping.mappings.filter(({ owner_phase }) => owner_phase === 4);
 
-    expect(laterRows.length).toBeGreaterThan(0);
-    for (const row of laterRows) {
-      expect(row.status, row.python_symbol).toBe("planned");
+    expect(webRows).toHaveLength(30);
+    for (const row of webRows) {
+      expect(row.status, row.python_symbol).toBe("complete");
       expect(rootSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
-      expect(webSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
+      expect(webExports, row.typescript_symbol).toHaveProperty(row.typescript_symbol);
+      expect(webSource).toContain(row.typescript_symbol);
     }
   });
 });
@@ -750,10 +752,19 @@ describe("checked mapping export closure", () => {
       .filter(({ export_path, status }) => export_path === "." && status === "complete")
       .map(({ typescript_symbol }) => typescript_symbol)
       .sort();
+    const expectedWebSymbols = apiMapping.mappings
+      .filter(({ export_path, status }) => export_path === "./web" && status === "complete")
+      .map(({ typescript_symbol }) => typescript_symbol)
+      .sort();
 
     expect(Object.keys(rootExports).sort()).toEqual(expectedRuntimeSymbols);
-    expect(Object.keys(webExports)).toEqual([]);
+    expect(
+      Object.keys(webExports)
+        .filter((symbol) => expectedWebSymbols.includes(symbol))
+        .sort(),
+    ).toEqual(expectedWebSymbols);
     expect(expectedRuntimeSymbols).toHaveLength(59);
+    expect(expectedWebSymbols).toHaveLength(30);
     expect(rootExports).not.toHaveProperty("ModbusTransport");
   });
 
@@ -778,7 +789,7 @@ describe("checked mapping export closure", () => {
       expect(rootExports, symbol).not.toHaveProperty(symbol);
       expect(rootSource, symbol).not.toContain(symbol);
     }
-    for (const row of apiMapping.mappings.filter(({ owner_phase }) => owner_phase > 3)) {
+    for (const row of apiMapping.mappings.filter(({ status }) => status !== "complete")) {
       expect(rootExports, row.typescript_symbol).not.toHaveProperty(row.typescript_symbol);
       expect(webExports, row.typescript_symbol).not.toHaveProperty(row.typescript_symbol);
       expect(rootSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
@@ -1298,8 +1309,16 @@ describe("generated API and baseline documentation", () => {
       },
       {
         args: ["--release"],
-        code: "mapping_release_status_incomplete",
-        mutate: () => undefined,
+        code: "baseline_release_status_incomplete",
+        mutate(project) {
+          mutateProjectJson<{ parity_status: string }>(
+            project,
+            "UPSTREAM-PARITY.json",
+            (baseline) => {
+              baseline.parity_status = "planned";
+            },
+          );
+        },
       },
       {
         code: "baseline_inventory_mismatch",
@@ -1332,7 +1351,7 @@ describe("generated API and baseline documentation", () => {
     const baselineDocument = readFileSync(resolve(project, "docs/BASELINE.md"), "utf8");
 
     expect(apiDocument).toMatch(/^<!-- GENERATED FILE/u);
-    expect(apiDocument).toContain("ad121ebf34a5f5e37204371c026927d77efcd15c");
+    expect(apiDocument).toContain("a5d44ed06e5bd317946ca41720f37151631bc9c6");
     expect(apiDocument).toContain("89 public symbols: 59 root, 30 web");
     for (const row of apiMapping.mappings) {
       expect(apiDocument, row.python_symbol).toContain(`| \`${row.python_symbol}\` |`);
@@ -1342,9 +1361,9 @@ describe("generated API and baseline documentation", () => {
     expect(apiDocument).toContain("`RegisterRegistry.to_schema` → `toSchema`");
 
     expect(baselineDocument).toMatch(/^<!-- GENERATED FILE/u);
-    expect(baselineDocument).toContain("| Python version | `0.7.6` |");
-    expect(baselineDocument).toContain("| Parity status | `planned` |");
-    expect(baselineDocument).toContain("| Verified on | `2026-07-14` |");
+    expect(baselineDocument).toContain("| Python version | `0.8.0` |");
+    expect(baselineDocument).toContain("| Parity status | `complete` |");
+    expect(baselineDocument).toContain("| Verified on | `2026-07-16` |");
     expect(baselineDocument).not.toContain("PollRateLimiter");
   });
 

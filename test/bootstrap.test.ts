@@ -41,7 +41,7 @@ describe("repository bootstrap contracts", () => {
     expect(parity.python_package).toBe("idm-heatpump-api");
     expect(parity.git_tag).toBe(`v${parity.python_version}`);
     expect(parity.git_commit).toMatch(/^[0-9a-f]{40}$/u);
-    expect(parity.parity_status).toBe("planned");
+    expect(parity.parity_status).toBe("complete");
   });
 
   it("keeps the compatibility matrix aligned with the baseline", () => {
@@ -72,7 +72,7 @@ describe("repository bootstrap contracts", () => {
       { development_baseline: { python_commit: "f".repeat(40) } },
       "Python commits",
     ],
-    ["status mismatch", {}, { development_baseline: { status: "complete" } }, "parity statuses"],
+    ["status mismatch", {}, { development_baseline: { status: "planned" } }, "parity statuses"],
   ];
 
   it.each(invalidParityCases)(

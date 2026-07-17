@@ -10,10 +10,10 @@ It documents development intent; only `complete` rows with passing evidence may 
 
 - Repository: `https://github.com/Xerolux/idm-heatpump-api`
 - Python package: `idm-heatpump-api`
-- Python version/tag: `0.7.6` / `v0.7.6`
-- Full commit: `ad121ebf34a5f5e37204371c026927d77efcd15c`
+- Python version/tag: `0.8.0` / `v0.8.0`
+- Full commit: `a5d44ed06e5bd317946ca41720f37151631bc9c6`
 - Parity schema: `1`
-- Development status: `planned`
+- Development status: `complete`
 
 **89 public symbols: 59 root, 30 web.**
 
@@ -57,51 +57,51 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `SYSTEM_MODE_OPTIONS` | `SYSTEM_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `VARIABLE_INPUT_OPTIONS` | `VARIABLE_INPUT_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `ZONE_MODULE_MODE_OPTIONS` | `ZONE_MODULE_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
-| `AuthenticationError` | `AuthenticationError` | `./web` | 4 | `planned` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `ConnectionError` | `ConnectionError` | `./web` | 4 | `planned` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `CsrfError` | `CsrfError` | `./web` | 4 | `planned` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `AuthenticationError` | `AuthenticationError` | `./web` | 4 | `complete` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `ConnectionError` | `ConnectionError` | `./web` | 4 | `complete` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `CsrfError` | `CsrfError` | `./web` | 4 | `complete` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `AdaptiveBackoff` | `AdaptiveBackoff` | `.` | 1 | `complete` | `class` | `snake_case_to_camelCase` | `timing`: `test/semantic/constants-and-types.test.ts` |
 | `DataType` | `DataType` | `.` | 1 | `complete` | `frozen_const_and_union` | `enum_to_const_union` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
 | `FeatureFlags` | `FeatureFlags` | `.` | 1 | `complete` | `readonly_object_factory` | `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
 | `IdmClientDiagnostics` | `IdmClientDiagnostics` | `.` | 2 | `complete` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `transport_diagnostics`: `test/client/diagnostics.test.ts` |
-| `IdmNavigator10WebClient` | `IdmNavigator10WebClient` | `./web` | 4 | `planned` | `class` | `none_to_null`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_client`: `test/parity/web-contract.test.ts` |
-| `IdmNavigator20WebClient` | `IdmNavigator20WebClient` | `./web` | 4 | `planned` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_client`: `test/parity/web-contract.test.ts` |
+| `IdmNavigator10WebClient` | `IdmNavigator10WebClient` | `./web` | 4 | `complete` | `class` | `none_to_null`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_client`: `test/parity/web-contract.test.ts` |
+| `IdmNavigator20WebClient` | `IdmNavigator20WebClient` | `./web` | 4 | `complete` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_client`: `test/parity/web-contract.test.ts` |
 | `IdmModelInfo` | `IdmModelInfo` | `.` | 1 | `complete` | `readonly_object_factory` | `list_to_readonly_array`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `set_to_immutable_set_like`, `snake_case_to_camelCase` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
 | `IdmModbusClient` | `IdmModbusClient` | `.` | 2 | `complete` | `class` | `diagnostic_message_redaction`, `idm_modbus_client_options`, `internal_adapter_retries_zero`, `mapping_to_readonly_map_or_record`, `none_to_null`, `set_to_immutable_set_like`, `snake_case_to_camelCase`, `transport_error_type_to_closed_kind`, `tuple_to_readonly_array` | `transport_client`: `test/parity/transport-contract.test.ts` |
 | `IllegalAddressError` | `IllegalAddressError` | `.` | 2 | `complete` | `error_class` | `python_exception_to_error_class` | `transport_errors`: `test/client/errors.test.ts` |
 | `ModbusCodec` | `ModbusCodec` | `.` | 1 | `complete` | `class` | `snake_case_to_camelCase` | `codec`: `test/codec.test.ts` |
-| `IdmWebAuthenticationError` | `IdmWebAuthenticationError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `IdmWebConnectionError` | `IdmWebConnectionError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `IdmWebCsrfError` | `IdmWebCsrfError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `IdmWebData` | `IdmWebData` | `./web` | 4 | `planned` | `readonly_object_factory` | `mapping_to_readonly_map_or_record`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
-| `IdmWebDependencyError` | `IdmWebDependencyError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `IdmWebDiagnostics` | `IdmWebDiagnostics` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_data`: `test/parity/web-contract.test.ts` |
-| `IdmWebError` | `IdmWebError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `IdmWebNotification` | `IdmWebNotification` | `./web` | 4 | `planned` | `readonly_object_factory` | `mapping_to_readonly_map_or_record`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
-| `IdmWebNotifications` | `IdmWebNotifications` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_data`: `test/parity/web-contract.test.ts` |
-| `IdmWebPinRejectedError` | `IdmWebPinRejectedError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `IdmWebProtocolError` | `IdmWebProtocolError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `IdmWebResponseError` | `IdmWebResponseError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `IdmWebTimeoutError` | `IdmWebTimeoutError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `IdmWebWebSocketError` | `IdmWebWebSocketError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `PinRejectedError` | `PinRejectedError` | `./web` | 4 | `planned` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `ProtocolError` | `ProtocolError` | `./web` | 4 | `planned` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `TimeoutError` | `TimeoutError` | `./web` | 4 | `planned` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `WebSocketError` | `WebSocketError` | `./web` | 4 | `planned` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
-| `IdmWebValue` | `IdmWebValue` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
-| `IdmWebValueDescription` | `IdmWebValueDescription` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebAuthenticationError` | `IdmWebAuthenticationError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `IdmWebConnectionError` | `IdmWebConnectionError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `IdmWebCsrfError` | `IdmWebCsrfError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `IdmWebData` | `IdmWebData` | `./web` | 4 | `complete` | `readonly_object_factory` | `mapping_to_readonly_map_or_record`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebDependencyError` | `IdmWebDependencyError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `IdmWebDiagnostics` | `IdmWebDiagnostics` | `./web` | 4 | `complete` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebError` | `IdmWebError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `IdmWebNotification` | `IdmWebNotification` | `./web` | 4 | `complete` | `readonly_object_factory` | `mapping_to_readonly_map_or_record`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebNotifications` | `IdmWebNotifications` | `./web` | 4 | `complete` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebPinRejectedError` | `IdmWebPinRejectedError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `IdmWebProtocolError` | `IdmWebProtocolError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `IdmWebResponseError` | `IdmWebResponseError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `IdmWebTimeoutError` | `IdmWebTimeoutError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `IdmWebWebSocketError` | `IdmWebWebSocketError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `PinRejectedError` | `PinRejectedError` | `./web` | 4 | `complete` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `ProtocolError` | `ProtocolError` | `./web` | 4 | `complete` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `TimeoutError` | `TimeoutError` | `./web` | 4 | `complete` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `WebSocketError` | `WebSocketError` | `./web` | 4 | `complete` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `IdmWebValue` | `IdmWebValue` | `./web` | 4 | `complete` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebValueDescription` | `IdmWebValueDescription` | `./web` | 4 | `complete` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
 | `ModbusErrorContext` | `ModbusErrorContext` | `.` | 2 | `complete` | `readonly_object_factory` | `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `transport_errors`: `test/client/diagnostics.test.ts` |
 | `PollRateLimiter` | `PollRateLimiter` | `.` | 1 | `complete` | `class` | — | `timing`: `test/semantic/constants-and-types.test.ts` |
-| `RECOMMENDED_WEB_SCAN_INTERVAL` | `RECOMMENDED_WEB_SCAN_INTERVAL` | `./web` | 4 | `planned` | `frozen_constant` | — | `web_constants`: `test/parity/web-contract.test.ts` |
+| `RECOMMENDED_WEB_SCAN_INTERVAL` | `RECOMMENDED_WEB_SCAN_INTERVAL` | `./web` | 4 | `complete` | `frozen_constant` | — | `web_constants`: `test/parity/web-contract.test.ts` |
 | `RegisterDef` | `RegisterDef` | `.` | 1 | `complete` | `readonly_object_factory` | `mapping_to_readonly_map_or_record`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `set_to_immutable_set_like`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `register_definition`: `test/registers/register-def.test.ts` |
 | `RegisterRegistry` | `RegisterRegistry` | `.` | 1 | `complete` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `RegisterType` | `RegisterType` | `.` | 1 | `complete` | `frozen_const_and_union` | `enum_to_const_union` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
-| `WEB_VALUE_DESCRIPTIONS` | `WEB_VALUE_DESCRIPTIONS` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `WEB_VALUE_DESCRIPTIONS` | `WEB_VALUE_DESCRIPTIONS` | `./web` | 4 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
 | `WriteClass` | `WriteClass` | `.` | 1 | `complete` | `frozen_const_and_union` | `enum_to_const_union` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
 | `WriteSafetyResult` | `WriteSafetyResult` | `.` | 3 | `complete` | `readonly_object_factory` | `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `writes`: `test/parity/write-contract.test.ts` |
 | `build_register_map` | `buildRegisterMap` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
-| `create_optional_navigator10_web_client` | `createOptionalNavigator10WebClient` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_factory`: `test/parity/web-contract.test.ts` |
-| `create_optional_navigator20_web_client` | `createOptionalNavigator20WebClient` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_factory`: `test/parity/web-contract.test.ts` |
+| `create_optional_navigator10_web_client` | `createOptionalNavigator10WebClient` | `./web` | 4 | `complete` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_factory`: `test/parity/web-contract.test.ts` |
+| `create_optional_navigator20_web_client` | `createOptionalNavigator20WebClient` | `./web` | 4 | `complete` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_factory`: `test/parity/web-contract.test.ts` |
 | `get_all_registers` | `getAllRegisters` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `get_detection_registers` | `getDetectionRegisters` | `.` | 1 | `complete` | `function` | `list_to_readonly_array`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `get_heating_circuit_registers` | `getHeatingCircuitRegisters` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
@@ -109,7 +109,7 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `get_register_registry` | `getRegisterRegistry` | `.` | 1 | `complete` | `function` | `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `get_zone_module_registers` | `getZoneModuleRegisters` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `quiet_pymodbus_logging` | `quietPymodbusLogging` | `.` | 2 | `complete` | `function` | `snake_case_to_camelCase` | `transport_logging`: `test/client/errors.test.ts` |
-| `web_pin_configured` | `webPinConfigured` | `./web` | 4 | `planned` | `function` | `snake_case_to_camelCase` | `web_configuration`: `test/parity/web-contract.test.ts` |
+| `web_pin_configured` | `webPinConfigured` | `./web` | 4 | `complete` | `function` | `snake_case_to_camelCase` | `web_configuration`: `test/parity/web-contract.test.ts` |
 
 ## TypeScript-only extensions
 

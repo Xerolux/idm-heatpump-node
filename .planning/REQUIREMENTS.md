@@ -12,7 +12,7 @@ Requirements for the initial `0.1.0` release. The existing package/tooling found
 - [ ] **PKG-01**: Consumers can run the package on Node.js without Python or the Python package at runtime; Python is used only for development and CI reference generation, and npm publication remains disabled until full parity.
 - [ ] **PKG-02**: Maintainers can locate public exports, constants, types, errors, codecs, register families, transport adapters, client behavior, optional web behavior, fixtures, parity tests, scripts, examples, and documentation in their dedicated package boundaries.
 - [ ] **PKG-03**: Consumers can use a strict-TypeScript-derived package on Node.js 22 or newer through primary ESM output and, when offered, separately tested CommonJS output generated from the same source; CI covers Node.js 22 and 24.
-- [ ] **PKG-04**: Consumers can opt into read-only web capabilities only through `@xerolux/idm-heatpump/web`; the package makes no browser-support claim and includes no telemetry.
+- [x] **PKG-04**: Consumers can opt into read-only web capabilities only through `@xerolux/idm-heatpump/web`; the package makes no browser-support claim and includes no telemetry.
 - [ ] **PKG-05**: Consumers can install the controlled npm tarball in a clean project and use every declared ESM and CommonJS export with declarations and source maps, while development-only files remain excluded and build, lint, format, Vitest, and CI checks stay reproducible.
 
 ### Parity Contract and Semantic Core
@@ -46,8 +46,8 @@ Requirements for the initial `0.1.0` release. The existing package/tooling found
 
 ### Optional Web Supplement
 
-- [ ] **WEB-01**: Consumers can optionally use read-only Navigator 10 WebSocket and Navigator 2.0 HTTP access with authentication and CSRF, parsers, cache, notifications, statistics, capabilities, diagnostics, error hierarchy, factories, and PIN checking; a missing PIN preserves Modbus-only operation.
-- [ ] **WEB-02**: Equivalent Python and TypeScript Navigator 10 and Navigator 2.0 responses yield equivalent normalized data, values, units, notifications, statistics, capabilities, diagnostics, and errors while Modbus remains the baseline path.
+- [x] **WEB-01**: Consumers can optionally use read-only Navigator 10 WebSocket and Navigator 2.0 HTTP access with authentication and CSRF, parsers, cache, notifications, statistics, capabilities, diagnostics, error hierarchy, factories, and PIN checking; a missing PIN preserves Modbus-only operation.
+- [x] **WEB-02**: Equivalent Python and TypeScript Navigator 10 and Navigator 2.0 responses yield equivalent normalized data, values, units, notifications, statistics, capabilities, diagnostics, and errors while Modbus remains the baseline path.
 
 ### Parity Closure and Release
 
@@ -146,9 +146,9 @@ add new ingested constraints or weaken the parent meaning.
 | ERR-01W     | Phase 3  | Complete |
 | WRT-01      | Phase 3  | Complete |
 | WRT-02      | Phase 3  | Complete |
-| PKG-04      | Phase 4  | Pending  |
-| WEB-01      | Phase 4  | Pending  |
-| WEB-02      | Phase 4  | Pending  |
+| PKG-04      | Phase 4  | Complete |
+| WEB-01      | Phase 4  | Complete |
+| WEB-02      | Phase 4  | Complete |
 | PKG-01      | Phase 5  | Pending  |
 | PKG-02      | Phase 5  | Pending  |
 | PKG-03      | Phase 5  | Pending  |
