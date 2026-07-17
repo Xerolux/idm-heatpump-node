@@ -200,6 +200,25 @@ function runGenerator(
   );
 }
 
+function runGeneratorScript(
+  script: string,
+  checkout: DisposableCheckout,
+): SpawnSyncReturns<string> {
+  return run(
+    PYTHON,
+    [
+      script,
+      "--manifest",
+      MANIFEST,
+      "--upstream-dir",
+      checkout.checkout,
+      "--output-root",
+      checkout.output,
+    ],
+    ROOT,
+  );
+}
+
 function importGenerator(expression: string): SpawnSyncReturns<string> {
   const source = [
     "import importlib.util, json",
@@ -800,6 +819,31 @@ describe("verified Python contract generator", () => {
       expect(Object.keys(scenario).sort()).toEqual(transportScenarioFields);
       expect(scenario.configuration).toMatchObject({ host: "example.invalid" });
     }
+  }, 120_000);
+
+  it("rejects an unrelated validation exception without emitting partial fixtures", () => {
+    const checkout = createExactCheckout();
+    const mutationDirectory = mkdtempSync(join(ROOT, ".generator-mutation-"));
+    temporaryDirectories.push(mutationDirectory);
+    const mutatedGenerator = join(mutationDirectory, "generate-python-contract-mutated.py");
+    const source = readFileSync(GENERATOR, "utf8");
+    const needle = '    kind = action["kind"]\n';
+    expect(source.split(needle)).toHaveLength(2);
+    writeFileSync(
+      mutatedGenerator,
+      source.replace(
+        needle,
+        `${needle}    if action.get("value") == "not-numeric":\n` +
+          '        raise RuntimeError("unrelated generator mutation")\n',
+      ),
+    );
+
+    const result = runGeneratorScript(mutatedGenerator, checkout);
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("fixture_invalid");
+    expect(result.stderr).toContain("write rejection exception family mismatch");
+    expect(existsSync(join(checkout.output, "test/fixtures"))).toBe(false);
   }, 120_000);
 
   it("is a fixed point and keeps all old fixture bytes plus check-mode mtimes unchanged", () => {

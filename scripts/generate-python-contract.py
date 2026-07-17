@@ -2379,6 +2379,79 @@ WRITE_ACTION_KINDS = (
     "reset_cyclic_write_state",
 )
 
+# Exact structural rejection origins in the pinned Python 0.7.6 client.  The
+# generator does not infer semantic equality from exception messages: every
+# reviewed validation code must match both its closed exception family and the
+# terminal traceback location of the guard that rejected the value.
+WRITE_VALIDATION_REJECTION_SPECS = {
+    "write_unknown_register": (KeyError, "_get_register_by_key", 1245),
+    "write_read_only": (ValueError, "simulate_write", 1215),
+    "write_model_unavailable": (ValueError, "_validate_model_availability", 1328),
+    "write_boolean_required": (ValueError, "_validate_write_allowed", 1260),
+    "write_boolean_for_numeric": (ValueError, "_validate_write_allowed", 1265),
+    "write_not_numeric": (ValueError, "_validate_write_allowed", 1269),
+    "write_nonfinite": (ValueError, "_validate_write_allowed", 1271),
+    "write_integer_required": (ValueError, "_validate_write_allowed", 1284),
+    "write_excluded": (ValueError, "_validate_write_allowed", 1288),
+    "write_below_minimum": (ValueError, "_validate_write_allowed", 1293),
+    "write_above_maximum": (ValueError, "_validate_write_allowed", 1295),
+    "write_enum_unsupported": (ValueError, "_validate_write_allowed", 1300),
+    "write_eeprom_throttled": (ValueError, "_validate_write_allowed", 1312),
+}
+
+
+def _write_validation_rejection_spec(
+    code: str,
+    *,
+    scenario: str,
+    action_index: int,
+) -> tuple[type[BaseException], str, int]:
+    spec = WRITE_VALIDATION_REJECTION_SPECS.get(code)
+    if spec is None:
+        fail(
+            "fixture_invalid",
+            f"write rejection lacks a closed verifier: {scenario}[{action_index}]",
+        )
+    return spec
+
+
+def _verify_write_validation_rejection(
+    error: BaseException,
+    code: str,
+    *,
+    scenario: str,
+    action_index: int,
+) -> None:
+    expected_family, expected_function, expected_line = _write_validation_rejection_spec(
+        code,
+        scenario=scenario,
+        action_index=action_index,
+    )
+    if type(error) is not expected_family:
+        fail(
+            "fixture_invalid",
+            f"write rejection exception family mismatch: {scenario}[{action_index}]",
+        )
+
+    traceback = error.__traceback__
+    if traceback is None:
+        fail(
+            "fixture_invalid",
+            f"write rejection lacks traceback evidence: {scenario}[{action_index}]",
+        )
+    while traceback.tb_next is not None:
+        traceback = traceback.tb_next
+    code_object = traceback.tb_frame.f_code
+    if (
+        Path(code_object.co_filename).name != "client.py"
+        or code_object.co_name != expected_function
+        or traceback.tb_lineno != expected_line
+    ):
+        fail(
+            "fixture_invalid",
+            f"write rejection validation stage mismatch: {scenario}[{action_index}]",
+        )
+
 
 def _write_custom_register(
     name: str,
@@ -2768,6 +2841,13 @@ def _write_scenario(
     async def execute() -> list[dict[str, Any]]:
         steps: list[dict[str, Any]] = []
         for index, action in enumerate(actions):
+            code = codes[index]
+            if code is not None:
+                _write_validation_rejection_spec(
+                    code,
+                    scenario=name,
+                    action_index=index,
+                )
             try:
                 value = await _execute_write_action(
                     action,
@@ -2780,8 +2860,13 @@ def _write_scenario(
                     fail("fixture_invalid", f"expected write validation rejection did not occur: {name}")
                 result = {"kind": "value", "value": value}
             except Exception as error:  # noqa: BLE001 - exact Python rejection is fixture data
-                code = codes[index]
                 if code is not None:
+                    _verify_write_validation_rejection(
+                        error,
+                        code,
+                        scenario=name,
+                        action_index=index,
+                    )
                     result = {
                         "kind": "error",
                         "category": "validation",
