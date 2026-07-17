@@ -452,12 +452,13 @@ describe("internal IdmModbusClient write execution", () => {
     expect(getInternalWriteStateSnapshot(client).writeThrottle).toEqual({});
   });
 
-  it("keeps the Phase-2 public 22/7 partition and all internal controls out of root exports", async () => {
+  it("promotes all 29 public members while keeping internal controls out of root exports", async () => {
     const mapping = JSON.parse(
       await readFile(new URL("../../contracts/api-mapping.json", import.meta.url), "utf8"),
     ) as {
       readonly mappings: readonly {
         readonly python_symbol: string;
+        readonly status: string;
         readonly partial_class?: {
           readonly implemented_members: readonly string[];
           readonly omitted_members: readonly string[];
@@ -467,16 +468,40 @@ describe("internal IdmModbusClient write execution", () => {
     const clientMapping = mapping.mappings.find(
       ({ python_symbol }) => python_symbol === "IdmModbusClient",
     );
-    expect(clientMapping?.partial_class?.implemented_members).toHaveLength(22);
-    expect(clientMapping?.partial_class?.omitted_members).toEqual([
+    expect(clientMapping).toMatchObject({ status: "complete" });
+    expect(clientMapping?.partial_class).toBeUndefined();
+
+    const publicMembers = [
+      "clearLastErrorContext",
+      "connect",
+      "decodeValue",
+      "detectModel",
+      "disconnect",
+      "encodeValue",
+      "forceReconnect",
       "getActiveCyclicWrites",
+      "getBatchUnsafeRegisters",
+      "getDiagnostics",
       "getExpiredCyclicWrites",
+      "getLastErrorContext",
+      "getUnsupportedRegisters",
+      "host",
+      "isConnected",
+      "markBatchUnsafe",
+      "modelInfo",
+      "modelName",
+      "port",
+      "probeRegister",
+      "readBatch",
+      "readRegister",
+      "readValue",
       "resetCyclicWriteState",
+      "resetFailedRegisters",
       "resetWriteThrottle",
       "setValue",
       "simulateWrite",
       "writeRegister",
-    ]);
+    ];
 
     const root = (await import("../../src/index.js")) as Record<string, unknown>;
     for (const name of [
@@ -492,8 +517,12 @@ describe("internal IdmModbusClient write execution", () => {
       now: () => 0,
       sleep: () => Promise.resolve(),
     });
-    for (const name of clientMapping?.partial_class?.omitted_members ?? []) {
-      expect(name in (client as unknown as Record<string, unknown>)).toBe(false);
+    const actualMembers = Object.getOwnPropertyNames(Object.getPrototypeOf(client)).filter(
+      (name) => name !== "constructor",
+    );
+    expect(actualMembers.sort()).toEqual([...publicMembers].sort());
+    for (const name of ["simulateWrite", "setValue", "resetWriteThrottle"]) {
+      expect(name in (client as unknown as Record<string, unknown>)).toBe(true);
     }
   });
 

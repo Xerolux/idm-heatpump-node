@@ -31,21 +31,13 @@ const EXPECTED_TARBALL_FILES = Object.freeze(
   ].sort(),
 );
 const EXPECTED_RUNTIME_DEPENDENCIES = Object.freeze({ "modbus-serial": "8.0.25" });
-const PHASE_2_RUNTIME_SYMBOLS = Object.freeze([
+const PHASE_3_RUNTIME_SYMBOLS = Object.freeze([
   "IdmClientDiagnostics",
   "IdmModbusClient",
   "IllegalAddressError",
   "ModbusErrorContext",
   "quietPymodbusLogging",
-]);
-const OMITTED_WRITE_MEMBERS = Object.freeze([
-  "getActiveCyclicWrites",
-  "getExpiredCyclicWrites",
-  "resetCyclicWriteState",
-  "resetWriteThrottle",
-  "setValue",
-  "simulateWrite",
-  "writeRegister",
+  "WriteSafetyResult",
 ]);
 
 function assert(condition, message) {
@@ -108,22 +100,28 @@ const mapping = readJson(resolve(root, "contracts/api-mapping.json"));
 const clientMapping = mapping.mappings.find(
   ({ python_symbol: pythonSymbol }) => pythonSymbol === "IdmModbusClient",
 );
-assert(clientMapping?.status === "partial", "IdmModbusClient must remain partial in Phase 2");
-const implementedMembers = clientMapping.partial_class?.implemented_members ?? [];
-const omittedMembers = clientMapping.partial_class?.omitted_members ?? [];
-assertExactStringList(omittedMembers, OMITTED_WRITE_MEMBERS, "Omitted Phase-3 write members");
+assert(clientMapping?.status === "complete", "IdmModbusClient must be complete in Phase 3");
+assert(
+  clientMapping.partial_class === undefined,
+  "Complete client must not retain a partial class",
+);
+const publicClasses = readJson(resolve(root, "test/fixtures/public-classes.json"));
+const clientClass = publicClasses.classes.find(({ python_name: pythonName }) => {
+  return pythonName === "IdmModbusClient";
+});
+assert(clientClass !== undefined, "Pinned IdmModbusClient class facts are missing");
+const implementedMembers = clientClass.members.map(({ name }) => {
+  return name.replace(/_([a-z0-9])/gu, (_match, character) => character.toUpperCase());
+});
+assert(implementedMembers.length === 29, "IdmModbusClient must expose exactly 29 members");
 
 const expectedRuntimeExports = mapping.mappings
-  .filter(
-    ({ export_path: exportPath, python_symbol: pythonSymbol, status }) =>
-      exportPath === "." &&
-      (status === "complete" || (pythonSymbol === "IdmModbusClient" && status === "partial")),
-  )
+  .filter(({ export_path: exportPath, status }) => exportPath === "." && status === "complete")
   .map(({ typescript_symbol: typescriptSymbol }) => typescriptSymbol);
-for (const symbol of PHASE_2_RUNTIME_SYMBOLS) {
+for (const symbol of PHASE_3_RUNTIME_SYMBOLS) {
   assert(
     expectedRuntimeExports.includes(symbol),
-    `Missing mapped Phase-2 runtime symbol: ${symbol}`,
+    `Missing mapped Phase-3 runtime symbol: ${symbol}`,
   );
 }
 
@@ -152,15 +150,15 @@ import {
   IllegalAddressError,
   ModbusErrorContext,
   quietPymodbusLogging,
+  WriteSafetyResult,
 } from "@xerolux/idm-heatpump";
 
 const expectedExports = ${JSON.stringify(expectedRuntimeExports.sort())};
 const expectedMembers = ${JSON.stringify([...implementedMembers].sort())};
-const omittedMembers = ${JSON.stringify([...omittedMembers].sort())};
 if (JSON.stringify(Object.keys(packageRoot).sort()) !== JSON.stringify(expectedExports)) {
   throw new Error("ESM root export closure failed");
 }
-if (Object.keys(webRoot).length !== 0) throw new Error("Phase-2 web root must remain empty");
+if (Object.keys(webRoot).length !== 0) throw new Error("Phase-3 web root must remain empty");
 const client = new IdmModbusClient("heatpump.example.invalid");
 if (client.host !== "heatpump.example.invalid" || client.port !== 502) {
   throw new Error("ESM IdmModbusClient defaults failed");
@@ -172,17 +170,32 @@ const actualMembers = Object.getOwnPropertyNames(IdmModbusClient.prototype)
   .filter((member) => member !== "constructor")
   .sort();
 if (JSON.stringify(actualMembers) !== JSON.stringify(expectedMembers)) {
-  throw new Error("ESM IdmModbusClient partial member closure failed");
+  throw new Error("ESM IdmModbusClient complete member closure failed");
 }
-if (omittedMembers.some((member) => member in client)) {
-  throw new Error("ESM IdmModbusClient leaked a Phase-3 write member");
+const simulation = client.simulateWrite("system_mode", 2);
+const result = WriteSafetyResult.create({
+  register: simulation.register,
+  requestedValue: simulation.requestedValue,
+  encodedRegisters: simulation.encodedRegisters,
+});
+const dryRun = await client.setValue("system_mode", 2, { dryRun: true });
+client.resetWriteThrottle();
+client.resetCyclicWriteState();
+if (!simulation.dryRun || result.dryRun || !dryRun.dryRun || client.isConnected) {
+  throw new Error("ESM write planning/dry-run connected or used wrong defaults");
+}
+if (simulation.encodedRegisters.join(",") !== "2" || dryRun.encodedRegisters.join(",") !== "2") {
+  throw new Error("ESM write planning encoded unexpected words");
+}
+if (Object.keys(client.getActiveCyclicWrites()).length !== 0 || client.getExpiredCyclicWrites().size !== 0) {
+  throw new Error("ESM dry-run mutated write state");
 }
 const diagnostics = IdmClientDiagnostics.create({ navigatorType: client.modelName, modbusConnected: false });
 const context = ModbusErrorContext.create({ operation: "read", address: 0, count: 1, registerType: "input", errorType: "timeout", message: "synthetic", attempt: 1 });
 const error = new IllegalAddressError("synthetic");
 quietPymodbusLogging();
 if (!Object.isFrozen(diagnostics) || !Object.isFrozen(context) || error.isIllegalAddress !== true) {
-  throw new Error("ESM Phase-2 data/error smoke failed");
+  throw new Error("ESM Phase-3 data/error smoke failed");
 }
 `,
   );
@@ -200,13 +213,14 @@ const {
   IllegalAddressError,
   ModbusErrorContext,
   quietPymodbusLogging,
+  WriteSafetyResult,
 } = packageRoot;
 
 const expectedExports = ${JSON.stringify(expectedRuntimeExports.sort())};
 if (JSON.stringify(Object.keys(packageRoot).sort()) !== JSON.stringify(expectedExports)) {
   throw new Error("CommonJS root export closure failed");
 }
-if (Object.keys(webRoot).length !== 0) throw new Error("Phase-2 web root must remain empty");
+if (Object.keys(webRoot).length !== 0) throw new Error("Phase-3 web root must remain empty");
 const client = new IdmModbusClient("heatpump.example.invalid");
 const diagnostics = IdmClientDiagnostics.create({ navigatorType: client.modelName, modbusConnected: false });
 const context = ModbusErrorContext.create({ operation: "read", address: 0, count: 1, registerType: "input", errorType: "timeout", message: "synthetic", attempt: 1 });
@@ -216,10 +230,17 @@ if (client.host !== "heatpump.example.invalid" || client.port !== 502 || client.
   throw new Error("CommonJS IdmModbusClient defaults failed");
 }
 if (!Object.isFrozen(diagnostics) || !Object.isFrozen(context) || error.isIllegalAddress !== true) {
-  throw new Error("CommonJS Phase-2 data/error smoke failed");
+  throw new Error("CommonJS Phase-3 data/error smoke failed");
 }
-for (const member of ${JSON.stringify([...omittedMembers].sort())}) {
-  if (member in client) throw new Error("CommonJS client leaked a Phase-3 write member");
+const simulation = client.simulateWrite("system_mode", 2);
+const result = WriteSafetyResult.create({ register: simulation.register, requestedValue: 2, encodedRegisters: [2] });
+client.resetWriteThrottle();
+client.resetCyclicWriteState();
+if (!simulation.dryRun || result.dryRun || client.isConnected) {
+  throw new Error("CommonJS write planning connected or used wrong defaults");
+}
+if (Object.keys(client.getActiveCyclicWrites()).length !== 0 || client.getExpiredCyclicWrites().size !== 0) {
+  throw new Error("CommonJS planning mutated write state");
 }
 `,
   );
@@ -235,6 +256,7 @@ for (const member of ${JSON.stringify([...omittedMembers].sort())}) {
   IllegalAddressError,
   ModbusErrorContext,
   quietPymodbusLogging,
+  WriteSafetyResult,
   type ModbusTransport,
 } from "@xerolux/idm-heatpump";
 
@@ -254,6 +276,17 @@ const client = new IdmModbusClient("heatpump.example.invalid");
 const diagnostics = IdmClientDiagnostics.create({ navigatorType: client.modelName, modbusConnected: false });
 const context = ModbusErrorContext.create({ operation: "read", address: 0, count: 1, registerType: "input", errorType: "timeout", message: "synthetic", attempt: 1 });
 const error = new IllegalAddressError("synthetic");
+const simulation = client.simulateWrite("system_mode", 2);
+const result = WriteSafetyResult.create({
+  register: simulation.register,
+  requestedValue: simulation.requestedValue,
+  encodedRegisters: simulation.encodedRegisters,
+});
+const dryRun = await client.setValue("system_mode", 2, { dryRun: true });
+client.resetWriteThrottle();
+client.resetCyclicWriteState();
+const active: Readonly<Record<string, number>> = client.getActiveCyclicWrites();
+const expired: ReadonlySet<string> = client.getExpiredCyclicWrites();
 quietPymodbusLogging();
 
 // @ts-expect-error transport injection is an internal-only seam
@@ -266,22 +299,8 @@ new IdmModbusClient("heatpump.example.invalid", { clock: () => 0 });
 new IdmModbusClient("heatpump.example.invalid", { sleep: async () => undefined });
 // @ts-expect-error adapter retries are fixed internally at zero
 new IdmModbusClient("heatpump.example.invalid", { adapterRetries: 0 });
-// @ts-expect-error Phase 3 owns getActiveCyclicWrites
-void client.getActiveCyclicWrites;
-// @ts-expect-error Phase 3 owns getExpiredCyclicWrites
-void client.getExpiredCyclicWrites;
-// @ts-expect-error Phase 3 owns resetCyclicWriteState
-void client.resetCyclicWriteState;
-// @ts-expect-error Phase 3 owns resetWriteThrottle
-void client.resetWriteThrottle;
-// @ts-expect-error Phase 3 owns setValue
-void client.setValue;
-// @ts-expect-error Phase 3 owns simulateWrite
-void client.simulateWrite;
-// @ts-expect-error Phase 3 owns writeRegister
 void client.writeRegister;
-
-void [transport, diagnostics, context, error];
+void [transport, diagnostics, context, error, result, dryRun, active, expired];
 `,
   );
   run(

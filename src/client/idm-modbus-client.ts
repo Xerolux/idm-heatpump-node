@@ -622,6 +622,66 @@ export class IdmModbusClient {
     this.#registerFailures.clear();
   }
 
+  /** Validate and encode a write plan without connecting or sending. */
+  public simulateWrite(
+    register: RegisterDef | string,
+    value: unknown,
+    options: SimulateWriteOptions = {},
+  ): WriteSafetyResult {
+    return this.#createWritePlan(register, value, {
+      dryRun: options.dryRun ?? true,
+      allowCustomRegister: options.allowCustomRegister ?? false,
+    });
+  }
+
+  /** Validate and execute one explicit register write through the whole-operation FIFO. */
+  public async writeRegister(
+    register: RegisterDef,
+    value: unknown,
+    options: WriteRegisterOptions = {},
+  ): Promise<void> {
+    await this.#gate.runExclusive(async () => {
+      const plan = this.#createWritePlan(register, value, {
+        dryRun: false,
+        allowCustomRegister: options.allowCustomRegister ?? false,
+      });
+      await this.#executeWritePlanLocked(plan);
+    });
+  }
+
+  /** Resolve a canonical key and write it unless the returned plan is a dry run. */
+  public async setValue(
+    key: string,
+    value: unknown,
+    options: SetValueOptions = {},
+  ): Promise<WriteSafetyResult> {
+    return this.#gate.runExclusive(async () => {
+      const plan = this.#createWritePlan(key, value, {
+        dryRun: options.dryRun ?? false,
+      });
+      if (!plan.dryRun) {
+        await this.#executeWritePlanLocked(plan);
+      }
+      return plan;
+    });
+  }
+
+  public resetWriteThrottle(register: RegisterDef | null = null): void {
+    this.#writeSafetyState.resetWriteThrottle(register);
+  }
+
+  public getActiveCyclicWrites(): Readonly<Record<string, number>> {
+    return this.#writeSafetyState.getActiveCyclicWrites(this.#dependencies.now());
+  }
+
+  public getExpiredCyclicWrites(): ReadonlySet<string> {
+    return this.#writeSafetyState.getExpiredCyclicWrites(this.#dependencies.now());
+  }
+
+  public resetCyclicWriteState(register: RegisterDef | null = null): void {
+    this.#writeSafetyState.resetCyclicWriteState(register);
+  }
+
   public async connect(): Promise<void> {
     await this.#gate.runExclusive(async () => this.#connectLocked());
   }

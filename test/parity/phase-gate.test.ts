@@ -536,8 +536,8 @@ describe("npm parity entry points and private package boundary", () => {
     for (const member of phase3WriteMembers) {
       expect(source, member).toContain(member);
     }
-    expect(source).toContain("setValue(\"system_mode\", 2, { dryRun: true })");
-    expect(source).toContain("simulateWrite(\"system_mode\", 2)");
+    expect(source).toContain('setValue("system_mode", 2, { dryRun: true })');
+    expect(source).toContain('simulateWrite("system_mode", 2)');
     expect(source).toContain("WriteSafetyResult.create");
     expect(source).not.toMatch(
       /\.(?:connect|readRegister|readBatch|probeRegister|detectModel)\s*\(/u,
@@ -820,10 +820,7 @@ describe("Phase 2 truthful documentation and closure", () => {
     }
     expect(completeRows).toHaveLength(59);
     expect(
-      completeRows.every(
-        ({ export_path, owner_phase }) =>
-          export_path === "." && owner_phase <= 3,
-      ),
+      completeRows.every(({ export_path, owner_phase }) => export_path === "." && owner_phase <= 3),
     ).toBe(true);
     expect(plannedRows).toHaveLength(30);
     expect(plannedRows.every(({ owner_phase }) => owner_phase === 4)).toBe(true);

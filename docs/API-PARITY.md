@@ -67,7 +67,7 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `IdmNavigator10WebClient` | `IdmNavigator10WebClient` | `./web` | 4 | `planned` | `class` | `none_to_null`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_client`: `test/parity/web-contract.test.ts` |
 | `IdmNavigator20WebClient` | `IdmNavigator20WebClient` | `./web` | 4 | `planned` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_client`: `test/parity/web-contract.test.ts` |
 | `IdmModelInfo` | `IdmModelInfo` | `.` | 1 | `complete` | `readonly_object_factory` | `list_to_readonly_array`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `set_to_immutable_set_like`, `snake_case_to_camelCase` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
-| `IdmModbusClient` | `IdmModbusClient` | `.` | 2 | `partial` | `class` | `diagnostic_message_redaction`, `idm_modbus_client_options`, `internal_adapter_retries_zero`, `mapping_to_readonly_map_or_record`, `none_to_null`, `set_to_immutable_set_like`, `snake_case_to_camelCase`, `transport_error_type_to_closed_kind`, `tuple_to_readonly_array` | `transport_client`: `test/parity/transport-contract.test.ts` |
+| `IdmModbusClient` | `IdmModbusClient` | `.` | 2 | `complete` | `class` | `diagnostic_message_redaction`, `idm_modbus_client_options`, `internal_adapter_retries_zero`, `mapping_to_readonly_map_or_record`, `none_to_null`, `set_to_immutable_set_like`, `snake_case_to_camelCase`, `transport_error_type_to_closed_kind`, `tuple_to_readonly_array` | `transport_client`: `test/parity/transport-contract.test.ts` |
 | `IllegalAddressError` | `IllegalAddressError` | `.` | 2 | `complete` | `error_class` | `python_exception_to_error_class` | `transport_errors`: `test/client/errors.test.ts` |
 | `ModbusCodec` | `ModbusCodec` | `.` | 1 | `complete` | `class` | `snake_case_to_camelCase` | `codec`: `test/codec.test.ts` |
 | `IdmWebAuthenticationError` | `IdmWebAuthenticationError` | `./web` | 4 | `planned` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
@@ -98,7 +98,7 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `RegisterType` | `RegisterType` | `.` | 1 | `complete` | `frozen_const_and_union` | `enum_to_const_union` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
 | `WEB_VALUE_DESCRIPTIONS` | `WEB_VALUE_DESCRIPTIONS` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
 | `WriteClass` | `WriteClass` | `.` | 1 | `complete` | `frozen_const_and_union` | `enum_to_const_union` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
-| `WriteSafetyResult` | `WriteSafetyResult` | `.` | 3 | `planned` | `readonly_object_factory` | `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `writes`: `test/parity/write-contract.test.ts` |
+| `WriteSafetyResult` | `WriteSafetyResult` | `.` | 3 | `complete` | `readonly_object_factory` | `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `writes`: `test/parity/write-contract.test.ts` |
 | `build_register_map` | `buildRegisterMap` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `create_optional_navigator10_web_client` | `createOptionalNavigator10WebClient` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_factory`: `test/parity/web-contract.test.ts` |
 | `create_optional_navigator20_web_client` | `createOptionalNavigator20WebClient` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_factory`: `test/parity/web-contract.test.ts` |
@@ -131,11 +131,7 @@ These explicitly additive symbols have no Python counterpart and do not count to
 
 Partial classes are private-development authorities only. Their implemented and omitted member lists are an exact disjoint partition of the pinned Python class fixture, and release mode rejects them.
 
-### IdmModbusClient
-
-- Partition: 22 implemented, 7 omitted
-- Implemented: `clearLastErrorContext`, `connect`, `decodeValue`, `detectModel`, `disconnect`, `encodeValue`, `forceReconnect`, `getBatchUnsafeRegisters`, `getDiagnostics`, `getLastErrorContext`, `getUnsupportedRegisters`, `host`, `isConnected`, `markBatchUnsafe`, `modelInfo`, `modelName`, `port`, `probeRegister`, `readBatch`, `readRegister`, `readValue`, `resetFailedRegisters`
-- Omitted: `getActiveCyclicWrites`, `getExpiredCyclicWrites`, `resetCyclicWriteState`, `resetWriteThrottle`, `setValue`, `simulateWrite`, `writeRegister`
+No partial classes are currently declared.
 
 ## Phase 1 class/member contract
 

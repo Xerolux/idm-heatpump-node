@@ -38,6 +38,7 @@ const GENERATOR_INPUTS = [
   "test/client/diagnostics.test.ts",
   "test/client/errors.test.ts",
   "test/parity/transport-contract.test.ts",
+  "test/parity/write-contract.test.ts",
   "UPSTREAM-PARITY.json",
 ] as const;
 const temporaryDirectories: string[] = [];
@@ -557,9 +558,7 @@ describe("API mapping inventory", () => {
     expect(completedRows).toHaveLength(59);
     expect(completedRows.map(({ python_symbol }) => python_symbol)).toEqual(
       apiMapping.mappings
-        .filter(
-          ({ owner_phase }) => owner_phase <= 3,
-        )
+        .filter(({ owner_phase }) => owner_phase <= 3)
         .map(({ python_symbol }) => python_symbol),
     );
 
@@ -748,9 +747,7 @@ describe("Phase-1 class representation mapping", () => {
 describe("checked mapping export closure", () => {
   it("exports exactly the authorized complete mappings", () => {
     const expectedRuntimeSymbols = apiMapping.mappings
-      .filter(
-        ({ export_path, status }) => export_path === "." && status === "complete",
-      )
+      .filter(({ export_path, status }) => export_path === "." && status === "complete")
       .map(({ typescript_symbol }) => typescript_symbol)
       .sort();
 
@@ -781,7 +778,7 @@ describe("checked mapping export closure", () => {
       expect(rootExports, symbol).not.toHaveProperty(symbol);
       expect(rootSource, symbol).not.toContain(symbol);
     }
-    for (const row of apiMapping.mappings.filter(({ owner_phase }) => owner_phase > 2)) {
+    for (const row of apiMapping.mappings.filter(({ owner_phase }) => owner_phase > 3)) {
       expect(rootExports, row.typescript_symbol).not.toHaveProperty(row.typescript_symbol);
       expect(webExports, row.typescript_symbol).not.toHaveProperty(row.typescript_symbol);
       expect(rootSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
@@ -815,7 +812,9 @@ describe("checked mapping export closure", () => {
 
     expect(rootSource).not.toMatch(/export\s+\*/u);
     expect(clientSource).not.toMatch(/export\s+\*/u);
-    expect(rootSource).toContain('export { IdmModbusClient } from "./client/index.js";');
+    expect(rootSource).toContain(
+      'export { IdmModbusClient, WriteSafetyResult } from "./client/index.js";',
+    );
     expect(rootSource).toContain(
       'export { IdmClientDiagnostics, ModbusErrorContext } from "./client/index.js";',
     );
@@ -843,9 +842,7 @@ describe("checked mapping export closure", () => {
     requireSuccess(build, "package build for declaration closure");
 
     const expectedRuntimeSymbols = apiMapping.mappings
-      .filter(
-        ({ export_path, status }) => export_path === "." && status === "complete",
-      )
+      .filter(({ export_path, status }) => export_path === "." && status === "complete")
       .map(({ typescript_symbol }) => typescript_symbol)
       .sort();
     const esm = (await import(
@@ -901,7 +898,7 @@ describe("checked mapping export closure", () => {
         expect(declaration, symbol).not.toMatch(new RegExp(`\\b${symbol}\\b`, "u"));
       }
     }
-  });
+  }, 30_000);
 });
 
 describe("generated API and baseline documentation", () => {
