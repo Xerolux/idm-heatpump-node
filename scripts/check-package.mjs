@@ -246,6 +246,7 @@ class StructuralTransport implements ModbusTransport {
   async read(_request: Parameters<ModbusTransport["read"]>[0]): Promise<readonly number[]> {
     return [];
   }
+  async write(_request: Parameters<ModbusTransport["write"]>[0]): Promise<void> {}
 }
 
 const transport = new StructuralTransport();
