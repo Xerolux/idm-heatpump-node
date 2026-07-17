@@ -216,6 +216,7 @@ const {
   WriteSafetyResult,
 } = packageRoot;
 
+async function runSmoke() {
 const expectedExports = ${JSON.stringify(expectedRuntimeExports.sort())};
 if (JSON.stringify(Object.keys(packageRoot).sort()) !== JSON.stringify(expectedExports)) {
   throw new Error("CommonJS root export closure failed");
@@ -234,14 +235,24 @@ if (!Object.isFrozen(diagnostics) || !Object.isFrozen(context) || error.isIllega
 }
 const simulation = client.simulateWrite("system_mode", 2);
 const result = WriteSafetyResult.create({ register: simulation.register, requestedValue: 2, encodedRegisters: [2] });
+const dryRun = await client.setValue("system_mode", 2, { dryRun: true });
 client.resetWriteThrottle();
 client.resetCyclicWriteState();
-if (!simulation.dryRun || result.dryRun || client.isConnected) {
-  throw new Error("CommonJS write planning connected or used wrong defaults");
+if (!simulation.dryRun || result.dryRun || !dryRun.dryRun || client.isConnected) {
+  throw new Error("CommonJS write planning/dry-run connected or used wrong defaults");
+}
+if (dryRun.encodedRegisters.join(",") !== "2") {
+  throw new Error("CommonJS dry-run encoded unexpected words");
 }
 if (Object.keys(client.getActiveCyclicWrites()).length !== 0 || client.getExpiredCyclicWrites().size !== 0) {
-  throw new Error("CommonJS planning mutated write state");
+  throw new Error("CommonJS planning/dry-run mutated write state");
 }
+}
+
+runSmoke().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
 `,
   );
   run(process.execPath, ["smoke.cjs"], cjsDirectory);
