@@ -3,10 +3,7 @@ import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import {
-  WriteSafetyResult,
-  createWritePlan,
-} from "../../src/client/write-safety.js";
+import { WriteSafetyResult, createWritePlan } from "../../src/client/write-safety.js";
 import { parseWriteBehaviorFixture } from "../../src/contracts/write-scenario.js";
 import { SemanticValidationError } from "../../src/errors.js";
 import {
@@ -73,20 +70,17 @@ describe("write plan validation", () => {
     expect(() => Object.assign(result, { dryRun: true })).toThrow(TypeError);
   });
 
-  it.each([[1.5], [-1], [65_536], [Number.NaN]])(
-    "rejects a non-word factory payload %j",
-    (encodedRegisters) => {
-      const register = createRegisterDef({
-        address: 1,
-        datatype: DataType.UCHAR,
-        name: "invalid_word",
-        writable: true,
-      });
-      expect(() =>
-        WriteSafetyResult.create({ register, requestedValue: 1, encodedRegisters }),
-      ).toThrow(RangeError);
-    },
-  );
+  it.each([1.5, -1, 65_536, Number.NaN])("rejects a non-word factory payload %j", (word) => {
+    const register = createRegisterDef({
+      address: 1,
+      datatype: DataType.UCHAR,
+      name: "invalid_word",
+      writable: true,
+    });
+    expect(() =>
+      WriteSafetyResult.create({ register, requestedValue: 1, encodedRegisters: [word] }),
+    ).toThrow(RangeError);
+  });
 
   it("returns the first authoritative collision code and bypasses membership only", () => {
     const modelInfo = detectedModel("Navigator 2.0");
@@ -96,9 +90,9 @@ describe("write plan validation", () => {
       name: "missing_read_only",
       writable: false,
     });
-    expect(() =>
-      createWritePlan({ register: readOnly, value: "bad", modelInfo }),
-    ).toThrowError(expect.objectContaining({ code: "write_read_only" }));
+    expect(() => createWritePlan({ register: readOnly, value: "bad", modelInfo })).toThrowError(
+      expect.objectContaining({ code: "write_read_only" }),
+    );
 
     const custom = createRegisterDef({
       address: 4_200,
@@ -117,6 +111,65 @@ describe("write plan validation", () => {
         allowCustomRegister: true,
       }),
     ).toThrowError(expect.objectContaining({ code: "write_boolean_for_numeric" }));
+  });
+
+  it.each([
+    {
+      input: { datatype: DataType.BOOL },
+      value: 2,
+      code: "write_boolean_required",
+    },
+    {
+      input: { datatype: DataType.FLOAT },
+      value: Number.NaN,
+      code: "write_nonfinite",
+    },
+    {
+      input: { datatype: DataType.UCHAR },
+      value: 1.5,
+      code: "write_integer_required",
+    },
+    {
+      input: { datatype: DataType.UCHAR, excludeFromWrite: new Set([5]) },
+      value: 5,
+      code: "write_excluded",
+    },
+    {
+      input: { datatype: DataType.INT16, minVal: 0 },
+      value: -1,
+      code: "write_below_minimum",
+    },
+    {
+      input: { datatype: DataType.INT16, maxVal: 10 },
+      value: 11,
+      code: "write_above_maximum",
+    },
+    {
+      input: { datatype: DataType.UCHAR, enumOptions: { 0: "Off", 1: "On" } },
+      value: 3,
+      code: "write_enum_unsupported",
+    },
+    {
+      input: { datatype: DataType.FLOAT },
+      value: Number.MAX_VALUE,
+      code: "codec_float_overflow",
+    },
+  ])("keeps the $code guard under custom membership bypass", ({ input, value, code }) => {
+    const register = createRegisterDef({
+      address: 4_220,
+      name: `custom_${code}`,
+      writable: true,
+      ...input,
+    });
+
+    expect(() =>
+      createWritePlan({
+        register,
+        value,
+        modelInfo: detectedModel("Navigator 2.0"),
+        allowCustomRegister: true,
+      }),
+    ).toThrowError(expect.objectContaining({ code }));
   });
 
   it("keeps simulation metadata transport-free even when dryRun is false", () => {
@@ -142,7 +195,10 @@ describe("write plan validation", () => {
     for (const scenario of scenarios) {
       const action = scenario.operation.actions[0];
       if (action?.kind !== "simulate_write") throw new Error("Expected simulate_write action");
-      const expected = scenario.expected_result.steps[0]?.result;
+      const steps = scenario.expected_result.steps;
+      if (!Array.isArray(steps)) throw new Error("Expected generated result steps");
+      const expected = (steps[0] as Readonly<Record<string, unknown>> | undefined)?.result as
+        Readonly<Record<string, unknown>> | undefined;
       if (expected === undefined) throw new Error("Expected generated result");
       const register = fixtureRegister(action.register);
       const invoke = (): ReturnType<typeof createWritePlan> =>
@@ -175,10 +231,13 @@ describe("write plan validation", () => {
       expect(result.dryRun, scenario.name).toBe(expectedValue.dryRun);
       expect(result.encodedRegisters, scenario.name).toEqual(expectedValue.encodedRegisters);
       expect(result.requestedValue, scenario.name).toBe(action.value);
-      expect(result.register, scenario.name).toBe(register);
-      expect({ name: result.register.name, address: result.register.address }, scenario.name).toEqual(
-        expectedValue.register,
-      );
+      if (typeof register !== "string") {
+        expect(result.register, scenario.name).toBe(register);
+      }
+      expect(
+        { name: result.register.name, address: result.register.address },
+        scenario.name,
+      ).toEqual(expectedValue.register);
     }
   });
 });
