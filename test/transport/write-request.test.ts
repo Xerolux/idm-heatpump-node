@@ -25,9 +25,7 @@ function validInput(patch: Partial<ModbusWriteRequestInput> = {}): ModbusWriteRe
 }
 
 function writeRequest(address: number, word: number): ModbusWriteRequest {
-  return createModbusWriteRequest(
-    validInput({ address, count: 1, words: [word] }),
-  );
+  return createModbusWriteRequest(validInput({ address, count: 1, words: [word] }));
 }
 
 describe("createModbusWriteRequest", () => {
@@ -155,10 +153,7 @@ describe("fake FC16 transport", () => {
     const failure = new Error("synthetic write failure");
     const transport = new FakeModbusTransport([], {
       initiallyConnected: true,
-      writeResponses: [
-        { kind: "write_ok" },
-        { kind: "error", error: failure },
-      ],
+      writeResponses: [{ kind: "write_ok" }, { kind: "error", error: failure }],
     });
     const first = writeRequest(1_200, 42);
     const second = writeRequest(1_201, 43);
@@ -227,18 +222,12 @@ describe("fake FC16 transport", () => {
   });
 
   it("pauses writes independently and exposes deterministic shared concurrency", async () => {
-    const transport = new FakeModbusTransport(
-      [{ kind: "words", words: [7] }],
-      {
-        initiallyConnected: true,
-        pauseReads: true,
-        pauseWrites: true,
-        writeResponses: [
-          { kind: "write_ok" },
-          { kind: "write_ok" },
-        ],
-      },
-    );
+    const transport = new FakeModbusTransport([{ kind: "words", words: [7] }], {
+      initiallyConnected: true,
+      pauseReads: true,
+      pauseWrites: true,
+      writeResponses: [{ kind: "write_ok" }, { kind: "write_ok" }],
+    });
     const read = transport.read({
       unitId: 1,
       registerType: RegisterType.INPUT,
@@ -249,10 +238,7 @@ describe("fake FC16 transport", () => {
     const firstWrite = transport.write(writeRequest(1_200, 42));
     const secondWrite = transport.write(writeRequest(1_201, 43));
 
-    await Promise.all([
-      transport.waitForPendingReads(1),
-      transport.waitForPendingWrites(2),
-    ]);
+    await Promise.all([transport.waitForPendingReads(1), transport.waitForPendingWrites(2)]);
     expect(transport.pendingReads).toBe(1);
     expect(transport.pendingWrites).toBe(2);
     expect(transport.activeRequests).toBe(3);
