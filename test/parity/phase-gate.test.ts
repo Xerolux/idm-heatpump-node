@@ -521,6 +521,7 @@ describe("npm parity entry points and private package boundary", () => {
 
   it("requires the package tarball ESM CommonJS declaration smoke to cover Phase 2 without connecting", () => {
     const source = readFileSync(resolve(root, "scripts/check-package.mjs"), "utf8");
+    const commandSource = readFileSync(resolve(root, "scripts/package-command.mjs"), "utf8");
 
     for (const symbol of phase2RuntimeSymbols) {
       expect(source, symbol).toContain(symbol);
@@ -529,12 +530,76 @@ describe("npm parity entry points and private package boundary", () => {
     expect(source).toContain("EXPECTED_TARBALL_FILES");
     expect(source).toContain('"modbus-serial": "8.0.25"');
     expect(source).toContain("@ts-expect-error");
+    expect(source).toContain('import { runPackageCommand } from "./package-command.mjs"');
+    expect(source).not.toContain("spawnSync");
+    expect(commandSource).toContain("PACKAGE_COMMAND_TIMEOUT_MS = 120_000");
+    expect(commandSource).toContain("timeout: timeoutMs");
     for (const member of phase2OmittedWriteMembers) {
       expect(source, member).toContain(member);
     }
     expect(source).not.toMatch(
       /\.(?:connect|readRegister|readBatch|probeRegister|detectModel)\s*\(/u,
     );
+  });
+
+  it("terminates package-check child processes at the reviewed timeout boundary", () => {
+    const helperUrl = pathToFileURL(resolve(root, "scripts/package-command.mjs")).href;
+    const success = run(
+      process.execPath,
+      [
+        "--input-type=module",
+        "--eval",
+        `import { runPackageCommand } from ${JSON.stringify(helperUrl)};
+process.stdout.write(runPackageCommand(process.execPath, ["--eval", "process.stdout.write('bounded')"], process.cwd(), { timeoutMs: 5_000 }));`,
+      ],
+      root,
+      process.env,
+      10_000,
+    );
+    expect(success.status, success.stderr).toBe(0);
+    expect(success.stdout).toBe("bounded");
+
+    const timeout = run(
+      process.execPath,
+      [
+        "--input-type=module",
+        "--eval",
+        `import { runPackageCommand } from ${JSON.stringify(helperUrl)};
+try {
+  runPackageCommand(process.execPath, ["--eval", "setInterval(() => {}, 1_000)"], process.cwd(), { timeoutMs: 100 });
+  process.exitCode = 2;
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  if (!message.includes("timed out after 100 ms")) {
+    console.error(message);
+    process.exitCode = 3;
+  }
+}`,
+      ],
+      root,
+      process.env,
+      10_000,
+    );
+    expect(timeout.status, timeout.stderr).toBe(0);
+
+    const invalidBoundary = run(
+      process.execPath,
+      [
+        "--input-type=module",
+        "--eval",
+        `import { runPackageCommand } from ${JSON.stringify(helperUrl)};
+try {
+  runPackageCommand(process.execPath, ["--version"], process.cwd(), { timeoutMs: 0 });
+  process.exitCode = 2;
+} catch (error) {
+  if (!(error instanceof RangeError)) process.exitCode = 3;
+}`,
+      ],
+      root,
+      process.env,
+      10_000,
+    );
+    expect(invalidBoundary.status, invalidBoundary.stderr).toBe(0);
   });
 });
 

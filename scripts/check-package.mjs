@@ -1,7 +1,8 @@
-import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
+
+import { runPackageCommand } from "./package-command.mjs";
 
 const root = process.cwd();
 const npmCli = process.env.npm_execpath;
@@ -54,19 +55,7 @@ function assert(condition, message) {
 }
 
 function run(command, args, cwd = root) {
-  const result = spawnSync(command, args, {
-    cwd,
-    encoding: "utf8",
-    maxBuffer: 4 * 1024 * 1024,
-    shell: false,
-    windowsHide: true,
-  });
-  if (result.status !== 0) {
-    throw new Error(
-      `Command failed: ${command} ${args.join(" ")}\n${result.error?.message ?? ""}\n${result.stdout ?? ""}\n${result.stderr ?? ""}`,
-    );
-  }
-  return result.stdout;
+  return runPackageCommand(command, args, cwd);
 }
 
 function runNpm(args, cwd = root) {
