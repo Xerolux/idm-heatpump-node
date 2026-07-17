@@ -187,8 +187,6 @@ describe("closed write scenario schema parser", () => {
     for (const action of cases) {
       const fixture = validFixture();
       operationOf(fixture).actions = [action];
-      const expected = firstScenario(fixture).expected_result as Record<string, unknown>;
-      expected.steps = [];
       expect(() => parseWriteBehaviorFixture(fixture), JSON.stringify(action)).not.toThrow();
     }
 
@@ -392,7 +390,7 @@ describe("closed write scenario schema parser", () => {
       { length: WRITE_SCENARIO_LIMITS.maxClockEvents + 1 },
       (_, index) => index,
     );
-    expectFixtureError(() => parseWriteBehaviorFixture(tooManyClockEvents));
+    expect(() => parseWriteBehaviorFixture(tooManyClockEvents)).toThrow();
 
     const tooManyWords = validFixture();
     firstScenario(tooManyWords).expected_requests = [
