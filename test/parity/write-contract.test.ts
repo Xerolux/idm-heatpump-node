@@ -424,6 +424,112 @@ describe("closed write scenario schema parser", () => {
     }
   });
 
+  it("rejects action-specific result, acknowledgement, and snapshot mutations", () => {
+    const actionResultMutations: readonly ((fixture: Record<string, unknown>) => void)[] = [
+      (fixture) => {
+        const expected = firstScenario(fixture).expected_result as Record<string, unknown>;
+        const steps = expected.steps as Record<string, unknown>[];
+        (steps[0] as Record<string, unknown>).result = { kind: "value", value: null };
+      },
+      (fixture) => {
+        operationOf(fixture).actions = [
+          {
+            allowCustomRegister: false,
+            kind: "write_register",
+            register: "system_mode",
+            value: 1,
+          },
+        ];
+      },
+      (fixture) => {
+        operationOf(fixture).actions = [{ kind: "get_active_cyclic_writes" }];
+        const expected = firstScenario(fixture).expected_result as Record<string, unknown>;
+        const steps = expected.steps as Record<string, unknown>[];
+        (steps[0] as Record<string, unknown>).result = { kind: "value", value: [] };
+      },
+      (fixture) => {
+        const expected = firstScenario(fixture).expected_result as Record<string, unknown>;
+        const steps = expected.steps as Record<string, unknown>[];
+        (steps[0] as Record<string, unknown>).result = {
+          category: "transport",
+          errorType: "timeout",
+          kind: "error",
+          message: "timeout",
+        };
+      },
+      (fixture) => {
+        (firstScenario(fixture).expected_state as Record<string, unknown>).connected = true;
+      },
+      (fixture) => {
+        operationOf(fixture).actions = [
+          {
+            allowCustomRegister: false,
+            kind: "write_register",
+            register: "system_mode",
+            value: 1,
+          },
+        ];
+        const expected = firstScenario(fixture).expected_result as Record<string, unknown>;
+        const steps = expected.steps as Record<string, unknown>[];
+        (steps[0] as Record<string, unknown>).result = { kind: "value", value: null };
+        firstScenario(fixture).transport_responses = [{ address: 1_006, count: 1, kind: "ack" }];
+        firstScenario(fixture).expected_requests = [
+          {
+            kind: "write",
+            request: {
+              address: 1_005,
+              count: 1,
+              functionCode: 16,
+              registerType: "holding",
+              unitId: 1,
+              words: [1],
+            },
+          },
+        ];
+      },
+    ];
+
+    for (const mutate of actionResultMutations) {
+      const fixture = validFixture();
+      mutate(fixture);
+      expectFixtureError(() => parseWriteBehaviorFixture(fixture));
+    }
+  });
+
+  it("keeps synthetic values only in reviewed fixture fields and closes forbidden sinks", () => {
+    const parsed = parseWriteBehaviorFixture(readFileSync(GENERATED_WRITE_FIXTURE, "utf8"));
+    const forbiddenKeys = new Set(["cause", "payload", "providerResult", "rawPayload"]);
+    const inspect = (value: unknown, path: string): void => {
+      if (Array.isArray(value)) {
+        for (const [index, item] of value.entries()) inspect(item, `${path}[${String(index)}]`);
+        return;
+      }
+      if (typeof value !== "object" || value === null) return;
+      for (const [key, item] of Object.entries(value)) {
+        expect(forbiddenKeys.has(key), `${path}.${key}`).toBe(false);
+        inspect(item, `${path}.${key}`);
+      }
+    };
+
+    for (const scenario of parsed.scenarios) {
+      for (const response of scenario.transport_responses) inspect(response, scenario.name);
+      for (const step of scenario.expected_result.steps as readonly Record<string, unknown>[]) {
+        inspect(step.result, scenario.name);
+        inspect(step.state, scenario.name);
+      }
+      inspect(scenario.expected_state, scenario.name);
+    }
+
+    const generatedDocs = ["../../docs/API-PARITY.md", "../../docs/BASELINE.md"].map((path) =>
+      readFileSync(resolve(import.meta.dirname, path), "utf8"),
+    );
+    for (const document of generatedDocs) {
+      expect(document).not.toMatch(
+        /(?:10|127|169\.254|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}|"(?:cause|payload|rawPayload|providerResult)"/iu,
+      );
+    }
+  });
+
   it("enforces source, scenario, action, response, clock, word, text, graph, and diagnostic bounds", () => {
     const oversizedSource = JSON.stringify(validFixture()).padEnd(
       WRITE_SCENARIO_LIMITS.maxSourceBytes + 1,
