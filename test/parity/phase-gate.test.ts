@@ -649,11 +649,11 @@ describe("GitHub Actions workflow contract", () => {
   });
 });
 
-describe("Phase 2 truthful documentation and closure", () => {
-  it("README documents the exact private Phase 2 read, detection, and resilience scope", () => {
+describe("Phase 3 truthful documentation and closure", () => {
+  it("README documents the exact private Phase 3 safe-write scope and risk boundary", () => {
     const readme = readFileSync(resolve(root, "README.md"), "utf8");
 
-    expect(readme).toMatch(/Phase 2[\s\S]*(?:implementiert|abgeschlossen)/u);
+    expect(readme).toMatch(/Phase 3[\s\S]*(?:implementiert|abgeschlossen)/u);
     expect(readme).toContain("private: true");
     expect(readme).toContain("0.7.6");
     expect(readme).toContain(pinnedTag);
@@ -669,18 +669,30 @@ describe("Phase 2 truthful documentation and closure", () => {
       "Retry",
       "Reconnect",
       "Diagnostik",
+      "FC16",
+      "Dry-run",
+      "EEPROM",
+      "Cyclic",
     ]) {
       expect(readme, implementedArea).toContain(implementedArea);
     }
-    for (const pendingArea of ["Writes", "Web-Supplement", "Veröffentlichung", "Gesamtparität"]) {
+    for (const pendingArea of ["Web-Supplement", "Veröffentlichung", "Gesamtparität"]) {
       expect(readme, pendingArea).toContain(pendingArea);
     }
+    expect(readme).toMatch(/ein- und zwei(?:-| )Wort/u);
+    expect(readme).toMatch(/planen[\s\S]*simulieren[\s\S]*Dry-run/u);
+    expect(readme).toMatch(/Validierung[\s\S]*Custom/u);
+    expect(readme).toMatch(/60\s*Sekunden/u);
+    expect(readme).toMatch(/300\s*Sekunden/u);
+    expect(readme).toMatch(/Fake Clock|kontrollierte Uhr/u);
+    expect(readme).toMatch(/at-least-once|mindestens einmal/u);
+    expect(readme).toMatch(/Antwortverlust[\s\S]*(?:erneut|wiederholt)/u);
     expect(readme).toMatch(/Navigator 1\.0\/1\.7[\s\S]*(?:nicht unterstützt|ausgeschlossen)/u);
     expect(readme).toContain("keine integrierte TLS-Verschlüsselung");
     expect(readme).toContain("keine Modbus-Authentifizierung");
     expect(readme).toMatch(/vertrauenswürdigen\s+lokalen Netzwerk/u);
     expect(readme).toMatch(/Keine\s+Node-Hardwarevalidierung durchgeführt\./u);
-    expect(readme).not.toMatch(/noch keinen Modbus-Transport|Phase 2[^\n]*(?:geplant|Transport)/u);
+    expect(readme).not.toMatch(/noch keinen Modbus-Transport|Phase 3[^\n]*(?:geplant|Writes)/u);
     expect(readme).toMatch(/nicht (?:auf npm )?veröffentlicht/u);
   });
 
@@ -698,7 +710,7 @@ describe("Phase 2 truthful documentation and closure", () => {
     }
   });
 
-  it("CHANGELOG records exact Phase 2 evidence, pending scope, and no Node hardware validation", () => {
+  it("CHANGELOG records exact Phase 3 write evidence, pending scope, and no hardware claim", () => {
     const changelogPath = resolve(root, "CHANGELOG.md");
     expect(existsSync(changelogPath)).toBe(true);
     const changelog = readFileSync(changelogPath, "utf8");
@@ -715,7 +727,10 @@ describe("Phase 2 truthful documentation and closure", () => {
     expect(changelog).toMatch(/Modell|Erkennung/u);
     expect(changelog).toMatch(/Retry|Reconnect/u);
     expect(changelog).toMatch(/Diagnostik/u);
-    expect(changelog).toMatch(/Writes[\s\S]*Web-Supplement[\s\S]*Veröffentlichung/u);
+    expect(changelog).toMatch(/FC16[\s\S]*(?:Dry-run|Dry-Run)/u);
+    expect(changelog).toMatch(/EEPROM[\s\S]*Cyclic/u);
+    expect(changelog).toMatch(/Write-Fehler|fehlgeschlagene Writes/u);
+    expect(changelog).toMatch(/Web-Supplement[\s\S]*Veröffentlichung/u);
     expect(changelog).toContain("Gesamtparität");
     expect(changelog).toContain("Navigator 1.0/1.7");
     expect(changelog).toContain("keine integrierte TLS-Verschlüsselung");
@@ -735,7 +750,7 @@ describe("Phase 2 truthful documentation and closure", () => {
     }
   });
 
-  it("closes only the Phase-2 read clauses while umbrella and write clauses stay pending", () => {
+  it("closes Phase 3 write clauses and their completed umbrellas without closing later phases", () => {
     const requirements = readFileSync(resolve(root, ".planning/REQUIREMENTS.md"), "utf8");
     const roadmap = readFileSync(resolve(root, ".planning/ROADMAP.md"), "utf8");
     const checked = (id: string): boolean => {
@@ -747,24 +762,41 @@ describe("Phase 2 truthful documentation and closure", () => {
       return match?.[1]?.toLowerCase() === "x";
     };
 
-    for (const id of ["TRN-01", "TRN-02", "TRN-03R", "DET-01", "DET-02", "ERR-01R"]) {
+    for (const id of [
+      "TRN-01",
+      "TRN-02",
+      "TRN-03",
+      "TRN-03R",
+      "TRN-03W",
+      "DET-01",
+      "DET-02",
+      "ERR-01",
+      "ERR-01R",
+      "ERR-01W",
+      "WRT-01",
+      "WRT-02",
+    ]) {
       expect(checked(id), id).toBe(true);
     }
-    for (const id of ["TRN-03", "TRN-03W", "ERR-01", "ERR-01W"]) {
+    for (const id of ["CTR-02", "PAR-02", "WEB-01", "WEB-02", "REL-01"]) {
       expect(checked(id), id).toBe(false);
     }
     expect(requirements).toContain("| TRN-03R     | Phase 2  | Complete");
     expect(requirements).toContain("| ERR-01R     | Phase 2  | Complete");
     expect(requirements).toContain(
-      "| TRN-03      | Umbrella | Pending until TRN-03R and TRN-03W complete |",
+      "| TRN-03      | Umbrella | Complete",
     );
     expect(requirements).toContain(
-      "| ERR-01      | Umbrella | Pending until ERR-01R and ERR-01W complete |",
+      "| ERR-01      | Umbrella | Complete",
     );
-    expect(requirements).toContain("| TRN-03W     | Phase 3  | Pending");
-    expect(requirements).toContain("| ERR-01W     | Phase 3  | Pending");
+    expect(requirements).toContain("| TRN-03W     | Phase 3  | Complete");
+    expect(requirements).toContain("| ERR-01W     | Phase 3  | Complete");
     expect(roadmap).toContain("**Requirements**: TRN-01, TRN-02, TRN-03R, DET-01, DET-02, ERR-01R");
     expect(roadmap).toContain("**Requirements**: WRT-01, WRT-02, TRN-03W, ERR-01W");
+    expect(roadmap).toMatch(/\[x\] \*\*Phase 3: Safe Write Parity\*\*/u);
+    expect(roadmap).toMatch(/3\. Safe Write Parity\s*\| 7\/7\s*\| Complete/u);
+    expect(roadmap).toMatch(/4\. Optional Read-Only Web Parity\s*\| 0\/TBD\s*\| Not started/u);
+    expect(roadmap).toMatch(/5\. Parity Closure and Release Assurance\s*\| 0\/TBD\s*\| Not started/u);
   });
 
   it("full gate keeps the package private, web-empty, covered, packaged, and parity-checked", () => {
