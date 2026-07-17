@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready for execution
-stopped_at: Completed 03-06-PLAN.md
-last_updated: "2026-07-17T04:31:24.028Z"
-last_activity: 2026-07-17 -- Phase 03 Plan 06 completed executable generated write parity and evidence closure
+status: Ready for planning
+stopped_at: Completed 03-07-PLAN.md
+last_updated: "2026-07-17T05:08:56.211Z"
+last_activity: 2026-07-17 -- Phase 03 completed public safe-write parity and private release closure
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 27
-  completed_plans: 26
-  percent: 40
+  completed_plans: 27
+  percent: 60
 ---
 
 # Project State
@@ -21,24 +21,24 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-14)
 
 **Core value:** Complete semantic and behavioral parity with the latest stable pinned `Xerolux/idm-heatpump-api` release, proven by cross-repository contracts and all release gates.
-**Current focus:** Phase 03 — safe-write-parity
+**Current focus:** Phase 04 — optional-read-only-web-parity
 
 ## Current Position
 
-Phase: 3
-Plan: 7 of 7
-Status: Ready for execution
-Last activity: 2026-07-17 -- Phase 03 Plan 06 completed executable generated write parity and evidence closure
+Phase: 4
+Plan: Not planned
+Status: Ready for planning
+Last activity: 2026-07-17 -- Phase 03 completed public safe-write parity and private release closure
 
-Milestone progress: [████░░░░░░] 40% (2/5 phases)
+Milestone progress: [██████░░░░] 60% (3/5 phases)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 26
-- Average duration: 47 min
-- Total execution time: 20h 27m
+- Total plans completed: 27
+- Average duration: 46 min
+- Total execution time: 20h 54m
 
 **By Phase:**
 
@@ -46,12 +46,12 @@ Milestone progress: [████░░░░░░] 40% (2/5 phases)
 | ----- | ----- | ------- | -------- |
 | 01    | 10    | 15h 22m | 92 min   |
 | 02    | 10    | 3h 30m  | 21 min   |
-| 03    | 6     | 1h 35m  | 16 min   |
+| 03    | 7     | 2h 02m  | 17 min   |
 
 **Recent Trend:**
 
-- Last 5 plans: 29 min, 8 min, 12 min, 9 min, 24 min
-- Trend: Phase 3 now has generated executable parity for every write action, trace, clock, state, retry, and failure branch
+- Last 5 plans: 8 min, 12 min, 9 min, 24 min, 27 min
+- Trend: Phase 3 is complete with exact private-package read/write parity; Phase 4 web planning is next
 
 _Updated after each plan completion_
 | Phase 01 P01 | 16 min | 2 tasks | 3 files |
@@ -80,6 +80,7 @@ _Updated after each plan completion_
 | Phase 03 P04 | 12 min | 2 tasks | 6 files |
 | Phase 03 P05 | 9 min | 2 tasks | 10 files |
 | Phase 03 P06 | 24 min | 2 tasks | 6 files |
+| Phase 03 P07 | 27 min | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -88,35 +89,9 @@ _Updated after each plan completion_
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [Phase 01]: Preserve pinned Python immutability, exceptional-number, validation, and exact CPython rounding semantics.
-- [Phase 01]: Preserve documented register starts and official logical overlaps through the sole validated register factory.
-- [Phase 01]: Expose only 53 evidenced Phase-1 mappings, leave 36 later mappings planned, and retain the private release block.
-- [Phase 01]: Keep parity lifecycle and bounded evidence in the audited generator/CI path with all actions pinned by full SHA.
-- [Phase 02]: Keep ModbusTransport in a separate additive authority with no fabricated Python mapping row.
-- [Phase 02]: Allow IdmModbusClient to be partial only during private development, with an exact pinned member partition and an unconditional release block.
-- [Phase 02]: Expose only host plus mapped camelCase options publicly; keep transport, clock, sleep, and zero adapter retries internal.
-- [Phase 02]: Normalize runtime errors to seven closed kinds and symmetrically redact configured endpoints with a bounded projection.
-- [Phase 02]: Use one frozen adapter-neutral read request with exact FC03/FC04 identity and reject address/count spans beyond the 16-bit Modbus space. — Validating protocol identity before transport execution keeps adapters interchangeable and prevents malformed requests from consuming deterministic evidence.
-- [Phase 02]: Keep Phase-2 runtime evidence in a separate exact-baseline schema with seven closed operations, synthetic example.invalid configuration, and literal <endpoint> diagnostic redaction. — This preserves the Phase-1 schema closure while preventing writes, web operations, private endpoints, alternate redaction markers, or mutable graphs from entering read parity evidence.
-- [Phase 02]: Represent the seven closed runtime outcomes as six normalized failure kinds plus the dedicated IllegalAddressError marker.
-- [Phase 02]: Create IllegalAddressError only from structured numeric Modbus Code 2; messages and numeric strings remain ordinary Modbus failures.
-- [Phase 02]: Preserve caller order and duplicates in public diagnostics factories; sorting belongs only to later internal-set snapshots.
-- [Phase 02]: Keep Phase-2 runtime evidence in a separate closed transport fixture. — Preserves the Phase-1 scenario schema while allowing exact lifecycle, read, resilience, detection, and diagnostics evidence.
-- [Phase 02]: Replace all seven fixtures and two generated documents through one fixed transaction. — Rejects missing, extra, oversized, or symlinked output before replacement and restores all nine artifacts after failure.
-- [Phase 02]: Carry internal client dependencies through a non-enumerable private symbol while keeping the constructor closed to host plus five mapped options.
-- [Phase 02]: Hold one FIFO acquisition across ensure/connect, every attempt, reconnect, delay, validation, and state mutation.
-- [Phase 02]: Reconnect timeout, disconnected, socket, and no-response failures; retry Modbus and invalid-response failures on the same connection; never retry Code 2.
-- [Phase 02]: Preserve the latest immutable normalized error context after later success until explicit clearing.
-- [Phase 02]: Keep exact documented logical starts/sizes and isolate direct reads from fallback failure state. — Grouping merges only same-type strict adjacency within the complete span; only ordered individual fallback mutates unsupported, permanent, or transient register state.
-- [Phase 02]: Keep ordered detection policy in one transport-neutral service. — The client callback preserves the exact one-attempt FC04 request shape and 2000 ms timeout under the existing complete-operation FIFO.
-- [Phase 02]: Treat only decoded circuit -1.0 or a missing or short response as unavailable. — An exact two-word response remains active even when invalid or outside the plausibility range, matching the pinned Python behavior.
-- [Phase 02]: Replace detected model and model-aware register map only after the full probe sequence completes. — Partial or failed detection must not leak half-applied public model state.
-- [Phase 02]: Sort client-owned diagnostic set snapshots only at the client boundary. — Public diagnostics factories remain order-preserving while internal set projections are deterministic and immutable.
 - [Phase 02]: Keep modbus-serial behind one internal retry-neutral adapter. — Public construction selects the provider without leaking dependency or injection types; only structured numeric Code 2 creates IllegalAddressError.
-- [Phase 02]: Promote only the four evidenced Phase-2 helper/data/error rows; keep IdmModbusClient partial with the exact 22 implemented and seven omitted member partition.
 - [Phase 02]: Expose ModbusTransport only as an additive type and derive ESM, CommonJS, and declaration closure from the same mapping authorities.
 - [Phase 02]: Keep internal client test controls in a module-scoped WeakMap so private seams do not enter the public class declaration.
-- [Phase 02]: Derive the exact private tarball runtime surface from mapping authorities and close only read-specific transport/error clauses. — Clean consumers prove installability without hardware access while seven omitted write members, umbrella requirements, and release validation remain fail-closed.
 - [Phase 03]: Represent every accepted write as holding-register FC16, including one-word values.
 - [Phase 03]: Keep ModbusTransport read-only in Wave 1 and add ModbusWriteTransport as a narrow additive refinement.
 - [Phase 03]: Keep fake read and write pause queues independent while sharing active-request counters.
@@ -134,6 +109,8 @@ Recent decisions affecting current work:
 - [Phase 03]: Execute parsed write scenarios through the private client and production adapter boundary while keeping fixture expectations external to the runner.
 - [Phase 03]: Seed detected-model state only through a private internal test seam so generated model-gated writes require no unplanned probe traffic.
 - [Phase 03]: Reject generated evidence when action/result, acknowledgement/request, or final-step/final-state projections disagree.
+- [Phase 03]: Promote the complete write surface only after generated parity, exact mapping, and clean-package evidence close together.
+- [Phase 03]: Keep the package private and release-blocked until web, latest-stable, hardware, and publication gates close.
 
 ### Pending Todos
 
@@ -152,6 +129,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-17T04:31:24.014Z
-Stopped at: Completed 03-06-PLAN.md
+Last session: 2026-07-17T05:08:56.201Z
+Stopped at: Completed 03-07-PLAN.md
 Resume file: None
