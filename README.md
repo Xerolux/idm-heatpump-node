@@ -10,14 +10,14 @@ vorgesehene Paketname ist:
 
 ## Status
 
-**Phase 2 ist implementiert und maschinengeprüft. Der Modbus-Lesepfad mit
-Erkennung und Resilienz ist nutzbar; das Gesamtprojekt ist noch nicht fertig
-und nicht auf npm veröffentlicht.**
+**Phase 3 ist implementiert und maschinengeprüft. Der Modbus-Lesepfad sowie
+die sicherheitskritischen Write-Pfade sind nutzbar; das Gesamtprojekt ist noch
+nicht fertig und nicht auf npm veröffentlicht.**
 
-`package.json` bleibt absichtlich auf `private: true`. Sichere Writes, das
-optionale Web-Supplement, die Veröffentlichung und die vollständige
-Gesamtparität folgen in den Phasen 3 bis 5. Bis dahin darf dieses Repository
-nicht als vollständiger, funktionsgleicher Gesamtport veröffentlicht werden.
+`package.json` bleibt absichtlich auf `private: true`. Das optionale
+Web-Supplement, die Veröffentlichung und die vollständige Gesamtparität folgen
+in den Phasen 4 und 5. Bis dahin darf dieses Repository nicht als vollständiger,
+funktionsgleicher Gesamtport veröffentlicht werden.
 
 Die exakt geprüfte Python-Baseline ist:
 
@@ -28,7 +28,7 @@ Die exakt geprüfte Python-Baseline ist:
 `UPSTREAM-PARITY.json` behält deshalb den Gesamtstatus `planned`. Keine
 Node-Hardwarevalidierung durchgeführt.
 
-## In Phase 2 nachgewiesen
+## Bis einschließlich Phase 3 nachgewiesen
 
 Der Paket-Root stellt den vollständigen Semantik-Kern aus Phase 1 sowie den
 evidenzbasierten Lesepfad aus Phase 2 bereit:
@@ -52,13 +52,22 @@ evidenzbasierten Lesepfad aus Phase 2 bereit:
   modellabhängiger Registerkarte;
 - unveränderliche Diagnostik für Verbindungs-, Fehler-, Unsupported-,
   Permanent- und Quarantänezustand;
-- sieben exakt gepinnte Golden Fixtures und zwei generierte Dokumente als
-  neun transaktional geprüfte Paritätsartefakte.
+- Planung, Simulation und Dry-run ohne Netzwerkverkehr;
+- validierte ein- und zwei-Wort-Writes ausschließlich als FC16-Request;
+- Typ-, Bereichs-, Enum-, Ausschlusswert- und Modell-Validierung; die
+  `allowCustomRegister`-Option umgeht nur die Name-/Adress-Mitgliedschaft eines
+  erkannten Modells, niemals die übrigen Schutzprüfungen;
+- eine EEPROM-Schreibsperre von 60 Sekunden und Cyclic-Heartbeats mit einer
+  Standard-TTL von 300 Sekunden, geprüft mit kontrollierter Uhr (Fake Clock);
+- Write-Retry und Reconnect mit konservativer at-least-once-Semantik sowie
+  erfolgreicher Zustandsänderung erst nach bestätigtem Transporterfolg;
+- acht exakt gepinnte Golden Fixtures und zwei generierte Dokumente als zehn
+  transaktional geprüfte Paritätsartefakte.
 
-Die Paritätsmatrix enthält weiterhin exakt 89 öffentliche Python-Symbole. 57
-Zuordnungen sind `complete`; `IdmModbusClient` bleibt während der privaten
-Entwicklung bewusst `partial`: 22 Lesepfad-Mitglieder sind implementiert und
-die sieben Write-Mitglieder aus Phase 3 sind nicht als Stubs exportiert.
+Die Paritätsmatrix enthält weiterhin exakt 89 öffentliche Python-Symbole. 59
+Zuordnungen sind `complete` und 30 Web-Zuordnungen bleiben `planned`;
+`IdmModbusClient` ist mit allen 29 öffentlichen Mitgliedern vollständig
+abgebildet.
 `ModbusTransport` ist separat als vollständige additive TypeScript-Erweiterung
 dokumentiert.
 
@@ -92,6 +101,35 @@ try {
 Der Beispielhost ist absichtlich synthetisch. Für einen echten Aufruf muss er
 durch den lokalen Host der eigenen Anlage ersetzt werden.
 
+## Writes planen und ausführen
+
+Vor einem echten Write lässt sich derselbe Wert planen, simulieren und
+asynchron als Dry-run prüfen. Das öffnet keine Verbindung und sendet keinen
+Modbus-Request:
+
+```ts
+import { IdmModbusClient } from "@xerolux/idm-heatpump";
+
+const client = new IdmModbusClient("heatpump.example.invalid");
+
+const plan = client.simulateWrite("system_mode", 2);
+const dryRun = await client.setValue("system_mode", 2, { dryRun: true });
+
+console.log(plan.encodedRegisters, dryRun.dryRun);
+```
+
+Ein echter Aufruf von `setValue()` oder `writeRegister()` muss erst nach
+bewusster Prüfung des Plans und einer hergestellten Verbindung erfolgen. Jeder
+akzeptierte ein- und zwei-Wort-Write wird mit FC16 gesendet. Ungültige Typen,
+Bereiche, Enum-Werte, ausgeschlossene Werte, schreibgeschützte Register und
+Modellabweichungen werden vor Netzwerkverkehr abgewiesen.
+
+Writes sind nicht exakt-einmalig: Bei einem Antwortverlust nach der
+Geräteübernahme kann ein begrenzter Retry denselben FC16-Request erneut senden. Das
+ist eine konservative at-least-once-Garantie; nach einem Antwortverlust muss der
+Gerätezustand gelesen und geprüft werden. Ein fehlgeschlagener Write wird nie
+als erfolgreicher EEPROM- oder Cyclic-Zustandswechsel gespeichert.
+
 ## Netzwerk- und Protokollgrenze
 
 Die Modbus-TCP-Verbindung bietet keine integrierte TLS-Verschlüsselung und
@@ -105,13 +143,11 @@ Familie in die Navigator-2.0/Pro/10-Registerkarte.
 
 ## Noch ausstehend
 
-- **Phase 3 – sichere Writes:** Dry-run, Write-Validierung,
-  EEPROM-Drosselung, Cyclic-Heartbeats und Write-Fehlerpfade.
 - **Phase 4 – optionales read-only Web-Supplement:** Navigator-10-WebSocket
   und Navigator-2.0-HTTP.
 - **Phase 5 – Veröffentlichung und Gesamtparität:** vollständige
-  Cross-Repository-Matrix, Upstream-Freshness, dokumentierte
-  Hardwarevalidierung und alle npm-Release-Gates.
+  Cross-Repository-Matrix, Prüfung gegen das dann neueste stabile Upstream,
+  dokumentierte Hardwarevalidierung und alle npm-Release-Gates.
 
 ## Entwicklung und Paritätsprüfung
 
@@ -129,7 +165,7 @@ npm audit --omit=dev
 `npm run check` führt Formatprüfung, ESLint, strikten Typecheck, Tests mit
 mindestens 80 Prozent Branch Coverage, ESM-/CommonJS-/Declaration-Build und
 einen Installations-/Importtest des kontrollierten npm-Tarballs aus. Der
-Tarball-Smoke importiert und instanziiert den öffentlichen Lesepfad, ohne eine
+Tarball-Smoke prüft den öffentlichen Lese- und Dry-run-Write-Pfad, ohne eine
 Verbindung zu öffnen.
 
 `npm run parity:check` ist nicht mutierend: Es klont die vollständige

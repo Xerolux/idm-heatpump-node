@@ -30,12 +30,12 @@ Requirements for the initial `0.1.0` release. The existing package/tooling found
 
 - [x] **TRN-01**: Domain logic uses a `ModbusTransport` abstraction whose first real adapter encapsulates `modbus-serial`; deterministic tests can replace it with a fake transport and controlled clock without adapter details leaking into domain behavior.
 - [x] **TRN-02**: Consumers can connect, disconnect, reconnect, retry with backoff, serialize requests, perform single and safe batch reads, recover through fallback, and observe Illegal Address, permanent-error, and batch-unsafe quarantine behavior matching Python request traces and outcomes.
-- [ ] **TRN-03 (umbrella)**: Identical selections emit the same ordered Modbus read/write function, address, count, and payload semantics as Python; batching combines only exactly adjacent, non-overlapping ranges of one register type, and overlapping `1392/count=2` and `1393/count=1` remain distinct requests. This umbrella is complete only when both child clauses below are complete and is never mapped directly to one phase.
+- [x] **TRN-03 (umbrella)**: Identical selections emit the same ordered Modbus read/write function, address, count, and payload semantics as Python; batching combines only exactly adjacent, non-overlapping ranges of one register type, and overlapping `1392/count=2` and `1393/count=1` remain distinct requests. This umbrella is complete only when both child clauses below are complete and is never mapped directly to one phase.
 - [x] **TRN-03R**: Phase 2 proves the read/lifecycle clause of TRN-03: identical selections emit the same ordered FC03/FC04 function, address, and count; batching uses only exact same-type adjacency and preserves all gaps and logical overlaps as distinct requests.
 - [x] **TRN-03W**: Phase 3 proves the write clause of TRN-03: accepted writes emit the same ordered function, address, count, and payload words as Python, while rejected and dry-run writes emit no unintended traffic.
 - [x] **DET-01**: Consumers receive Python-equivalent Navigator 2.0, Navigator Pro, Navigator 10, firmware, heating-circuit, zone-module, solar, ISC, PV, cascade, sentinel, unavailable-slot, model-gate, and capability-derived register-map results, while Navigator 1.0/1.7 remains unsupported.
 - [x] **DET-02**: Identical probe responses produce Python-equivalent detected capabilities, unsupported registers, batch-unsafe registers, permanently failed registers, connection-suspect state, and diagnostics.
-- [ ] **ERR-01 (umbrella)**: Consumers observe language-neutral, Python-equivalent outcomes for timeouts, disconnects, short or invalid responses, Modbus Exception Code 2, repeated transient failures, batch-read errors, write errors, reconnect, and retry exhaustion. This umbrella is complete only when both child clauses below are complete and is never mapped directly to one phase.
+- [x] **ERR-01 (umbrella)**: Consumers observe language-neutral, Python-equivalent outcomes for timeouts, disconnects, short or invalid responses, Modbus Exception Code 2, repeated transient failures, batch-read errors, write errors, reconnect, and retry exhaustion. This umbrella is complete only when both child clauses below are complete and is never mapped directly to one phase.
 - [x] **ERR-01R**: Phase 2 proves the read/lifecycle clause of ERR-01: timeouts, disconnects, short or invalid responses, Code 2, repeated transient failures, batch-read errors, reconnect, and retry exhaustion have Python-equivalent normalized outcomes, traces, and state.
 - [x] **ERR-01W**: Phase 3 proves the write clause of ERR-01: write validation, transport/device write failures, reconnect, retry exhaustion, and failed-write state have Python-equivalent normalized outcomes without recording false success.
 
@@ -125,39 +125,39 @@ add new ingested constraints or weaken the parent meaning.
 
 ## Traceability
 
-| Requirement | Phase    | Status                                     |
-| ----------- | -------- | ------------------------------------------ |
-| PAR-01      | Phase 1  | Complete                                   |
-| BASE-01     | Phase 1  | Complete                                   |
-| API-01      | Phase 1  | Complete                                   |
-| API-02      | Phase 1  | Complete                                   |
-| REG-01      | Phase 1  | Complete                                   |
-| COD-01      | Phase 1  | Complete                                   |
-| CTR-01      | Phase 1  | Complete                                   |
-| TRN-01      | Phase 2  | Complete                                   |
-| TRN-02      | Phase 2  | Complete                                   |
-| TRN-03      | Umbrella | Pending until TRN-03R and TRN-03W complete |
-| TRN-03R     | Phase 2  | Complete                                   |
-| TRN-03W     | Phase 3  | Complete                                   |
-| DET-01      | Phase 2  | Complete                                   |
-| DET-02      | Phase 2  | Complete                                   |
-| ERR-01      | Umbrella | Pending until ERR-01R and ERR-01W complete |
-| ERR-01R     | Phase 2  | Complete                                   |
-| ERR-01W     | Phase 3  | Complete                                   |
-| WRT-01      | Phase 3  | Complete                                   |
-| WRT-02      | Phase 3  | Complete                                   |
-| PKG-04      | Phase 4  | Pending                                    |
-| WEB-01      | Phase 4  | Pending                                    |
-| WEB-02      | Phase 4  | Pending                                    |
-| PKG-01      | Phase 5  | Pending                                    |
-| PKG-02      | Phase 5  | Pending                                    |
-| PKG-03      | Phase 5  | Pending                                    |
-| PKG-05      | Phase 5  | Pending                                    |
-| PAR-02      | Phase 5  | Pending                                    |
-| REL-01      | Phase 5  | Pending                                    |
-| CTR-02      | Phase 5  | Pending                                    |
-| REL-02      | Phase 5  | Pending                                    |
-| REL-03      | Phase 5  | Pending                                    |
+| Requirement | Phase    | Status   |
+| ----------- | -------- | -------- |
+| PAR-01      | Phase 1  | Complete |
+| BASE-01     | Phase 1  | Complete |
+| API-01      | Phase 1  | Complete |
+| API-02      | Phase 1  | Complete |
+| REG-01      | Phase 1  | Complete |
+| COD-01      | Phase 1  | Complete |
+| CTR-01      | Phase 1  | Complete |
+| TRN-01      | Phase 2  | Complete |
+| TRN-02      | Phase 2  | Complete |
+| TRN-03      | Umbrella | Complete |
+| TRN-03R     | Phase 2  | Complete |
+| TRN-03W     | Phase 3  | Complete |
+| DET-01      | Phase 2  | Complete |
+| DET-02      | Phase 2  | Complete |
+| ERR-01      | Umbrella | Complete |
+| ERR-01R     | Phase 2  | Complete |
+| ERR-01W     | Phase 3  | Complete |
+| WRT-01      | Phase 3  | Complete |
+| WRT-02      | Phase 3  | Complete |
+| PKG-04      | Phase 4  | Pending  |
+| WEB-01      | Phase 4  | Pending  |
+| WEB-02      | Phase 4  | Pending  |
+| PKG-01      | Phase 5  | Pending  |
+| PKG-02      | Phase 5  | Pending  |
+| PKG-03      | Phase 5  | Pending  |
+| PKG-05      | Phase 5  | Pending  |
+| PAR-02      | Phase 5  | Pending  |
+| REL-01      | Phase 5  | Pending  |
+| CTR-02      | Phase 5  | Pending  |
+| REL-02      | Phase 5  | Pending  |
+| REL-03      | Phase 5  | Pending  |
 
 **Coverage:**
 
@@ -173,4 +173,4 @@ add new ingested constraints or weaken the parent meaning.
 ---
 
 _Requirements defined: 2026-07-14_
-_Last updated: 2026-07-16 after completing Phase 02 Plan 03 runtime evidence_
+_Last updated: 2026-07-17 after completing Phase 3 safe-write parity_

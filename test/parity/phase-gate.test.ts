@@ -783,12 +783,8 @@ describe("Phase 3 truthful documentation and closure", () => {
     }
     expect(requirements).toContain("| TRN-03R     | Phase 2  | Complete");
     expect(requirements).toContain("| ERR-01R     | Phase 2  | Complete");
-    expect(requirements).toContain(
-      "| TRN-03      | Umbrella | Complete",
-    );
-    expect(requirements).toContain(
-      "| ERR-01      | Umbrella | Complete",
-    );
+    expect(requirements).toContain("| TRN-03      | Umbrella | Complete");
+    expect(requirements).toContain("| ERR-01      | Umbrella | Complete");
     expect(requirements).toContain("| TRN-03W     | Phase 3  | Complete");
     expect(requirements).toContain("| ERR-01W     | Phase 3  | Complete");
     expect(roadmap).toContain("**Requirements**: TRN-01, TRN-02, TRN-03R, DET-01, DET-02, ERR-01R");
@@ -796,7 +792,9 @@ describe("Phase 3 truthful documentation and closure", () => {
     expect(roadmap).toMatch(/\[x\] \*\*Phase 3: Safe Write Parity\*\*/u);
     expect(roadmap).toMatch(/3\. Safe Write Parity\s*\| 7\/7\s*\| Complete/u);
     expect(roadmap).toMatch(/4\. Optional Read-Only Web Parity\s*\| 0\/TBD\s*\| Not started/u);
-    expect(roadmap).toMatch(/5\. Parity Closure and Release Assurance\s*\| 0\/TBD\s*\| Not started/u);
+    expect(roadmap).toMatch(
+      /5\. Parity Closure and Release Assurance\s*\| 0\/TBD\s*\| Not started/u,
+    );
   });
 
   it("full gate keeps the package private, web-empty, covered, packaged, and parity-checked", () => {
