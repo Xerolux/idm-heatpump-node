@@ -9,7 +9,11 @@ import {
   WriteScenarioContractError,
   parseWriteBehaviorFixture,
 } from "../../src/contracts/write-scenario.js";
-import { WriteSafetyResult, createWritePlan } from "../../src/client/write-safety.js";
+import {
+  WriteSafetyResult,
+  WriteSafetyState,
+  createWritePlan,
+} from "../../src/client/write-safety.js";
 import { DataType } from "../../src/types.js";
 import { createRegisterDef } from "../../src/registers/definitions.js";
 
@@ -144,6 +148,33 @@ describe("closed write scenario schema parser", () => {
       }),
     );
     expect(Object.isFrozen(plan.encodedRegisters)).toBe(true);
+  });
+
+  it("preserves the generated 60/300-second write state boundaries", () => {
+    const eeprom = createRegisterDef({
+      address: 4_206,
+      datatype: DataType.UCHAR,
+      name: "synthetic_eeprom",
+      writable: true,
+      eepromSensitive: true,
+    });
+    const cyclic = createRegisterDef({
+      address: 4_208,
+      datatype: DataType.FLOAT,
+      name: "synthetic_cyclic",
+      writable: true,
+      cyclicRequired: true,
+    });
+    const state = new WriteSafetyState();
+    state.recordSuccessfulWrite(eeprom, 0);
+    state.recordSuccessfulWrite(cyclic, 0);
+
+    expect(() => state.assertEepromWriteAllowed(eeprom, 59.999)).toThrowError(
+      expect.objectContaining({ code: "write_eeprom_throttled" }),
+    );
+    expect(() => state.assertEepromWriteAllowed(eeprom, 60)).not.toThrow();
+    expect(state.getActiveCyclicWrites(299.999)).toEqual({ synthetic_cyclic: 300 });
+    expect([...state.getExpiredCyclicWrites(300)]).toEqual(["synthetic_cyclic"]);
   });
 
   it("parses the pinned generated write matrix with unique complete categories", () => {
