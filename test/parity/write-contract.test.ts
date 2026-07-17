@@ -571,16 +571,16 @@ describe("generated executable write parity", () => {
       const scenario = fixture.scenarios[index];
       if (scenario === undefined) throw new Error(`Missing parsed scenario ${String(index)}`);
       expect(execution.result, `${scenario.name} result`).toEqual(scenario.expected_result);
-      expect(execution.requests, `${scenario.name} requests`).toEqual(
-        scenario.expected_requests,
-      );
+      expect(execution.requests, `${scenario.name} requests`).toEqual(scenario.expected_requests);
       expect(execution.clock, `${scenario.name} clock`).toEqual(scenario.clock);
       expect(execution.state, `${scenario.name} state`).toEqual(scenario.expected_state);
     }
   });
 
   it("executes one parsed scenario without using fixture-owned expected behavior", async () => {
-    const scenario = fixture.scenarios.find(({ name }) => name === "write_fc16_float_low_word_first");
+    const scenario = fixture.scenarios.find(
+      ({ name }) => name === "write_fc16_float_low_word_first",
+    );
     if (scenario === undefined) throw new Error("Missing generated Float32 write scenario");
 
     const execution = await executeWriteBehaviorScenario(scenario);

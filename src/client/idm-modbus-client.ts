@@ -128,6 +128,7 @@ interface InternalTestControl {
   readonly resetCyclicWriteState: (register?: RegisterDef | null) => void;
   readonly resetWriteThrottle: (register?: RegisterDef | null) => void;
   readonly seedReadState: (seed: InternalReadStateSeed) => void;
+  readonly seedModelInfo: (modelInfo: IdmModelInfo | null) => void;
   readonly seedWriteState: (seed: InternalWriteStateSeed) => void;
   readonly setValue: (
     key: string,
@@ -282,6 +283,13 @@ export function attachInternalModbusTransport(
 
 export function seedInternalReadState(client: IdmModbusClient, seed: InternalReadStateSeed): void {
   requireInternalTestControl(client).seedReadState(seed);
+}
+
+export function seedInternalModelInfo(
+  client: IdmModbusClient,
+  modelInfo: IdmModelInfo | null,
+): void {
+  requireInternalTestControl(client).seedModelInfo(modelInfo);
 }
 
 export function getInternalClientSnapshot(client: IdmModbusClient): InternalClientSnapshot {
@@ -466,6 +474,10 @@ export class IdmModbusClient {
             requireIntegerAtLeast(failures, 1, `transient failure count for ${register}`);
             this.#registerFailures.set(register, failures);
           }
+        },
+        seedModelInfo: (modelInfo: IdmModelInfo | null): void => {
+          this.#modelInfo = modelInfo;
+          this.#registerMap = modelInfo === null ? null : buildRegisterMap({ modelInfo });
         },
         seedWriteState: (seed: InternalWriteStateSeed): void => {
           this.#writeSafetyState.seed(seed);
