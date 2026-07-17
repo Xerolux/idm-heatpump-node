@@ -28,6 +28,7 @@ import {
 import { createModbusSerialTransport } from "../transport/modbus-serial-adapter.js";
 import {
   createModbusReadRequest,
+  MODBUS_READ_LIMITS,
   type ModbusReadRequest,
   type ModbusTransport,
   validateModbusWords,
@@ -175,6 +176,18 @@ function normalizeRetryCount(value: number | undefined, fallback: number): numbe
   return Math.max(1, Math.trunc(value));
 }
 
+function roundHalfEvenInteger(value: number): number {
+  const lower = Math.floor(value);
+  const fraction = value - lower;
+  if (fraction < 0.5) {
+    return lower;
+  }
+  if (fraction > 0.5) {
+    return lower + 1;
+  }
+  return lower % 2 === 0 ? lower : lower + 1;
+}
+
 function timeoutMilliseconds(timeout: number | undefined): number | undefined {
   if (timeout === undefined) {
     return undefined;
@@ -182,11 +195,14 @@ function timeoutMilliseconds(timeout: number | undefined): number | undefined {
   if (!Number.isFinite(timeout) || timeout <= 0) {
     throw new RangeError("timeout override must be finite and positive");
   }
-  const milliseconds = timeout * 1_000;
-  if (!Number.isInteger(milliseconds)) {
-    throw new RangeError("timeout override must resolve to whole milliseconds");
+  const scaled = timeout * 1_000;
+  if (scaled <= MODBUS_READ_LIMITS.minimumTimeoutMs) {
+    return MODBUS_READ_LIMITS.minimumTimeoutMs;
   }
-  return milliseconds;
+  if (scaled >= MODBUS_READ_LIMITS.maximumTimeoutMs) {
+    return MODBUS_READ_LIMITS.maximumTimeoutMs;
+  }
+  return roundHalfEvenInteger(scaled);
 }
 
 function mergeResultEntries(

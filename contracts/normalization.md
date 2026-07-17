@@ -119,6 +119,13 @@ are public. Concrete transport, clock, delay, and adapter retry injection remain
 internal source/test seams. Pymodbus-compatible adapter retries are fixed to
 zero so only the IDM client owns retry and backoff behavior.
 
+Positive finite probe timeouts remain expressed publicly in seconds. At the
+Node transport boundary they are converted explicitly to milliseconds with
+binary64 round-half-to-even, then bounded to the inclusive transport interval
+`1..2147483647`. Thus every positive sub-millisecond timeout remains accepted
+and maps to 1 ms; larger finite values remain accepted and saturate at the
+transport maximum. This is the only approved timeout unit conversion.
+
 Runtime failures are classified from structured evidence before comparison.
 Numeric Modbus exception Code 2 and the structured illegal-address marker are
 the only unsupported-address evidence. Exception class names, message

@@ -223,6 +223,116 @@
         {
           "kind": "read",
           "request": {
+            "address": 1201,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2,
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": [
+        8
+      ],
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "probe_fractional_timeout_half_even",
+      "operation": {
+        "address": 1201,
+        "count": 1,
+        "kind": "probe",
+        "maxRetries": 1,
+        "registerType": "input",
+        "timeout": 0.0015
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            8
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1202,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 1,
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": [
+        9
+      ],
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": null,
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "probe_timeout_lower_positive_boundary",
+      "operation": {
+        "address": 1202,
+        "count": 1,
+        "kind": "probe",
+        "maxRetries": 1,
+        "registerType": "input",
+        "timeout": 5e-324
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
             "address": 1000,
             "count": 2,
             "functionCode": 4,

@@ -1071,6 +1071,18 @@ RUNTIME_SCENARIO_FIELDS = (
 RUNTIME_NORMALIZATION_START = "<!-- runtime-normalization-contract:start -->"
 RUNTIME_NORMALIZATION_END = "<!-- runtime-normalization-contract:end -->"
 MAX_RUNTIME_DIAGNOSTIC = 1024
+MIN_RUNTIME_TIMEOUT_MS = 1
+MAX_RUNTIME_TIMEOUT_MS = 2_147_483_647
+
+
+def _runtime_timeout_milliseconds(timeout: float) -> int:
+    numeric = float(timeout)
+    if not math.isfinite(numeric) or numeric <= 0:
+        fail("fixture_invalid", "runtime request timeout must be finite and positive")
+    scaled = numeric * 1000
+    if not math.isfinite(scaled) or scaled >= MAX_RUNTIME_TIMEOUT_MS:
+        return MAX_RUNTIME_TIMEOUT_MS
+    return max(MIN_RUNTIME_TIMEOUT_MS, round(scaled))
 
 
 def _runtime_normalization_contract() -> dict[str, Any]:
@@ -1202,9 +1214,7 @@ class _RuntimeHarness:
 
     async def wait_for(self, awaitable: Awaitable[Any], timeout: float) -> Any:
         previous = self.timeout_ms
-        timeout_ms = round(float(timeout) * 1000)
-        if timeout_ms <= 0:
-            fail("fixture_invalid", "runtime request timeout must be positive")
+        timeout_ms = _runtime_timeout_milliseconds(timeout)
         self.timeout_ms = timeout_ms
         try:
             return await awaitable
@@ -1714,6 +1724,46 @@ def _transport_fixture(
                 client_module.RegisterType.HOLDING,
                 max_retries=1,
                 request_timeout=2,
+            ),
+        ),
+        _run_runtime_scenario(
+            client_module,
+            name="probe_fractional_timeout_half_even",
+            operation={
+                "kind": "probe",
+                "address": 1201,
+                "count": 1,
+                "registerType": "input",
+                "maxRetries": 1,
+                "timeout": 0.0015,
+            },
+            scripts=[_runtime_words([8])],
+            execute=raw_read(
+                1201,
+                1,
+                client_module.RegisterType.INPUT,
+                max_retries=1,
+                request_timeout=0.0015,
+            ),
+        ),
+        _run_runtime_scenario(
+            client_module,
+            name="probe_timeout_lower_positive_boundary",
+            operation={
+                "kind": "probe",
+                "address": 1202,
+                "count": 1,
+                "registerType": "input",
+                "maxRetries": 1,
+                "timeout": math.nextafter(0.0, math.inf),
+            },
+            scripts=[_runtime_words([9])],
+            execute=raw_read(
+                1202,
+                1,
+                client_module.RegisterType.INPUT,
+                max_retries=1,
+                request_timeout=math.nextafter(0.0, math.inf),
             ),
         ),
     ]

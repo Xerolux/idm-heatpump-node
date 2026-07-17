@@ -309,6 +309,24 @@ describe("IdmModbusClient probes and error context", () => {
     });
   });
 
+  it("normalizes every positive fractional probe timeout with bounded half-even milliseconds", async () => {
+    const clock = new FakeClock();
+    const transport = new FakeModbusTransport([
+      { kind: "words", words: [7] },
+      { kind: "words", words: [8] },
+      { kind: "words", words: [9] },
+    ]);
+    const { client } = createSequenceClient([transport], clock);
+
+    await expect(client.probeRegister(4_109, 1, { timeout: 0.0015 })).resolves.toEqual([7]);
+    await expect(client.probeRegister(4_110, 1, { timeout: 0.0025 })).resolves.toEqual([8]);
+    await expect(client.probeRegister(4_111, 1, { timeout: Number.MIN_VALUE })).resolves.toEqual([
+      9,
+    ]);
+
+    expect(fakeReadRequests(transport).map(({ timeoutMs }) => timeoutMs)).toEqual([2, 2, 1]);
+  });
+
   it("throws configuration and programming failures instead of swallowing them", async () => {
     const clock = new FakeClock();
     let creations = 0;
@@ -327,6 +345,10 @@ describe("IdmModbusClient probes and error context", () => {
 
     await expect(client.probeRegister(-1)).rejects.toBeInstanceOf(RangeError);
     await expect(client.probeRegister(0, 0)).rejects.toBeInstanceOf(RangeError);
+    await expect(client.probeRegister(0, 1, { timeout: 0 })).rejects.toBeInstanceOf(RangeError);
+    await expect(client.probeRegister(0, 1, { timeout: Number.NaN })).rejects.toBeInstanceOf(
+      RangeError,
+    );
     await expect(client.probeRegister(0, 1, { maxRetries: Number.NaN })).rejects.toBeInstanceOf(
       RangeError,
     );

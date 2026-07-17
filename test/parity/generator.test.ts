@@ -610,6 +610,8 @@ describe("verified Python contract generator", () => {
         "serialization_parallel_reads",
         "read_input_fc04",
         "read_holding_fc03",
+        "probe_fractional_timeout_half_even",
+        "probe_timeout_lower_positive_boundary",
         "batch_adjacent",
         "batch_gap_split",
         "batch_register_type_split",

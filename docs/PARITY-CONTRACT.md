@@ -117,6 +117,12 @@ monotone Uhr, Delay/Sleep und Adapter-Retries sind ausschließlich interne
 Test-/Implementierungsseams. Die zum Python-Parameter `pymodbus_retries`
 gehörenden Adapter-Retries werden intern auf `0` festgelegt.
 
+Positive endliche Probe-Timeouts bleiben öffentlich Sekundenwerte. An der
+Node-Transportgrenze werden sie explizit binär64 mit Half-even auf Millisekunden
+gerundet und auf `1..2147483647` begrenzt. Damit bleiben auch positive Werte
+unter einer Millisekunde zulässig; dies ist die einzige erlaubte
+Timeout-Einheitenumrechnung.
+
 Runtimefehler werden vor dem Vergleich auf genau sieben Werte projiziert:
 `timeout`, `disconnected`, `socket`, `no_response`, `modbus`,
 `illegal_address` und `invalid_response`. Nur numerischer Modbus Exception Code

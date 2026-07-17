@@ -1007,7 +1007,7 @@ describe("generated non-detection transport scenarios", () => {
   );
 
   it("executes every owned scenario through the real client and consumes each script", async () => {
-    expect(scenarios).toHaveLength(30);
+    expect(scenarios).toHaveLength(32);
     for (const scenario of scenarios) {
       const actual = await executeGeneratedScenario(scenario);
       expect(actual.result, `${scenario.name} result`).toEqual(scenario.expected_result);
