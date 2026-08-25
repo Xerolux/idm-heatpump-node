@@ -697,7 +697,7 @@ describe("Phase 4 truthful documentation and closure", () => {
     expect(readme).toMatch(/vertrauenswürdigen\s+lokalen Netzwerk/u);
     expect(readme).toMatch(/Keine\s+Node-Hardwarevalidierung\s+durchgeführt/u);
     expect(readme).not.toMatch(/noch keinen Modbus-Transport|Phase 3[^\n]*(?:geplant|Writes)/u);
-    expect(readme).toContain("Version `0.1.0`");
+    expect(readme).toContain("Version `1.0.3`");
   });
 
   it("README register examples use canonical keys exposed by the public API", () => {
@@ -735,7 +735,7 @@ describe("Phase 4 truthful documentation and closure", () => {
     expect(changelog).toMatch(/EEPROM[\s\S]*Cyclic/u);
     expect(changelog).toMatch(/Write-Fehler|fehlgeschlagene Writes/u);
     expect(changelog).toMatch(/Web-Supplement[\s\S]*Veröffentlichung/u);
-    expect(changelog).toContain("89 vollständige API-Zuordnungen");
+    expect(changelog).toContain("95 vollständige API-Zuordnungen");
     expect(changelog).toContain("Python-1.0.3-Parität");
     expect(changelog).toContain("Navigator 1.0/1.7");
     expect(changelog).toContain("keine integrierte TLS-Verschlüsselung");

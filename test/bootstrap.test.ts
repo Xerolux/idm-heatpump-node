@@ -52,7 +52,15 @@ describe("repository bootstrap contracts", () => {
     expect(matrix.development_baseline.python_version).toBe(parity.python_version);
     expect(matrix.development_baseline.python_commit).toBe(parity.git_commit);
     expect(matrix.development_baseline.status).toBe(parity.parity_status);
-    expect(matrix.releases).toEqual([]);
+    const packageVersion = (
+      readJson<{ readonly version: string }>("package.json") as { version: string }
+    ).version;
+    expect(matrix.releases.at(-1)).toMatchObject({
+      version: packageVersion,
+      python_version: parity.python_version,
+      python_commit: parity.git_commit,
+      parity_status: parity.parity_status,
+    });
     expect(() => assertParityMetadataConsistency(parity, matrix)).not.toThrow();
   });
 

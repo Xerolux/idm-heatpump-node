@@ -15,7 +15,8 @@ Python-Referenz ist implementiert und maschinengeprüft: Modbus Read/Write,
 Erkennung, Fehlerverhalten und das optionale read-only Web-Supplement.**
 
 `package.json` ist für das erste öffentliche Paket bewusst auf `private: false`
-gesetzt. Version `0.1.0` wird unter `@xerolux/idm-heatpump` veröffentlicht.
+gesetzt. Version `1.0.3` (gespiegelt an der Python-Baseline) wird unter
+`@xerolux/idm-heatpump` veröffentlicht.
 Vor jeder späteren Version muss dieselbe Freshness- und Paritätsprüfung erneut
 erfolgreich laufen.
 
