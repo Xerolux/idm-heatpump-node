@@ -3,7 +3,6 @@ import ModbusRTU from "modbus-serial";
 import {
   createModbusFailure,
   createNormalizedTransportFailure,
-  createWriteModbusFailure,
   isKnownTransportFailure,
   NormalizedTransportFailureKind,
   type DiagnosticEndpoint,
@@ -90,9 +89,11 @@ function normalizeAdapterError(
   const record = errorRecord(error);
   const message = errorMessage(error, operation);
   if (typeof record?.modbusCode === "number") {
-    return operation === "write"
-      ? createWriteModbusFailure(message, endpoint)
-      : createModbusFailure(record.modbusCode, message, endpoint);
+    // Reads and writes share the device-response mapping: exception code 2 is
+    // permanently unsupported for the address, every other code is a
+    // transient Modbus failure. This mirrors Python's shared
+    // ``check_transport_response`` helper introduced in 1.0.
+    return createModbusFailure(record.modbusCode, message, endpoint);
   }
 
   const code = errorCode(error);

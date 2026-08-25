@@ -56,6 +56,7 @@ import {
 } from "./write-safety.js";
 
 const DEFAULT_MAX_GROUP_SIZE = 40;
+const DEFAULT_EEPROM_WRITE_INTERVAL_SECONDS = 60;
 const PERMANENT_FAILURE_THRESHOLD = 3;
 const INTERNAL_DEPENDENCIES = Symbol("IdmModbusClient.internalDependencies");
 
@@ -65,6 +66,17 @@ export interface IdmModbusClientOptions {
   readonly timeout?: number;
   readonly maxRetries?: number;
   readonly maxGroupSize?: number;
+  /**
+   * Public injection point mirroring Python 1.0's keyword-only ``transport``.
+   *
+   * When omitted, the default Modbus TCP transport is created lazily and is
+   * observably identical to the pre-injection behavior. An injected transport
+   * owns connection lifecycle only; retry, batching, quarantine, model
+   * detection and write safety remain client-owned. Injected transports
+   * persist across reconnects: the client closes and reopens them without
+   * replacing the object.
+   */
+  readonly transport?: ModbusTransport;
 }
 
 export interface ProbeRegisterOptions {
@@ -163,7 +175,14 @@ interface InternalIdmModbusClientOptions extends IdmModbusClientOptions {
   readonly [INTERNAL_DEPENDENCIES]?: InternalClientDependencies;
 }
 
-const allowedOptionKeys = new Set(["port", "slaveId", "timeout", "maxRetries", "maxGroupSize"]);
+const allowedOptionKeys = new Set([
+  "port",
+  "slaveId",
+  "timeout",
+  "maxRetries",
+  "maxGroupSize",
+  "transport",
+]);
 const reconnectFailureKinds: ReadonlySet<NormalizedTransportFailureKindValue> = new Set([
   NormalizedTransportFailureKind.TIMEOUT,
   NormalizedTransportFailureKind.DISCONNECTED,
@@ -200,6 +219,22 @@ function requireClosedOptions(options: IdmModbusClientOptions): void {
     if (!allowedOptionKeys.has(key)) {
       throw new RangeError(`Unknown IdmModbusClient option: ${key}`);
     }
+  }
+}
+
+function requireSatisfiesModbusTransport(value: unknown): void {
+  if (typeof value !== "object" || value === null) {
+    throw new TypeError("transport must satisfy the ModbusTransport protocol");
+  }
+  const candidate = value as Partial<ModbusTransport>;
+  if (
+    typeof candidate.connected !== "boolean" ||
+    typeof candidate.connect !== "function" ||
+    typeof candidate.close !== "function" ||
+    typeof candidate.read !== "function" ||
+    typeof candidate.write !== "function"
+  ) {
+    throw new TypeError("transport must satisfy the ModbusTransport protocol");
   }
 }
 
@@ -375,6 +410,8 @@ export class IdmModbusClient {
   readonly #maxGroupSize: number;
   readonly #dependencies: InternalClientDependencies;
   readonly #endpoint: DiagnosticEndpoint;
+  readonly #injectedTransport: ModbusTransport | null;
+  #eepromWriteInterval = DEFAULT_EEPROM_WRITE_INTERVAL_SECONDS;
   #transport: ModbusTransport | null = null;
   #modelInfo: IdmModelInfo | null = null;
   #registerMap: ReadonlyMap<string, RegisterDef> | null = null;
@@ -409,6 +446,9 @@ export class IdmModbusClient {
     }
     requireIntegerAtLeast(maxRetries, 1, "maxRetries");
     requireIntegerAtLeast(maxGroupSize, 1, "maxGroupSize");
+    if (options.transport !== undefined) {
+      requireSatisfiesModbusTransport(options.transport);
+    }
 
     this.#host = host;
     this.#port = port;
@@ -418,6 +458,8 @@ export class IdmModbusClient {
     this.#maxGroupSize = maxGroupSize;
     this.#dependencies = internalOptions[INTERNAL_DEPENDENCIES] ?? defaultDependencies;
     this.#endpoint = Object.freeze({ host: this.#host, port: this.#port });
+    this.#injectedTransport = options.transport ?? null;
+    this.#transport = this.#injectedTransport;
     internalTestControls.set(
       this,
       Object.freeze({
@@ -559,6 +601,33 @@ export class IdmModbusClient {
 
   public get modelInfo(): IdmModelInfo | null {
     return this.#modelInfo;
+  }
+
+  /**
+   * Minimum seconds between two writes to the same EEPROM register.
+   *
+   * EEPROM registers have a limited number of write cycles. The default (60 s)
+   * protects the hardware by refusing a second write to the same EEPROM
+   * register within the interval. Consumers may lower it for power-user/debug
+   * setups, explicitly accepting faster EEPROM wear.
+   */
+  public get eepromWriteInterval(): number {
+    return this.#eepromWriteInterval;
+  }
+
+  public set eepromWriteInterval(value: number) {
+    if (!Number.isFinite(value) || value <= 0) {
+      throw new RangeError(
+        `eeprom_write_interval must be finite and positive, got ${String(value)}`,
+      );
+    }
+    this.#eepromWriteInterval = value;
+  }
+
+  /** Set or override the detected model info explicitly. */
+  public setModelInfo(modelInfo: IdmModelInfo): void {
+    this.#modelInfo = modelInfo;
+    this.#registerMap = modelInfo === null ? null : buildRegisterMap({ modelInfo });
   }
 
   public get modelName(): string {
@@ -743,6 +812,16 @@ export class IdmModbusClient {
   }
 
   async #connectLocked(): Promise<void> {
+    if (this.#injectedTransport !== null) {
+      // Injected transports persist across reconnects; the client only opens
+      // the socket when it is not already connected.
+      if (this.#transport?.connected === true) {
+        return;
+      }
+      await this.#injectedTransport.connect();
+      return;
+    }
+
     if (this.#transport?.connected === true) {
       return;
     }
@@ -969,6 +1048,11 @@ export class IdmModbusClient {
       return;
     }
     await transport.close();
+    if (this.#injectedTransport !== null) {
+      // An injected transport is only closed, never discarded, mirroring the
+      // public Python transport contract.
+      return;
+    }
     if (this.#transport === transport) {
       this.#transport = null;
     }
@@ -1075,6 +1159,7 @@ export class IdmModbusClient {
       ...(this.#registerMap === null ? {} : { modelRegisterMap: this.#registerMap }),
       writeSafetyState: this.#writeSafetyState,
       now: this.#dependencies.now(),
+      eepromWriteInterval: this.#eepromWriteInterval,
     });
   }
 

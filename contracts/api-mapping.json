@@ -3,9 +3,9 @@
   "baseline": {
     "repository": "https://github.com/Xerolux/idm-heatpump-api",
     "python_package": "idm-heatpump-api",
-    "python_version": "0.8.0",
-    "git_tag": "v0.8.0",
-    "git_commit": "a5d44ed06e5bd317946ca41720f37151631bc9c6",
+    "python_version": "1.0.3",
+    "git_tag": "v1.0.3",
+    "git_commit": "6b834747a05931c4512ebdbb03292b487a3f986d",
     "parity_schema_version": 1
   },
   "mappings": [
@@ -21,6 +21,22 @@
       "normalizations": ["mapping_to_readonly_map_or_record"],
       "representation": {
         "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "BINARY_REGISTER_METADATA",
+      "typescript_symbol": "BINARY_REGISTER_METADATA",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 3,
+      "status": "complete",
+      "evidence_category": "binary_metadata",
+      "contract_test": "test/semantic/binary-metadata.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "readonly_map",
         "constructor": "value",
         "validation": "constant_fixture"
       }
@@ -605,6 +621,60 @@
       }
     },
     {
+      "python_symbol": "BinaryDeviceClass",
+      "typescript_symbol": "BinaryDeviceClass",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 3,
+      "status": "complete",
+      "evidence_category": "binary_metadata",
+      "contract_test": "test/semantic/binary-metadata.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_const_and_union",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "BinaryRegisterMetadata",
+      "typescript_symbol": "BinaryRegisterMetadata",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 3,
+      "status": "complete",
+      "evidence_category": "binary_metadata",
+      "contract_test": "test/semantic/binary-metadata.test.ts",
+      "normalizations": [
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase",
+        "tuple_to_readonly_array"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "BinaryRegisterMetadata",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "BinaryValue",
+      "typescript_symbol": "BinaryValue",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 3,
+      "status": "complete",
+      "evidence_category": "binary_metadata",
+      "contract_test": "test/semantic/binary-metadata.test.ts",
+      "normalizations": [],
+      "representation": {
+        "form": "frozen_const_and_union",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
       "python_symbol": "ConnectionError",
       "typescript_symbol": "ConnectionError",
       "export_path": "./web",
@@ -809,6 +879,29 @@
         "python_class": "IdmModbusClient",
         "constructor": "class",
         "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmModbusTransport",
+      "typescript_symbol": "ModbusTransport",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 3,
+      "status": "complete",
+      "evidence_category": "transport_client",
+      "contract_test": "test/parity/transport-contract.test.ts",
+      "normalizations": ["snake_case_to_camelCase"],
+      "representation": {
+        "form": "class",
+        "python_class": "IdmModbusTransport",
+        "constructor": "not_constructible",
+        "member_naming": "preserve",
+        "member_overrides": {
+          "read_holding_registers": "read",
+          "read_input_registers": "read",
+          "write_registers": "write"
+        },
         "validation": "python_fixture"
       }
     },
@@ -1471,6 +1564,22 @@
       "evidence_category": "registers",
       "contract_test": "test/registers/builders.test.ts",
       "normalizations": ["mapping_to_readonly_map_or_record", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "get_binary_register_metadata",
+      "typescript_symbol": "getBinaryRegisterMetadata",
+      "export_path": ".",
+      "kind": "function",
+      "owner_phase": 3,
+      "status": "complete",
+      "evidence_category": "binary_metadata",
+      "contract_test": "test/semantic/binary-metadata.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
       "representation": {
         "form": "function",
         "constructor": "value",

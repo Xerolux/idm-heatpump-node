@@ -4,7 +4,6 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
-  attachInternalModbusTransport,
   createInternalIdmModbusClient,
   getInternalClientSnapshot,
   readInternalModbusRegisters,
@@ -303,11 +302,11 @@ const GENERATED_TRANSPORT_FIXTURE = resolve(
 function validTransportScenario(): Record<string, unknown> {
   return {
     baseline: {
-      git_commit: "a5d44ed06e5bd317946ca41720f37151631bc9c6",
-      git_tag: "v0.8.0",
+      git_commit: "6b834747a05931c4512ebdbb03292b487a3f986d",
+      git_tag: "v1.0.3",
       parity_schema_version: 1,
       python_package: "idm-heatpump-api",
-      python_version: "0.8.0",
+      python_version: "1.0.3",
       repository: "https://github.com/Xerolux/idm-heatpump-api",
     },
     generator_version: "1",
@@ -818,7 +817,7 @@ async function executeGeneratedScenario(
   const clock = new FakeClock();
   const transport = new FakeModbusTransport(fakeResponses(scenario), {
     allowMismatchedResponseCount: true,
-    initiallyConnected: scenario.operation.kind !== TransportOperationKind.LIFECYCLE,
+    initiallyConnected: true,
   });
   const client = createInternalIdmModbusClient(
     requiredString(configuration, "host"),
@@ -828,6 +827,7 @@ async function executeGeneratedScenario(
       timeout: requiredNumber(configuration, "timeout"),
       maxRetries: requiredNumber(configuration, "maxRetries"),
       maxGroupSize: requiredNumber(configuration, "maxGroupSize"),
+      transport,
     },
     {
       transportFactory: () => transport,
@@ -837,13 +837,6 @@ async function executeGeneratedScenario(
   );
   const synthetic = configuredRegisters(configuration);
 
-  if (
-    scenario.operation.kind !== TransportOperationKind.LIFECYCLE &&
-    scenario.name !== "constructor_defaults" &&
-    scenario.name !== "reset_failed_register_state"
-  ) {
-    attachInternalModbusTransport(client, transport);
-  }
   switch (scenario.name) {
     case "successful_individual_read_clears_failure":
       seedInternalReadState(client, {
@@ -1043,7 +1036,7 @@ describe("generated detection transport scenarios", () => {
   );
 
   it("executes every Python-generated detection scenario through the real client", async () => {
-    expect(scenarios).toHaveLength(5);
+    expect(scenarios).toHaveLength(8);
     for (const scenario of scenarios) {
       const actual = await executeGeneratedScenario(scenario);
       expect(actual.result, `${scenario.name} result`).toEqual(scenario.expected_result);

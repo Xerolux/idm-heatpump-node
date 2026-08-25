@@ -95,7 +95,7 @@ export const WriteSafetyResult = Object.freeze({
 });
 
 interface WriteSafetyStateGuard {
-  assertEepromWriteAllowed(register: RegisterDef, now: number): void;
+  assertEepromWriteAllowed(register: RegisterDef, now: number, intervalSeconds?: number): void;
 }
 
 export interface InternalWriteSafetyStateSeed {
@@ -119,6 +119,7 @@ export interface WritePlanInput {
   readonly modelRegisterMap?: ReadonlyMap<string, RegisterDef>;
   readonly writeSafetyState?: WriteSafetyStateGuard;
   readonly now?: number;
+  readonly eepromWriteInterval?: number;
 }
 
 function reject(
@@ -280,14 +281,21 @@ export class WriteSafetyState implements WriteSafetyStateGuard {
     this.#cyclicWriteDeadlines = cyclicWrites;
   }
 
-  public assertEepromWriteAllowed(register: RegisterDef, now: number): void {
+  public assertEepromWriteAllowed(
+    register: RegisterDef,
+    now: number,
+    intervalSeconds: number = EEPROM_WRITE_INTERVAL_SECONDS,
+  ): void {
     requireMonotonicSeconds(now, "now");
+    if (!Number.isFinite(intervalSeconds) || intervalSeconds <= 0) {
+      throw new RangeError("eeprom_write_interval must be finite and positive");
+    }
     if (register.writeClass !== WriteClass.EEPROM) return;
     const lastWrite = this.#lastEepromWrites.get(register.name);
     if (lastWrite === undefined) return;
     const elapsed = now - lastWrite;
-    if (elapsed < EEPROM_WRITE_INTERVAL_SECONDS) {
-      const remaining = EEPROM_WRITE_INTERVAL_SECONDS - elapsed;
+    if (elapsed < intervalSeconds) {
+      const remaining = intervalSeconds - elapsed;
       reject(
         "write_eeprom_throttled",
         `EEPROM-sensitive register '${register.name}' was written too recently (try again in ${formatPythonBinary64OneDecimal(remaining)}s)`,
@@ -466,7 +474,7 @@ export function createWritePlan(input: WritePlanInput): WriteSafetyResult {
     if (input.now === undefined) {
       throw new TypeError("Write planning with safety state requires a monotonic timestamp");
     }
-    input.writeSafetyState.assertEepromWriteAllowed(register, input.now);
+    input.writeSafetyState.assertEepromWriteAllowed(register, input.now, input.eepromWriteInterval);
   }
 
   return WriteSafetyResult.create({

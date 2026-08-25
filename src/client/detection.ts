@@ -22,6 +22,16 @@ const HEATING_CIRCUIT_STEP = 2;
 const HEATING_CIRCUIT_UNAVAILABLE = -1;
 const HEATING_CIRCUIT_ACTIVE_MODE_BASE = 1_498;
 const HEATING_CIRCUIT_ACTIVE_MODE_UNAVAILABLE = 0xff;
+// booster_fault (4001, UCHAR): "not configured" sentinel 255 (raw word 0xFFFF).
+// A non-sentinel answer proves the booster block exists (Navigator 10); a
+// sentinel answer is family-neutral because some Navigator 2.0 firmwares answer
+// Navigator-10-only registers with a sentinel instead of rejecting them.
+const BOOSTER_FAULT_UNAVAILABLE = 0xff;
+const NAV10_POWER_LIMIT_PROBE = 4_108;
+const NAV10_POWER_LIMIT_MIN = 0.1;
+const NAV10_POWER_LIMIT_MAX = 200;
+const NAV10_BOOSTER_FAULT_PROBE = 4_001;
+const NAV10_STANDBY_POWER_PROBES = [4_122, 4_126] as const;
 const ZONE_MODULE_BASE = 2_000;
 const ZONE_MODULE_STEP = 65;
 const EMPTY_SLOT_STOP_THRESHOLD = 2;
@@ -130,7 +140,45 @@ export async function detectModel(
   const cascadeResponse = exactWords(await probe(1_147, 1), 1);
   const hasCascade = cascadeResponse !== null && ((cascadeResponse[0] as number) & 0xff) !== 0xff;
 
-  const hasNavigator10 = exactWords(await probe(4_108, 2), 2) !== null;
+  // Navigator 10 differentiation. Address 1072 (heat_sink_flow_rate) is NOT a
+  // reliable signal (also present on some Navigator 2.0 controllers such as the
+  // IDM Terra SWM). Address 4108 (power_limit_hp) counts only when it answers
+  // with a plausible, configured power-limit value: some Navigator 2.0
+  // controllers answer Navigator-10-only addresses with a sentinel instead of
+  // rejecting them. The booster_fault register 4001 is the fallback proof of
+  // the Navigator-10-only block (a non-sentinel value), and the always-present
+  // power-measurement pair 4122/4126 closes the standby gap where a Navigator
+  // 10 without a booster and an inactive power limit was misclassified.
+  let hasNavigator10 =
+    probeFloat(
+      await probe(NAV10_POWER_LIMIT_PROBE, 2),
+      NAV10_POWER_LIMIT_MIN,
+      NAV10_POWER_LIMIT_MAX,
+    ) !== null;
+
+  if (!hasNavigator10) {
+    const boosterFault = exactWords(await probe(NAV10_BOOSTER_FAULT_PROBE, 1), 1);
+    if (
+      boosterFault !== null &&
+      ((boosterFault[0] as number) & 0xff) !== BOOSTER_FAULT_UNAVAILABLE
+    ) {
+      hasNavigator10 = true;
+    }
+  }
+
+  if (!hasNavigator10) {
+    let nav10BlockPresent = true;
+    for (const address of NAV10_STANDBY_POWER_PROBES) {
+      if (exactWords(await probe(address, 2), 2) === null) {
+        nav10BlockPresent = false;
+        break;
+      }
+    }
+    if (nav10BlockPresent) {
+      hasNavigator10 = true;
+    }
+  }
+
   const modelName = hasNavigator10
     ? MODEL_NAVIGATOR_10
     : zoneModules > 0

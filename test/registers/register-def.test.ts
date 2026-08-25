@@ -61,7 +61,7 @@ describe("immutable RegisterDef factory", () => {
     expect(Object.isFrozen(RegisterDef)).toBe(true);
   });
 
-  it("consumes the sole mapping representation and closes all 26 Python members", () => {
+  it("consumes the sole mapping representation and closes all 27 Python members", () => {
     const row = mapping.mappings.find(({ python_symbol }) => python_symbol === "RegisterDef");
     const fact = publicClasses.classes.find(({ python_name }) => python_name === "RegisterDef");
     expect(row).toMatchObject({
@@ -78,7 +78,7 @@ describe("immutable RegisterDef factory", () => {
     const definition = createRegisterDef(baseInput());
     const mappedMembers = fact?.members.map(({ name }) => toCamelCase(name)).sort();
     expect(Object.keys(definition).sort()).toEqual(mappedMembers);
-    expect(mappedMembers).toHaveLength(26);
+    expect(mappedMembers).toHaveLength(27);
     expect(fact?.constructor.parameters.map(({ name }) => toCamelCase(name))).toEqual([
       "address",
       "datatype",
@@ -139,10 +139,40 @@ describe("immutable RegisterDef factory", () => {
       sourceVersion: "MODBUS TCP NAVIGATOR 10 2025-06-18 plus Navigator 2.0/Pro legacy docs",
       supportedModels: ["Navigator 10", "Navigator 2.0", "Navigator Pro"],
       sentinelValues: [],
+      effectiveSentinelValues: [255],
       lastVerified: null,
       size: 1,
     });
     expect(Object.isFrozen(definition)).toBe(true);
+  });
+
+  it("derives effective sentinels from explicit overrides and datatype defaults", () => {
+    expect(
+      createRegisterDef(baseInput({ sentinelValues: [-32768, 65535, 255] }))
+        .effectiveSentinelValues,
+    ).toEqual([-32768, 65535, 255]);
+    expect(
+      createRegisterDef(baseInput({ datatype: DataType.FLOAT })).effectiveSentinelValues,
+    ).toEqual([-1]);
+    expect(
+      createRegisterDef(baseInput({ datatype: DataType.UCHAR })).effectiveSentinelValues,
+    ).toEqual([255]);
+    expect(
+      createRegisterDef(baseInput({ datatype: DataType.UINT16 })).effectiveSentinelValues,
+    ).toEqual([65535]);
+    expect(
+      createRegisterDef(baseInput({ datatype: DataType.INT16 })).effectiveSentinelValues,
+    ).toEqual([-1, -32768]);
+    expect(
+      createRegisterDef(baseInput({ datatype: DataType.BOOL })).effectiveSentinelValues,
+    ).toEqual([]);
+    expect(
+      createRegisterDef(baseInput({ datatype: DataType.INT8 })).effectiveSentinelValues,
+    ).toEqual([]);
+    expect(
+      createRegisterDef(baseInput({ datatype: DataType.BITFLAG })).effectiveSentinelValues,
+    ).toEqual([]);
+    expect(Object.isFrozen(createRegisterDef(baseInput()).effectiveSentinelValues)).toBe(true);
   });
 
   it.each([

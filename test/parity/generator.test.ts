@@ -23,7 +23,7 @@ const PYTHON =
   (process.platform === "win32" && process.env.LOCALAPPDATA !== undefined
     ? join(process.env.LOCALAPPDATA, "Programs/Python/Python313/python.exe")
     : "python3.12");
-const PINNED_COMMIT = "a5d44ed06e5bd317946ca41720f37151631bc9c6";
+const PINNED_COMMIT = "6b834747a05931c4512ebdbb03292b487a3f986d";
 const CANONICAL_ORIGIN = "https://github.com/Xerolux/idm-heatpump-api";
 const FIXTURE_NAMES = [
   "public-api.json",
@@ -422,8 +422,8 @@ describe("verified Python contract generator", () => {
       expect(fixture.baseline).toEqual({
         repository: CANONICAL_ORIGIN,
         python_package: "idm-heatpump-api",
-        python_version: "0.8.0",
-        git_tag: "v0.8.0",
+        python_version: "1.0.3",
+        git_tag: "v1.0.3",
         git_commit: PINNED_COMMIT,
         parity_schema_version: 1,
       });
@@ -438,8 +438,8 @@ describe("verified Python contract generator", () => {
       readonly counts: { readonly total: number; readonly root: number; readonly web: number };
       readonly aliases: readonly { readonly name: string; readonly target: string }[];
     };
-    expect(publicApi.symbols).toHaveLength(89);
-    expect(publicApi.counts).toEqual({ total: 89, root: 59, web: 30 });
+    expect(publicApi.symbols).toHaveLength(95);
+    expect(publicApi.counts).toEqual({ total: 95, root: 65, web: 30 });
     expect(publicApi.symbols.map(({ name }) => name)).toEqual([
       ...new Set(publicApi.symbols.map(({ name }) => name)),
     ]);
@@ -805,7 +805,7 @@ describe("verified Python contract generator", () => {
         "cyclic_default_ttl_boundary",
         "cyclic_custom_ttl_refresh_and_resets",
         "write_retry_modbus_eventual_success",
-        "write_retry_code_2_is_modbus",
+        "write_code_2_is_permanent",
         "write_retry_transport_reconnect",
         "write_retry_disconnected_reconnect",
         "write_retry_socket_reconnect",

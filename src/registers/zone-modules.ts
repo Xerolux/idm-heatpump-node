@@ -88,6 +88,7 @@ export function getZoneModuleRegisters(
         address: roomBase + 6,
         datatype: DataType.UCHAR,
         name: `${prefix}_relay`,
+        binary: true,
       },
     );
   }

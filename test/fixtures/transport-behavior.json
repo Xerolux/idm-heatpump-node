@@ -1,10 +1,10 @@
 {
   "baseline": {
-    "git_commit": "a5d44ed06e5bd317946ca41720f37151631bc9c6",
-    "git_tag": "v0.8.0",
+    "git_commit": "6b834747a05931c4512ebdbb03292b487a3f986d",
+    "git_tag": "v1.0.3",
     "parity_schema_version": 1,
     "python_package": "idm-heatpump-api",
-    "python_version": "0.8.0",
+    "python_version": "1.0.3",
     "repository": "https://github.com/Xerolux/idm-heatpump-api"
   },
   "generator_version": "1",
@@ -41,7 +41,7 @@
       },
       "expected_state": {
         "batchUnsafeRegisters": [],
-        "connected": false,
+        "connected": true,
         "connectionSuspect": false,
         "lastError": null,
         "maxActiveRequests": 0,
@@ -68,7 +68,7 @@
       },
       "expected_requests": [
         {
-          "kind": "connect"
+          "kind": "close"
         },
         {
           "kind": "close"
@@ -2475,6 +2475,28 @@
         {
           "kind": "read",
           "request": {
+            "address": 4001,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4122,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
             "address": 4120,
             "count": 2,
             "functionCode": 4,
@@ -2718,6 +2740,16 @@
           "errorType": "illegal_address",
           "kind": "error",
           "message": "Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 4001: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)"
         },
         {
           "errorType": "illegal_address",
@@ -2967,6 +2999,28 @@
             "timeoutMs": 2000,
             "unitId": 1
           }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4001,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4122,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
         }
       ],
       "expected_result": {
@@ -3099,11 +3153,11 @@
         "connected": true,
         "connectionSuspect": false,
         "lastError": {
-          "address": 4108,
+          "address": 4122,
           "attempt": 1,
           "count": 2,
           "errorType": "illegal_address",
-          "message": "Modbus Error: Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)",
+          "message": "Modbus Error: Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)",
           "operation": "read",
           "registerType": "input"
         },
@@ -3226,6 +3280,16 @@
           "errorType": "illegal_address",
           "kind": "error",
           "message": "Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 4001: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)"
         }
       ]
     },
@@ -3481,6 +3545,28 @@
             "timeoutMs": 2000,
             "unitId": 1
           }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4001,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4122,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
         }
       ],
       "expected_result": {
@@ -3627,11 +3713,11 @@
         "connected": true,
         "connectionSuspect": false,
         "lastError": {
-          "address": 4108,
+          "address": 4122,
           "attempt": 1,
           "count": 2,
           "errorType": "illegal_address",
-          "message": "Modbus Error: Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)",
+          "message": "Modbus Error: Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)",
           "operation": "read",
           "registerType": "input"
         },
@@ -3757,6 +3843,16 @@
           "errorType": "illegal_address",
           "kind": "error",
           "message": "Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 4001: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)"
         }
       ]
     },
@@ -4651,6 +4747,28 @@
             "timeoutMs": 2000,
             "unitId": 1
           }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4001,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4122,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
         }
       ],
       "expected_result": {
@@ -4801,11 +4919,11 @@
         "connected": true,
         "connectionSuspect": false,
         "lastError": {
-          "address": 4108,
+          "address": 4122,
           "attempt": 1,
           "count": 2,
           "errorType": "illegal_address",
-          "message": "Modbus Error: Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)",
+          "message": "Modbus Error: Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)",
           "operation": "read",
           "registerType": "input"
         },
@@ -4953,6 +5071,1726 @@
           "errorType": "illegal_address",
           "kind": "error",
           "message": "Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 4001: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1350,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1498,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1352,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1499,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1354,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1500,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1356,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1501,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1358,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1502,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1360,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1503,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1362,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1504,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2000,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2065,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1850,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1870,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 74,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1147,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4108,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4001,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4122,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "activeHeatingCircuits": [
+          "A"
+        ],
+        "features": [
+          "heating_circuits"
+        ],
+        "firmwareVersion": null,
+        "hasCascade": false,
+        "hasIsc": false,
+        "hasPv": false,
+        "hasSolar": false,
+        "modelName": "Navigator 2.0",
+        "registerMap": {
+          "count": 105,
+          "keys": [
+            "air_heat_exchanger_temp",
+            "air_intake_temp",
+            "air_intake_temp_2",
+            "bivalence_point_1_2nd_gen",
+            "bivalence_point_1_3rd_gen",
+            "bivalence_point_2_2nd_gen",
+            "bivalence_point_2_3rd_gen",
+            "bivalence_state",
+            "brine_pump_status",
+            "cascade_available_cooling",
+            "cascade_available_dhw",
+            "cascade_available_heating",
+            "cascade_running_cooling",
+            "cascade_running_dhw",
+            "cascade_running_heating",
+            "charging_pump_status",
+            "charging_sensor_temp",
+            "circulation_pump",
+            "cold_storage_temp",
+            "compressor_status_1",
+            "compressor_status_2",
+            "compressor_status_3",
+            "compressor_status_4",
+            "cooling_demand",
+            "current_electricity_price",
+            "current_power",
+            "current_power_solar",
+            "demand_cooling",
+            "demand_dhw_charging",
+            "demand_heating",
+            "demand_onetime_dhw",
+            "dhw_charge_off_temp",
+            "dhw_charge_on_temp",
+            "dhw_demand",
+            "dhw_setpoint",
+            "dhw_tapping_temp",
+            "dhw_temp_bottom",
+            "dhw_temp_top",
+            "energy_cooling",
+            "energy_defrost",
+            "energy_dhw",
+            "energy_electric_heater",
+            "energy_heating",
+            "energy_passive_cooling",
+            "energy_solar",
+            "energy_total",
+            "error_acknowledge",
+            "evu_lock",
+            "ext_demand_temp_cooling",
+            "ext_demand_temp_heating",
+            "ext_humidity",
+            "ext_outdoor_temp",
+            "firmware_version",
+            "glt_cold_storage_temp",
+            "glt_dhw_temp_bottom",
+            "glt_dhw_temp_top",
+            "glt_heat_storage_temp",
+            "glt_temp_demand_cooling",
+            "glt_temp_demand_heating",
+            "hc_a_active_mode",
+            "hc_a_cooling_limit",
+            "hc_a_ext_room_temp",
+            "hc_a_flow_temp",
+            "hc_a_heating_curve",
+            "hc_a_heating_limit",
+            "hc_a_mode",
+            "hc_a_parallel_shift",
+            "hc_a_room_setpoint_cool_eco",
+            "hc_a_room_setpoint_cool_normal",
+            "hc_a_room_setpoint_heat_eco",
+            "hc_a_room_setpoint_heat_normal",
+            "hc_a_room_temp",
+            "hc_a_setpoint_flow_constant",
+            "hc_a_setpoint_flow_cooling",
+            "hc_a_setpoint_flow_temp",
+            "heat_source_inlet_temp",
+            "heat_source_outlet_temp",
+            "heat_source_pump_status",
+            "heating_demand",
+            "hgl_flow_temp",
+            "hp_flow_temp",
+            "hp_operating_mode",
+            "hp_return_temp",
+            "hp_sum_alarm",
+            "humidity_sensor",
+            "internal_message",
+            "isc_cold_storage_pump_status",
+            "isc_recooling_pump_status",
+            "outdoor_temp",
+            "outdoor_temp_avg",
+            "power_consumption_hp",
+            "smart_grid_status",
+            "storage_temp",
+            "system_mode",
+            "thermal_power_flow_sensor",
+            "total_heat_energy",
+            "valve_hc_heat_cool",
+            "valve_heat_dhw",
+            "valve_heat_source_heat_cool",
+            "valve_isc_heat_source_cold_storage",
+            "valve_isc_storage_bypass",
+            "valve_solar_heat_dhw",
+            "valve_solar_storage_heat_source",
+            "valve_storage_heat_cool",
+            "variable_input"
+          ]
+        },
+        "zoneModules": 0
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 4122,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "illegal_address",
+          "message": "Modbus Error: Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 2.0",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "detect_terra_swm_sentinel_answers",
+      "operation": {
+        "includeFirmware": false,
+        "kind": "detect_model"
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16840
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            0
+          ]
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1352: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1499: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1354: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1500: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1356: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1501: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1358: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1502: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1360: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1503: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1362: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1504: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 2000: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 2065: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1850: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1870: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 74: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1147: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            49024
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            65535
+          ]
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)"
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1350,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1498,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1352,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1499,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1354,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1500,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1356,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1501,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1358,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1502,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1360,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1503,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1362,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1504,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2000,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2065,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1850,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1870,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 74,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1147,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4108,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4001,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4122,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4126,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "activeHeatingCircuits": [
+          "A"
+        ],
+        "features": [
+          "heating_circuits"
+        ],
+        "firmwareVersion": null,
+        "hasCascade": false,
+        "hasIsc": false,
+        "hasPv": false,
+        "hasSolar": false,
+        "modelName": "Navigator 10",
+        "registerMap": {
+          "count": 138,
+          "keys": [
+            "air_heat_exchanger_temp",
+            "air_intake_temp",
+            "air_intake_temp_2",
+            "bivalence_point_1_2nd_gen",
+            "bivalence_point_1_3rd_gen",
+            "bivalence_point_2_2nd_gen",
+            "bivalence_point_2_3rd_gen",
+            "bivalence_state",
+            "booster_a_charging_pump",
+            "booster_a_compressor",
+            "booster_a_flow_temp",
+            "booster_a_return_temp",
+            "booster_a_source_inlet_temp",
+            "booster_a_source_outlet_temp",
+            "booster_a_source_pump",
+            "booster_a_storage_temp",
+            "booster_b_charging_pump",
+            "booster_b_compressor",
+            "booster_b_flow_temp",
+            "booster_b_return_temp",
+            "booster_b_source_inlet_temp",
+            "booster_b_source_outlet_temp",
+            "booster_b_source_pump",
+            "booster_b_storage_temp",
+            "booster_fault",
+            "booster_interlock",
+            "brine_pump_status",
+            "cascade_available_cooling",
+            "cascade_available_dhw",
+            "cascade_available_heating",
+            "cascade_running_cooling",
+            "cascade_running_dhw",
+            "cascade_running_heating",
+            "charging_pump_status",
+            "charging_sensor_temp",
+            "circulation_pump",
+            "cold_storage_temp",
+            "compressor_status_1",
+            "compressor_status_2",
+            "compressor_status_3",
+            "compressor_status_4",
+            "cooling_demand",
+            "current_electricity_price",
+            "current_power",
+            "current_power_solar",
+            "demand_cooling",
+            "demand_dhw_charging",
+            "demand_heating",
+            "demand_onetime_dhw",
+            "dhw_charge_off_temp",
+            "dhw_charge_on_temp",
+            "dhw_demand",
+            "dhw_setpoint",
+            "dhw_tapping_temp",
+            "dhw_temp_bottom",
+            "dhw_temp_top",
+            "energy_cooling",
+            "energy_defrost",
+            "energy_dhw",
+            "energy_electric_heater",
+            "energy_heating",
+            "energy_passive_cooling",
+            "energy_solar",
+            "energy_total",
+            "error_acknowledge",
+            "evu_lock",
+            "ext_demand_groundwater_pump_m15",
+            "ext_demand_groundwater_pump_m15_sw_max",
+            "ext_demand_temp_cooling",
+            "ext_demand_temp_heating",
+            "ext_humidity",
+            "ext_outdoor_temp",
+            "fault_charging_pump_1_intermediate",
+            "fault_charging_pump_2_intermediate",
+            "fault_heat_source_circuit",
+            "fault_heat_source_pressure_switch",
+            "firmware_version",
+            "glt_cold_storage_temp",
+            "glt_dhw_temp_bottom",
+            "glt_dhw_temp_top",
+            "glt_heat_storage_temp",
+            "glt_temp_demand_cooling",
+            "glt_temp_demand_heating",
+            "groundwater_inlet_temp_1",
+            "groundwater_inlet_temp_2",
+            "hc_a_active_mode",
+            "hc_a_cooling_limit",
+            "hc_a_ext_room_temp",
+            "hc_a_flow_temp",
+            "hc_a_heating_curve",
+            "hc_a_heating_limit",
+            "hc_a_mode",
+            "hc_a_parallel_shift",
+            "hc_a_room_setpoint_cool_eco",
+            "hc_a_room_setpoint_cool_normal",
+            "hc_a_room_setpoint_heat_eco",
+            "hc_a_room_setpoint_heat_normal",
+            "hc_a_room_temp",
+            "hc_a_setpoint_flow_constant",
+            "hc_a_setpoint_flow_cooling",
+            "hc_a_setpoint_flow_temp",
+            "heat_sink_charging_pump_signal",
+            "heat_sink_flow_rate",
+            "heat_sink_flow_temp",
+            "heat_sink_return_temp",
+            "heat_source_inlet_temp",
+            "heat_source_outlet_temp",
+            "heat_source_pump_status",
+            "heating_demand",
+            "hgl_flow_temp",
+            "hp_flow_temp",
+            "hp_operating_mode",
+            "hp_return_temp",
+            "hp_sum_alarm",
+            "humidity_sensor",
+            "internal_message",
+            "isc_cold_storage_pump_status",
+            "isc_recooling_pump_status",
+            "outdoor_temp",
+            "outdoor_temp_avg",
+            "power_consumption_hp",
+            "power_consumption_hp_smartfox",
+            "power_limit_cascade",
+            "power_limit_hp",
+            "smart_grid_status",
+            "storage_temp",
+            "system_mode",
+            "thermal_power_flow_sensor",
+            "total_heat_energy",
+            "valve_hc_heat_cool",
+            "valve_heat_dhw",
+            "valve_heat_source_heat_cool",
+            "valve_isc_heat_source_cold_storage",
+            "valve_isc_storage_bypass",
+            "valve_solar_heat_dhw",
+            "valve_solar_storage_heat_source",
+            "valve_storage_heat_cool",
+            "variable_input"
+          ]
+        },
+        "zoneModules": 0
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 1147,
+          "attempt": 1,
+          "count": 1,
+          "errorType": "illegal_address",
+          "message": "Modbus Error: Illegal Data Address reading address 1147: ExceptionResponse(exception_code=2)",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 10",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "detect_standby_navigator_10_power_registers",
+      "operation": {
+        "includeFirmware": false,
+        "kind": "detect_model"
+      },
+      "transport_responses": [
+        {
+          "kind": "words",
+          "words": [
+            0,
+            16840
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            0
+          ]
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1352: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1499: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1354: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1500: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1356: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1501: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1358: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1502: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1360: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1503: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1362: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1504: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 2000: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 2065: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1850: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1870: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 74: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1147: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            0
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            255
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            0
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [
+        {
+          "kind": "read",
+          "request": {
+            "address": 1350,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1498,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1352,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1499,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1354,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1500,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1356,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1501,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1358,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1502,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1360,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1503,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1362,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1504,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2000,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2065,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 2130,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1850,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1870,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 74,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1147,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4108,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 4001,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        }
+      ],
+      "expected_result": {
+        "activeHeatingCircuits": [],
+        "features": [
+          "zone_modules"
+        ],
+        "firmwareVersion": null,
+        "hasCascade": false,
+        "hasIsc": false,
+        "hasPv": false,
+        "hasSolar": false,
+        "modelName": "Navigator 10",
+        "registerMap": {
+          "count": 154,
+          "keys": [
+            "air_heat_exchanger_temp",
+            "air_intake_temp",
+            "air_intake_temp_2",
+            "bivalence_point_1_2nd_gen",
+            "bivalence_point_1_3rd_gen",
+            "bivalence_point_2_2nd_gen",
+            "bivalence_point_2_3rd_gen",
+            "bivalence_state",
+            "booster_a_charging_pump",
+            "booster_a_compressor",
+            "booster_a_flow_temp",
+            "booster_a_return_temp",
+            "booster_a_source_inlet_temp",
+            "booster_a_source_outlet_temp",
+            "booster_a_source_pump",
+            "booster_a_storage_temp",
+            "booster_b_charging_pump",
+            "booster_b_compressor",
+            "booster_b_flow_temp",
+            "booster_b_return_temp",
+            "booster_b_source_inlet_temp",
+            "booster_b_source_outlet_temp",
+            "booster_b_source_pump",
+            "booster_b_storage_temp",
+            "booster_fault",
+            "booster_interlock",
+            "brine_pump_status",
+            "cascade_available_cooling",
+            "cascade_available_dhw",
+            "cascade_available_heating",
+            "cascade_running_cooling",
+            "cascade_running_dhw",
+            "cascade_running_heating",
+            "charging_pump_status",
+            "charging_sensor_temp",
+            "circulation_pump",
+            "cold_storage_temp",
+            "compressor_status_1",
+            "compressor_status_2",
+            "compressor_status_3",
+            "compressor_status_4",
+            "cooling_demand",
+            "current_electricity_price",
+            "current_power",
+            "current_power_solar",
+            "demand_cooling",
+            "demand_dhw_charging",
+            "demand_heating",
+            "demand_onetime_dhw",
+            "dhw_charge_off_temp",
+            "dhw_charge_on_temp",
+            "dhw_demand",
+            "dhw_setpoint",
+            "dhw_tapping_temp",
+            "dhw_temp_bottom",
+            "dhw_temp_top",
+            "energy_cooling",
+            "energy_defrost",
+            "energy_dhw",
+            "energy_electric_heater",
+            "energy_heating",
+            "energy_passive_cooling",
+            "energy_solar",
+            "energy_total",
+            "error_acknowledge",
+            "evu_lock",
+            "ext_demand_groundwater_pump_m15",
+            "ext_demand_groundwater_pump_m15_sw_max",
+            "ext_demand_temp_cooling",
+            "ext_demand_temp_heating",
+            "ext_humidity",
+            "ext_outdoor_temp",
+            "fault_charging_pump_1_intermediate",
+            "fault_charging_pump_2_intermediate",
+            "fault_heat_source_circuit",
+            "fault_heat_source_pressure_switch",
+            "firmware_version",
+            "glt_cold_storage_temp",
+            "glt_dhw_temp_bottom",
+            "glt_dhw_temp_top",
+            "glt_heat_storage_temp",
+            "glt_temp_demand_cooling",
+            "glt_temp_demand_heating",
+            "groundwater_inlet_temp_1",
+            "groundwater_inlet_temp_2",
+            "heat_sink_charging_pump_signal",
+            "heat_sink_flow_rate",
+            "heat_sink_flow_temp",
+            "heat_sink_return_temp",
+            "heat_source_inlet_temp",
+            "heat_source_outlet_temp",
+            "heat_source_pump_status",
+            "heating_demand",
+            "hgl_flow_temp",
+            "hp_flow_temp",
+            "hp_operating_mode",
+            "hp_return_temp",
+            "hp_sum_alarm",
+            "humidity_sensor",
+            "internal_message",
+            "isc_cold_storage_pump_status",
+            "isc_recooling_pump_status",
+            "outdoor_temp",
+            "outdoor_temp_avg",
+            "power_consumption_hp",
+            "power_consumption_hp_smartfox",
+            "power_limit_cascade",
+            "power_limit_hp",
+            "smart_grid_status",
+            "storage_temp",
+            "system_mode",
+            "thermal_power_flow_sensor",
+            "total_heat_energy",
+            "valve_hc_heat_cool",
+            "valve_heat_dhw",
+            "valve_heat_source_heat_cool",
+            "valve_isc_heat_source_cold_storage",
+            "valve_isc_storage_bypass",
+            "valve_solar_heat_dhw",
+            "valve_solar_storage_heat_source",
+            "valve_storage_heat_cool",
+            "variable_input",
+            "zm1_dehumidification",
+            "zm1_mode_heat_cool",
+            "zm1_room1_humidity",
+            "zm1_room1_mode",
+            "zm1_room1_relay",
+            "zm1_room1_setpoint",
+            "zm1_room1_temp",
+            "zm1_room2_humidity",
+            "zm1_room2_mode",
+            "zm1_room2_relay",
+            "zm1_room2_setpoint",
+            "zm1_room2_temp",
+            "zm1_room3_humidity",
+            "zm1_room3_mode",
+            "zm1_room3_relay",
+            "zm1_room3_setpoint",
+            "zm1_room3_temp",
+            "zm1_room4_humidity",
+            "zm1_room4_mode",
+            "zm1_room4_relay",
+            "zm1_room4_setpoint",
+            "zm1_room4_temp",
+            "zm1_room5_humidity",
+            "zm1_room5_mode",
+            "zm1_room5_relay",
+            "zm1_room5_setpoint",
+            "zm1_room5_temp",
+            "zm1_room6_humidity",
+            "zm1_room6_mode",
+            "zm1_room6_relay",
+            "zm1_room6_setpoint",
+            "zm1_room6_temp"
+          ]
+        },
+        "zoneModules": 1
+      },
+      "expected_state": {
+        "batchUnsafeRegisters": [],
+        "connected": true,
+        "connectionSuspect": false,
+        "lastError": {
+          "address": 4108,
+          "attempt": 1,
+          "count": 2,
+          "errorType": "illegal_address",
+          "message": "Modbus Error: Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)",
+          "operation": "read",
+          "registerType": "input"
+        },
+        "maxActiveRequests": 1,
+        "modelName": "Navigator 10",
+        "permanentlyFailedRegisters": [],
+        "transientFailures": {},
+        "unsupportedRegisters": []
+      },
+      "name": "detect_navigator_10_via_booster_fault",
+      "operation": {
+        "includeFirmware": false,
+        "kind": "detect_model"
+      },
+      "transport_responses": [
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1350: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1498: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1352: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1499: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1354: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1500: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1356: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1501: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1358: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1502: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1360: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1503: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1362: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1504: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "kind": "words",
+          "words": [
+            1
+          ]
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 2065: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 2130: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1850: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1870: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 74: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1147: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "kind": "words",
+          "words": [
+            3
+          ]
         }
       ]
     },
@@ -5060,7 +6898,7 @@
         "batchUnsafeRegisters": [
           "humidity_sensor"
         ],
-        "connected": false,
+        "connected": true,
         "connectionSuspect": false,
         "lastError": null,
         "maxActiveRequests": 0,

@@ -10,18 +10,19 @@ It documents development intent; only `complete` rows with passing evidence may 
 
 - Repository: `https://github.com/Xerolux/idm-heatpump-api`
 - Python package: `idm-heatpump-api`
-- Python version/tag: `0.8.0` / `v0.8.0`
-- Full commit: `a5d44ed06e5bd317946ca41720f37151631bc9c6`
+- Python version/tag: `1.0.3` / `v1.0.3`
+- Full commit: `6b834747a05931c4512ebdbb03292b487a3f986d`
 - Parity schema: `1`
 - Development status: `complete`
 
-**89 public symbols: 59 root, 30 web.**
+**95 public symbols: 65 root, 30 web.**
 
 ## Symbol matrix
 
 | Python symbol | TypeScript counterpart | Export path | Owner | Status | Representation | Normalizations | Contract evidence |
 | --- | --- | --- | ---: | --- | --- | --- | --- |
 | `ACTIVE_HC_MODE_OPTIONS` | `ACTIVE_HC_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `BINARY_REGISTER_METADATA` | `BINARY_REGISTER_METADATA` | `.` | 3 | `complete` | `readonly_map` | `mapping_to_readonly_map_or_record` | `binary_metadata`: `test/semantic/binary-metadata.test.ts` |
 | `BIVALENCE_STATE_OPTIONS` | `BIVALENCE_STATE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `BOOSTER_FAULT_OPTIONS` | `BOOSTER_FAULT_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `CIRCUIT_MODE_OPTIONS` | `CIRCUIT_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
@@ -58,6 +59,9 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `VARIABLE_INPUT_OPTIONS` | `VARIABLE_INPUT_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `ZONE_MODULE_MODE_OPTIONS` | `ZONE_MODULE_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `AuthenticationError` | `AuthenticationError` | `./web` | 4 | `complete` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `BinaryDeviceClass` | `BinaryDeviceClass` | `.` | 3 | `complete` | `frozen_const_and_union` | — | `binary_metadata`: `test/semantic/binary-metadata.test.ts` |
+| `BinaryRegisterMetadata` | `BinaryRegisterMetadata` | `.` | 3 | `complete` | `readonly_object_factory` | `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `binary_metadata`: `test/semantic/binary-metadata.test.ts` |
+| `BinaryValue` | `BinaryValue` | `.` | 3 | `complete` | `frozen_const_and_union` | — | `binary_metadata`: `test/semantic/binary-metadata.test.ts` |
 | `ConnectionError` | `ConnectionError` | `./web` | 4 | `complete` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `CsrfError` | `CsrfError` | `./web` | 4 | `complete` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `AdaptiveBackoff` | `AdaptiveBackoff` | `.` | 1 | `complete` | `class` | `snake_case_to_camelCase` | `timing`: `test/semantic/constants-and-types.test.ts` |
@@ -68,6 +72,7 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `IdmNavigator20WebClient` | `IdmNavigator20WebClient` | `./web` | 4 | `complete` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_client`: `test/parity/web-contract.test.ts` |
 | `IdmModelInfo` | `IdmModelInfo` | `.` | 1 | `complete` | `readonly_object_factory` | `list_to_readonly_array`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `set_to_immutable_set_like`, `snake_case_to_camelCase` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
 | `IdmModbusClient` | `IdmModbusClient` | `.` | 2 | `complete` | `class` | `diagnostic_message_redaction`, `idm_modbus_client_options`, `internal_adapter_retries_zero`, `mapping_to_readonly_map_or_record`, `none_to_null`, `set_to_immutable_set_like`, `snake_case_to_camelCase`, `transport_error_type_to_closed_kind`, `tuple_to_readonly_array` | `transport_client`: `test/parity/transport-contract.test.ts` |
+| `IdmModbusTransport` | `ModbusTransport` | `.` | 3 | `complete` | `class` | `snake_case_to_camelCase` | `transport_client`: `test/parity/transport-contract.test.ts` |
 | `IllegalAddressError` | `IllegalAddressError` | `.` | 2 | `complete` | `error_class` | `python_exception_to_error_class` | `transport_errors`: `test/client/errors.test.ts` |
 | `ModbusCodec` | `ModbusCodec` | `.` | 1 | `complete` | `class` | `snake_case_to_camelCase` | `codec`: `test/codec.test.ts` |
 | `IdmWebAuthenticationError` | `IdmWebAuthenticationError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
@@ -103,6 +108,7 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `create_optional_navigator10_web_client` | `createOptionalNavigator10WebClient` | `./web` | 4 | `complete` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_factory`: `test/parity/web-contract.test.ts` |
 | `create_optional_navigator20_web_client` | `createOptionalNavigator20WebClient` | `./web` | 4 | `complete` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_factory`: `test/parity/web-contract.test.ts` |
 | `get_all_registers` | `getAllRegisters` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
+| `get_binary_register_metadata` | `getBinaryRegisterMetadata` | `.` | 3 | `complete` | `function` | `none_to_null`, `snake_case_to_camelCase` | `binary_metadata`: `test/semantic/binary-metadata.test.ts` |
 | `get_detection_registers` | `getDetectionRegisters` | `.` | 1 | `complete` | `function` | `list_to_readonly_array`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `get_heating_circuit_registers` | `getHeatingCircuitRegisters` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `get_register` | `getRegister` | `.` | 1 | `complete` | `function` | `none_to_null`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
@@ -117,11 +123,10 @@ These explicitly additive symbols have no Python counterpart and do not count to
 
 | TypeScript symbol | Export path | Owner | Status | Kind | Rationale | Contract evidence |
 | --- | --- | ---: | --- | --- | --- | --- |
-| `ModbusTransport` | `.` | 2 | `complete` | `type` | Node transport abstraction required for deterministic runtime parity without exposing the concrete adapter. | `test/parity/transport-contract.test.ts` |
 
 ## Runtime normalization authority
 
-- Public constructor: `host` plus mapped options `port`, `slaveId`, `timeout`, `maxRetries`, `maxGroupSize`
+- Public constructor: `host` plus mapped options `port`, `slaveId`, `timeout`, `maxRetries`, `maxGroupSize`, `transport`
 - Internal adapter policy: pymodbus adapter retries are internalized at `0`
 - Closed error kinds: `timeout`, `disconnected`, `socket`, `no_response`, `modbus`, `illegal_address`, `invalid_response`
 - Diagnostic redaction: longest-first endpoint replacement with `<endpoint>`, unchanged remaining text/order, and rejection above 1024 characters
@@ -284,6 +289,7 @@ The TypeScript naming and representation decisions below are derived only from m
   - `RegisterDef.unit` → `unit` (attribute)
   - `RegisterDef.writable` → `writable` (attribute)
   - `RegisterDef.write_only` → `writeOnly` (attribute)
+  - `RegisterDef.effective_sentinel_values` → `effectiveSentinelValues` (property)
   - `RegisterDef.write_class` → `writeClass` (property)
 
 ### RegisterRegistry

@@ -24,6 +24,7 @@ import subprocess
 import sys
 import tempfile
 import tomllib
+import types
 from collections.abc import Iterator, Mapping, Sequence, Set
 from pathlib import Path
 from typing import Any, NoReturn
@@ -34,9 +35,9 @@ EXPECTED_BASELINE = {
     "schema_version": 1,
     "repository": "https://github.com/Xerolux/idm-heatpump-api",
     "python_package": "idm-heatpump-api",
-    "python_version": "0.8.0",
-    "git_tag": "v0.8.0",
-    "git_commit": "a5d44ed06e5bd317946ca41720f37151631bc9c6",
+    "python_version": "1.0.3",
+    "git_tag": "v1.0.3",
+    "git_commit": "6b834747a05931c4512ebdbb03292b487a3f986d",
 }
 EXPECTED_MANIFEST_FIELDS = {
     "schema_version",
@@ -531,18 +532,31 @@ def _class_validation_boundaries(class_value: type[Any]) -> list[dict[str, Any]]
 def _public_fixtures(manifest: Mapping[str, Any], checkout: Path, package: Any) -> tuple[dict[str, Any], dict[str, Any]]:
     groups = _source_groups(checkout)
     public_names = list(package.__all__)
-    if len(public_names) != 89 or len(set(public_names)) != 89:
-        fail("fixture_invalid", "pinned package must expose exactly 89 unique symbols")
+    if len(public_names) != 95 or len(set(public_names)) != 95:
+        fail("fixture_invalid", "pinned package must expose exactly 95 unique symbols")
     symbols: list[dict[str, Any]] = []
     aliases: list[dict[str, str]] = []
     classes_by_identity: dict[tuple[str, str], dict[str, Any]] = {}
+    public_name_set = set(public_names)
+
+    def _python_kind(value: Any) -> str:
+        if inspect.isclass(value):
+            return "class"
+        if not callable(value):
+            return "constant"
+        # ``typing`` constructs (``Literal[...]``, generic aliases) and PEP 604
+        # unions are callable but are type declarations, not functions.
+        if isinstance(value, types.UnionType) or getattr(type(value), "__module__", "") == "typing":
+            return "constant"
+        return "function"
+
     for name in public_names:
         if name not in groups or not hasattr(package, name):
             fail("fixture_invalid", f"public symbol is not source-backed/importable: {name}")
         group = groups[name]
         boundary = "./web" if group == "web" else "."
         value = getattr(package, name)
-        python_kind = "class" if inspect.isclass(value) else "function" if callable(value) else "constant"
+        python_kind = _python_kind(value)
         symbols.append(
             {
                 "name": name,
@@ -552,7 +566,11 @@ def _public_fixtures(manifest: Mapping[str, Any], checkout: Path, package: Any) 
             }
         )
         actual_name = getattr(value, "__name__", name)
-        if isinstance(actual_name, str) and actual_name != name:
+        if (
+            isinstance(actual_name, str)
+            and actual_name != name
+            and actual_name in public_name_set
+        ):
             aliases.append({"name": name, "target": actual_name})
         if inspect.isclass(value):
             identity = (value.__module__, value.__qualname__)
@@ -571,7 +589,7 @@ def _public_fixtures(manifest: Mapping[str, Any], checkout: Path, package: Any) 
             entry["public_names"].append(name)
     root_count = sum(symbol["export_boundary"] == "." for symbol in symbols)
     web_count = len(symbols) - root_count
-    if (root_count, web_count) != (59, 30):
+    if (root_count, web_count) != (65, 30):
         fail("fixture_invalid", f"unexpected public ownership split: {root_count}/{web_count}")
     public_api = _fixture_root(
         manifest,
@@ -792,7 +810,7 @@ def _register_fixture(manifest: Mapping[str, Any], checkout: Path, client_module
         fail("fixture_invalid", f"upstream register snapshot is invalid: {error}")
     if current_schema != snapshot:
         fail("fixture_invalid", "generated register maps differ from pinned upstream snapshot")
-    expected_snapshot_bytes = (json.dumps(current_schema, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+    expected_snapshot_bytes = json.dumps(current_schema, ensure_ascii=False, indent=2).encode("utf-8")
     if snapshot_bytes != expected_snapshot_bytes:
         fail("fixture_invalid", "pinned register snapshot bytes are not canonical")
     expected_counts = {"default": 267, "navigator_10_full": 587, "navigator_20_circuit_a": 105}
@@ -1178,29 +1196,9 @@ def _runtime_error(source: str, message: str | None = None) -> dict[str, Any]:
     return {"kind": "error", "source": source, "message": message}
 
 
-class _RuntimeResponse:
-    def __init__(
-        self,
-        *,
-        registers: Sequence[int] | None = None,
-        error: bool = False,
-        exception_code: int | None = None,
-    ) -> None:
-        self.registers = list(registers or [])
-        self.error = error
-        self.exception_code = exception_code
-
-    def isError(self) -> bool:  # noqa: N802 - pinned pymodbus compatibility
-        return self.error or self.exception_code is not None
-
-    def __str__(self) -> str:
-        if self.exception_code is not None:
-            return f"ExceptionResponse(exception_code={self.exception_code})"
-        return "ErrorResponse()" if self.error else "ReadResponse()"
-
-
 class _RuntimeHarness:
-    def __init__(self, scripts: Sequence[Mapping[str, Any]], client_module: Any) -> None:
+    def __init__(self, scripts: Sequence[Mapping[str, Any]], client_module: Any, name: str = "") -> None:
+        self.name = name
         self.scripts = [dict(script) for script in scripts]
         self.client_module = client_module
         self.events: list[dict[str, Any]] = []
@@ -1249,29 +1247,33 @@ class _RuntimeHarness:
         if self.index != len(self.scripts):
             fail(
                 "fixture_invalid",
-                f"runtime fake has {len(self.scripts) - self.index} unconsumed response(s)",
+                f"runtime fake has {len(self.scripts) - self.index} unconsumed response(s) in {self.name}",
             )
 
 
 class _RuntimeFakeTransport:
+    """1.0 transport-contract fake: raw register words and raised exceptions."""
+
     def __init__(self, harness: _RuntimeHarness) -> None:
         self.harness = harness
         self.connected = True
 
-    async def connect(self) -> bool:
+    async def connect(self) -> None:
         self.harness.events.append({"kind": "connect"})
         self.connected = True
-        return True
 
-    def close(self) -> None:
+    async def close(self) -> None:
         self.harness.events.append({"kind": "close"})
         self.connected = False
 
-    async def read_input_registers(self, *, address: int, count: int, **_: Any) -> Any:
+    async def read_input_registers(self, *, address: int, count: int) -> list[int]:
         return await self._read("input", 4, address, count)
 
-    async def read_holding_registers(self, *, address: int, count: int, **_: Any) -> Any:
+    async def read_holding_registers(self, *, address: int, count: int) -> list[int]:
         return await self._read("holding", 3, address, count)
+
+    async def write_registers(self, *, address: int, values: Sequence[int]) -> None:
+        fail("fixture_invalid", "runtime read scenarios must never write registers")
 
     async def _read(
         self,
@@ -1279,7 +1281,7 @@ class _RuntimeFakeTransport:
         function_code: int,
         address: int,
         count: int,
-    ) -> _RuntimeResponse:
+    ) -> list[int]:
         self.harness.active_requests += 1
         self.harness.max_active_requests = max(
             self.harness.max_active_requests,
@@ -1303,7 +1305,7 @@ class _RuntimeFakeTransport:
                 words = script.get("words")
                 if not isinstance(words, list):
                     fail("fixture_invalid", "runtime words script is invalid")
-                return _RuntimeResponse(registers=words)
+                return [int(word) for word in words]
             if kind != "error":
                 fail("fixture_invalid", "runtime response script kind is invalid")
             source = script.get("source")
@@ -1311,7 +1313,7 @@ class _RuntimeFakeTransport:
             if not isinstance(source, str):
                 fail("fixture_invalid", "runtime error script source is invalid")
             if source == "numeric_modbus_exception_code_2":
-                return _RuntimeResponse(exception_code=2)
+                raise self.harness.client_module.IllegalAddressError(message)
             if not isinstance(message, str):
                 fail("fixture_invalid", "runtime error script message is invalid")
             if source == "timeout_exception":
@@ -1433,7 +1435,7 @@ def _run_runtime_scenario(
     port = config["port"]
     if host != "example.invalid" or not isinstance(port, int):
         fail("fixture_invalid", "runtime scenarios must use the synthetic endpoint")
-    harness = _RuntimeHarness(scripts, client_module)
+    harness = _RuntimeHarness(scripts, client_module, name)
     transport = _RuntimeFakeTransport(harness)
     client = client_module.IdmModbusClient(
         host,
@@ -1443,14 +1445,13 @@ def _run_runtime_scenario(
         max_retries=config["maxRetries"],
         pymodbus_retries=0,
         max_group_size=config["maxGroupSize"],
+        transport=transport,
     )
     if setup is not None:
         setup(client)
 
-    original_factory = client_module.AsyncModbusTcpClient
     original_sleep = client_module.asyncio.sleep
     original_wait_for = client_module.asyncio.wait_for
-    client_module.AsyncModbusTcpClient = lambda **_: transport
     client_module.asyncio.sleep = harness.sleep
     client_module.asyncio.wait_for = harness.wait_for
     try:
@@ -1464,7 +1465,6 @@ def _run_runtime_scenario(
                 port=port,
             )
     finally:
-        client_module.AsyncModbusTcpClient = original_factory
         client_module.asyncio.sleep = original_sleep
         client_module.asyncio.wait_for = original_wait_for
 
@@ -2226,7 +2226,7 @@ def _transport_fixture(
         [
             detection_scenario(
                 "detect_unknown",
-                [*heating_detection_scripts(), *[missing() for _ in range(8)]],
+                [*heating_detection_scripts(), *[missing() for _ in range(10)]],
                 include_firmware=True,
             ),
             detection_scenario(
@@ -2240,7 +2240,7 @@ def _transport_fixture(
                             )
                         }
                     ),
-                    *[missing() for _ in range(7)],
+                    *[missing() for _ in range(9)],
                 ],
                 include_firmware=False,
             ),
@@ -2249,7 +2249,7 @@ def _transport_fixture(
                 [
                     *heating_detection_scripts(),
                     _runtime_words([1]),
-                    *[missing() for _ in range(7)],
+                    *[missing() for _ in range(9)],
                 ],
                 include_firmware=False,
             ),
@@ -2301,6 +2301,71 @@ def _transport_fixture(
                     _runtime_words(codec.encode_float32(0.0)),
                     _runtime_words([0xFFFF]),
                     missing(),
+                    missing(),
+                    missing(),
+                ],
+                include_firmware=False,
+            ),
+            detection_scenario(
+                "detect_terra_swm_sentinel_answers",
+                [
+                    *heating_detection_scripts(
+                        {
+                            0: (
+                                _runtime_words(codec.encode_float32(25.0)),
+                                _runtime_words([0]),
+                            )
+                        }
+                    ),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    _runtime_words(codec.encode_float32(-1.0)),
+                    _runtime_words([0xFFFF]),
+                    missing(),
+                ],
+                include_firmware=False,
+            ),
+            detection_scenario(
+                "detect_standby_navigator_10_power_registers",
+                [
+                    *heating_detection_scripts(
+                        {
+                            0: (
+                                _runtime_words(codec.encode_float32(25.0)),
+                                _runtime_words([0]),
+                            )
+                        }
+                    ),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    _runtime_words(codec.encode_float32(0.0)),
+                    _runtime_words([0xFF]),
+                    _runtime_words(codec.encode_float32(0.0)),
+                    _runtime_words(codec.encode_float32(0.0)),
+                ],
+                include_firmware=False,
+            ),
+            detection_scenario(
+                "detect_navigator_10_via_booster_fault",
+                [
+                    *heating_detection_scripts(),
+                    _runtime_words([1]),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    missing(),
+                    _runtime_words([3]),
                 ],
                 include_firmware=False,
             ),
@@ -2399,24 +2464,24 @@ WRITE_ACTION_KINDS = (
     "reset_cyclic_write_state",
 )
 
-# Exact structural rejection origins in the pinned Python 0.8.0 client.  The
+# Exact structural rejection origins in the pinned Python 1.0.3 client.  The
 # generator does not infer semantic equality from exception messages: every
 # reviewed validation code must match both its closed exception family and the
 # terminal traceback location of the guard that rejected the value.
 WRITE_VALIDATION_REJECTION_SPECS = {
-    "write_unknown_register": (KeyError, "_get_register_by_key", 1280),
-    "write_read_only": (ValueError, "simulate_write", 1250),
-    "write_model_unavailable": (ValueError, "_validate_model_availability", 1363),
-    "write_boolean_required": (ValueError, "_validate_write_allowed", 1295),
-    "write_boolean_for_numeric": (ValueError, "_validate_write_allowed", 1300),
-    "write_not_numeric": (ValueError, "_validate_write_allowed", 1304),
-    "write_nonfinite": (ValueError, "_validate_write_allowed", 1306),
-    "write_integer_required": (ValueError, "_validate_write_allowed", 1319),
-    "write_excluded": (ValueError, "_validate_write_allowed", 1323),
-    "write_below_minimum": (ValueError, "_validate_write_allowed", 1328),
-    "write_above_maximum": (ValueError, "_validate_write_allowed", 1330),
-    "write_enum_unsupported": (ValueError, "_validate_write_allowed", 1335),
-    "write_eeprom_throttled": (ValueError, "_validate_write_allowed", 1347),
+    "write_unknown_register": (KeyError, "_get_register_by_key", 1400),
+    "write_read_only": (ValueError, "simulate_write", 1370),
+    "write_model_unavailable": (ValueError, "_validate_model_availability", 1483),
+    "write_boolean_required": (ValueError, "_validate_write_allowed", 1415),
+    "write_boolean_for_numeric": (ValueError, "_validate_write_allowed", 1420),
+    "write_not_numeric": (ValueError, "_validate_write_allowed", 1424),
+    "write_nonfinite": (ValueError, "_validate_write_allowed", 1426),
+    "write_integer_required": (ValueError, "_validate_write_allowed", 1439),
+    "write_excluded": (ValueError, "_validate_write_allowed", 1443),
+    "write_below_minimum": (ValueError, "_validate_write_allowed", 1448),
+    "write_above_maximum": (ValueError, "_validate_write_allowed", 1450),
+    "write_enum_unsupported": (ValueError, "_validate_write_allowed", 1455),
+    "write_eeprom_throttled": (ValueError, "_validate_write_allowed", 1467),
 }
 
 
@@ -2537,7 +2602,8 @@ def _write_python_register(client_module: Any, value: Mapping[str, Any]) -> Any:
 
 
 class _WriteHarness:
-    def __init__(self, scripts: Sequence[Mapping[str, Any]], client_module: Any) -> None:
+    def __init__(self, scripts: Sequence[Mapping[str, Any]], client_module: Any, name: str = "") -> None:
+        self.name = name
         self.scripts = [dict(script) for script in scripts]
         self.client_module = client_module
         self.events: list[dict[str, Any]] = []
@@ -2579,29 +2645,35 @@ class _WriteHarness:
         if self.index != len(self.scripts):
             fail(
                 "fixture_invalid",
-                f"write fake has {len(self.scripts) - self.index} unconsumed response(s)",
+                f"write fake has {len(self.scripts) - self.index} unconsumed response(s) in {self.name}",
             )
 
 
 class _WriteFakeTransport:
+    """1.0 transport-contract write fake: acknowledgements raise nothing."""
+
     def __init__(self, harness: _WriteHarness) -> None:
         self.harness = harness
         self.connected = True
 
-    async def connect(self) -> bool:
+    async def connect(self) -> None:
         self.harness.events.append({"kind": "connect"})
         self.connected = True
-        return True
 
-    def close(self) -> None:
+    async def close(self) -> None:
         self.harness.events.append({"kind": "close"})
         self.connected = False
 
-    async def write_registers(self, *, address: int, values: Sequence[int], **kwargs: Any) -> Any:
+    async def read_input_registers(self, *, address: int, count: int) -> list[int]:
+        fail("fixture_invalid", "write scenarios must never read input registers")
+
+    async def read_holding_registers(self, *, address: int, count: int) -> list[int]:
+        fail("fixture_invalid", "write scenarios must never read holding registers")
+
+    async def write_registers(self, *, address: int, values: Sequence[int]) -> None:
         words = [int(value) for value in values]
-        unit_id = next(iter(kwargs.values()), 1)
         request = {
-            "unitId": int(unit_id),
+            "unitId": 1,
             "registerType": "holding",
             "functionCode": 16,
             "address": address,
@@ -2619,13 +2691,13 @@ class _WriteFakeTransport:
             script = self.harness.next_script(address, len(words))
             kind = script.get("kind")
             if kind == "ack":
-                return _RuntimeResponse()
+                return None
             if kind != "error":
                 fail("fixture_invalid", "write response script kind is invalid")
             source = script.get("source")
             message = script.get("message")
             if source == "numeric_modbus_exception_code_2":
-                return _RuntimeResponse(exception_code=2)
+                raise self.harness.client_module.IllegalAddressError(message)
             if not isinstance(source, str) or not isinstance(message, str):
                 fail("fixture_invalid", "write error script is incomplete")
             if source == "timeout_exception":
@@ -2652,13 +2724,8 @@ def _write_error_projection(
     host: str,
     port: int,
 ) -> dict[str, str]:
-    error_type = (
-        "modbus"
-        if source == "numeric_modbus_exception_code_2"
-        else transport_error_type_to_closed_kind(source)
-    )
     return {
-        "errorType": error_type,
+        "errorType": transport_error_type_to_closed_kind(source),
         "message": diagnostic_message_redaction(message, host, port),
     }
 
@@ -2841,7 +2908,7 @@ def _write_scenario(
         "slaveId": 1,
         "timeout": 10,
     }
-    harness = _WriteHarness(scripts, client_module)
+    harness = _WriteHarness(scripts, client_module, name)
     transport = _WriteFakeTransport(harness)
     client = client_module.IdmModbusClient(
         configuration["host"],
@@ -2851,8 +2918,8 @@ def _write_scenario(
         max_retries=configuration["maxRetries"],
         pymodbus_retries=0,
         max_group_size=configuration["maxGroupSize"],
+        transport=transport,
     )
-    client._client = transport
     client._time = lambda: harness.elapsed
     if detected_model is not None:
         client._model_info = client_module.IdmModelInfo(
@@ -2864,9 +2931,7 @@ def _write_scenario(
             has_pv=False,
             has_cascade=False,
         )
-    original_factory = client_module.AsyncModbusTcpClient
     original_sleep = client_module.asyncio.sleep
-    client_module.AsyncModbusTcpClient = lambda **_: transport
     client_module.asyncio.sleep = harness.sleep
 
     async def execute() -> list[dict[str, Any]]:
@@ -2933,7 +2998,6 @@ def _write_scenario(
     try:
         steps = asyncio.run(execute())
     finally:
-        client_module.AsyncModbusTcpClient = original_factory
         client_module.asyncio.sleep = original_sleep
     harness.assert_consumed()
     return {
@@ -3225,11 +3289,10 @@ def _write_fixture(manifest: Mapping[str, Any], client_module: Any, constants: A
         scripts=[modbus_error(), ack()],
     )
     add(
-        name="write_retry_code_2_is_modbus",
+        name="write_code_2_is_permanent",
         actions=[write(custom_float, 42.5)],
         scripts=[
             {"kind": "error", "source": "numeric_modbus_exception_code_2", "message": "code 2"},
-            ack(),
         ],
     )
     add(

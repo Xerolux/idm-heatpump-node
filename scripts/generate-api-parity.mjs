@@ -28,8 +28,8 @@ const PATHS = Object.freeze({
 });
 const MAX_JSON_BYTES = 4 * 1024 * 1024;
 const MAX_STRING_LENGTH = 1024;
-const EXPECTED_SYMBOL_COUNT = 89;
-const EXPECTED_ROOT_COUNT = 59;
+const EXPECTED_SYMBOL_COUNT = 95;
+const EXPECTED_ROOT_COUNT = 65;
 const EXPECTED_WEB_COUNT = 30;
 const IDENTIFIER = /^[A-Za-z][A-Za-z0-9_]*$/u;
 const CAMEL_IDENTIFIER = /^[A-Za-z][A-Za-z0-9]*$/u;
@@ -76,20 +76,15 @@ const EXPECTED_RUNTIME_NORMALIZATION = Object.freeze({
       "max_retries",
       "pymodbus_retries",
       "max_group_size",
+      "transport",
     ],
     typescript_required: ["host"],
-    typescript_options: ["port", "slaveId", "timeout", "maxRetries", "maxGroupSize"],
+    typescript_options: ["port", "slaveId", "timeout", "maxRetries", "maxGroupSize", "transport"],
     internalized: {
       code: "internal_adapter_retries_zero",
       pymodbusRetries: 0,
     },
-    forbidden_public_options: [
-      "transport",
-      "transportFactory",
-      "clock",
-      "sleep",
-      "pymodbusRetries",
-    ],
+    forbidden_public_options: ["transportFactory", "clock", "sleep", "pymodbusRetries"],
   },
   transport_error_type_to_closed_kind: {
     code: "transport_error_type_to_closed_kind",
@@ -343,7 +338,11 @@ function validatePublicApi(value, expectedBaseline) {
     if (!new Set(["class", "constant", "function"]).has(symbol.python_kind)) {
       fail("public_inventory_invalid", `Invalid kind for ${symbol.name}`);
     }
-    if (!new Set(["client", "const", "registers", "web"]).has(symbol.source_group)) {
+    if (
+      !new Set(["binary_metadata", "client", "const", "registers", "transport", "web"]).has(
+        symbol.source_group,
+      )
+    ) {
       fail("public_inventory_invalid", `Invalid source group for ${symbol.name}`);
     }
     if (symbol.export_boundary === ".") {
@@ -368,7 +367,7 @@ function validatePublicApi(value, expectedBaseline) {
     value.counts.root !== rootCount ||
     value.counts.web !== webCount
   ) {
-    fail("public_inventory_invalid", "Public inventory must contain exactly 89/59/30 symbols");
+    fail("public_inventory_invalid", "Public inventory must contain exactly 95/65/30 symbols");
   }
   const aliases = new Map();
   for (const [index, alias] of value.aliases.entries()) {

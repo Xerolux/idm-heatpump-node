@@ -5,6 +5,44 @@ dokumentiert.
 
 ## [Unreleased]
 
+### Added
+
+- Synchronisation auf `idm-heatpump-api` `1.0.3`, Tag `v1.0.3`, vollständiger
+  Commit `6b834747a05931c4512ebdbb03292b487a3f986d` (vorher `0.8.0`). Alle
+  Paritätsartefakte, Tests und Dokumente wurden aus der neuen Baseline
+  regeneriert; die erste Veröffentlichung erfolgt mit vollständiger
+  Python-1.0.3-Parität.
+- Öffentliche Transport-Injektion `new IdmModbusClient(host, { transport })`
+  als Gegenstück zu Python 1.0 `IdmModbusClient(..., transport=)`. Injizierte
+  Transports besitzen nur den Verbindungszyklus, persistieren über Reconnects
+  und werden strukturell gegen das `ModbusTransport`-Protokoll validiert
+  (Gegenstück zu `IdmModbusTransport`).
+- Neutrales Binärregister-Metadatenmodul mit `BINARY_REGISTER_METADATA`,
+  `BinaryRegisterMetadata`, `BinaryDeviceClass`, `BinaryValue` und
+  `getBinaryRegisterMetadata` inklusive dynamischer Zonen-Raum-Relais-Namen.
+- `RegisterDef.effectiveSentinelValues` mit datentyp-spezifischen
+  Sentinel-Defaults (Sentinel-Autorität).
+- `IdmModbusClient.setModelInfo` zum expliziten Setzen von Modellinformationen
+  mit Cache-Neuaufbau.
+- Öffentliche, validierte Eigenschaft
+  `IdmModbusClient.eepromWriteInterval` (Standard 60 s).
+- Web-Supplement: Raumtemperatur-Sensoren `B62`–`B67` sowie Beschreibungen für
+  `flow_temp_HK_A`–`G` und `room_temperature_HK_A`–`G`.
+
+### Changed
+
+- Navigator-10-Modellerkennung: Register 4108 zählt nur mit plausibler
+  Leistungsgrenze (0,1–200 kW), Fallback-Sonde 4001 (booster_fault, Sentinel
+  255 ist familienneutral) und tertiäres Standby-Signal 4122/4126; schließt
+  die Terra-SWM-Fehlklassifikation und den Standby-Fall (#170) ab.
+- Modbus-Writes mit Exception Code 2 werden wie Reads als permanent
+  (`IllegalAddressError`) klassifiziert und nicht erneut versucht
+  (`check_transport_response`-Wiederverwendung aus Python 1.0.1).
+- Sentinel-Metadaten `(-32768, 65535, 255)` für zehn Pumpen-Statusregister;
+  Zonen-Raum-Relais `zm{z}_room{r}_relay` sind nun `binary`.
+- Öffentliche API auf 95 Python-Symbole (65 Root, 30 Web) erweitert;
+  `IdmModbusClient` deckt 31 öffentliche Mitglieder ab.
+
 ## [0.1.0] - 2026-07-17
 
 ### Added

@@ -101,6 +101,15 @@ export const IdmWebValueDescription = Object.freeze({
   },
 });
 
+function temperatureDescription(key: string): IdmWebValueDescription {
+  return IdmWebValueDescription.create({
+    key,
+    preferredUnit: "°C",
+    deviceClass: "temperature",
+    stateClass: "measurement",
+  });
+}
+
 export const WEB_VALUE_DESCRIPTIONS: Readonly<Record<string, IdmWebValueDescription>> =
   Object.freeze({
     flowmeter: IdmWebValueDescription.create({
@@ -153,6 +162,20 @@ export const WEB_VALUE_DESCRIPTIONS: Readonly<Record<string, IdmWebValueDescript
       deviceClass: "energy",
       stateClass: "total",
     }),
+    flow_temp_HK_A: temperatureDescription("flow_temp_HK_A"),
+    flow_temp_HK_B: temperatureDescription("flow_temp_HK_B"),
+    flow_temp_HK_C: temperatureDescription("flow_temp_HK_C"),
+    flow_temp_HK_D: temperatureDescription("flow_temp_HK_D"),
+    flow_temp_HK_E: temperatureDescription("flow_temp_HK_E"),
+    flow_temp_HK_F: temperatureDescription("flow_temp_HK_F"),
+    flow_temp_HK_G: temperatureDescription("flow_temp_HK_G"),
+    room_temperature_HK_A: temperatureDescription("room_temperature_HK_A"),
+    room_temperature_HK_B: temperatureDescription("room_temperature_HK_B"),
+    room_temperature_HK_C: temperatureDescription("room_temperature_HK_C"),
+    room_temperature_HK_D: temperatureDescription("room_temperature_HK_D"),
+    room_temperature_HK_E: temperatureDescription("room_temperature_HK_E"),
+    room_temperature_HK_F: temperatureDescription("room_temperature_HK_F"),
+    room_temperature_HK_G: temperatureDescription("room_temperature_HK_G"),
   });
 
 function frozenRecord<T>(input: Readonly<Record<string, T>>): Readonly<Record<string, T>> {
@@ -330,7 +353,16 @@ const SENSOR_NAME_MAP: Readonly<Record<string, string>> = Object.freeze({
   B55: "flow_temp_HK_E",
   B56: "flow_temp_HK_F",
   B57: "flow_temp_HK_G",
+  // Heating-circuit room temperatures. Linear sequence B61+i for circuits A-G:
+  // B61=A, B62=B, B63=C, B64=D (verified live on a Navigator 10 ALM with
+  // circuits A+D), B65=E, B66=F, B67=G.
   B61: "room_temperature_HK_A",
+  B62: "room_temperature_HK_B",
+  B63: "room_temperature_HK_C",
+  B64: "room_temperature_HK_D",
+  B65: "room_temperature_HK_E",
+  B66: "room_temperature_HK_F",
+  B67: "room_temperature_HK_G",
   B71: "hotgas_temperature",
   B78: "verdamper_pressure",
   B78v: "evaporation_temperature",

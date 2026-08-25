@@ -106,11 +106,11 @@ function writeScriptMessage(errorType: string, message: string): string {
   if (errorType === NormalizedTransportFailureKind.NO_RESPONSE) {
     return `Modbus Error: [Input/Output] ${message}`;
   }
-  if (errorType === NormalizedTransportFailureKind.MODBUS) {
-    const codeTwo = /^Illegal Data Address writing address (\d+): (.*)$/u.exec(message);
-    if (codeTwo !== null) {
-      return `Modbus Error: Modbus error writing address ${codeTwo[1]}: ${codeTwo[2]}`;
-    }
+  if (
+    errorType === NormalizedTransportFailureKind.MODBUS ||
+    errorType === NormalizedTransportFailureKind.ILLEGAL_ADDRESS
+  ) {
+    // pymodbus's ModbusException subclasses stringify with a shared prefix.
     return `Modbus Error: ${message}`;
   }
   return message;

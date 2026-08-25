@@ -100,13 +100,6 @@ export function createModbusFailure(
   return new NormalizedTransportFailure(NormalizedTransportFailureKind.MODBUS, normalizedMessage);
 }
 
-export function createWriteModbusFailure(
-  message: string,
-  endpoint?: DiagnosticEndpoint,
-): NormalizedTransportFailure {
-  return createNormalizedTransportFailure(NormalizedTransportFailureKind.MODBUS, message, endpoint);
-}
-
 export function isKnownTransportFailure(
   value: unknown,
 ): value is IllegalAddressError | NormalizedTransportFailure {

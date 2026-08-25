@@ -425,11 +425,11 @@ describe("versioned CTR-01 scenario fixture", () => {
     expect(parsed.schema_version).toBe(1);
     expect(parsed.generator_version).toBe("1");
     expect(parsed.baseline).toEqual({
-      git_commit: "a5d44ed06e5bd317946ca41720f37151631bc9c6",
-      git_tag: "v0.8.0",
+      git_commit: "6b834747a05931c4512ebdbb03292b487a3f986d",
+      git_tag: "v1.0.3",
       parity_schema_version: 1,
       python_package: "idm-heatpump-api",
-      python_version: "0.8.0",
+      python_version: "1.0.3",
       repository: "https://github.com/Xerolux/idm-heatpump-api",
     });
     expect(parsed.scenarios).toHaveLength(7);

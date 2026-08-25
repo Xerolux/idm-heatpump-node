@@ -98,6 +98,8 @@ describe("ordered IDM model detection", () => {
       missing(74),
       missing(1_147),
       missing(4_108),
+      missing(4_001),
+      missing(4_122),
       missing(4_120),
     ];
     const { client, transport } = clientWithResponses(responses);
@@ -137,6 +139,8 @@ describe("ordered IDM model detection", () => {
       expectedProbe(74, 2),
       expectedProbe(1_147, 1),
       expectedProbe(4_108, 2),
+      expectedProbe(4_001, 1),
+      expectedProbe(4_122, 2),
       expectedProbe(4_120, 2),
     ]);
     expect(client.getUnsupportedRegisters()).toEqual(["unsupported-before-detection"]);
@@ -241,6 +245,8 @@ describe("ordered IDM model detection", () => {
       words([0, 0]),
       words([0xffff]),
       missing(4_108),
+      missing(4_001),
+      missing(4_122),
     ];
     const { client, transport } = clientWithResponses(responses);
 
@@ -284,6 +290,8 @@ describe("ordered IDM model detection", () => {
       missing(74),
       words([0]),
       missing(4_108),
+      missing(4_001),
+      missing(4_122),
     ];
     const { client, transport } = clientWithResponses(responses);
 
@@ -316,6 +324,8 @@ describe("ordered IDM model detection", () => {
       missing(74),
       missing(1_147),
       missing(4_108),
+      missing(4_001),
+      missing(4_122),
     ];
     const { client, transport } = clientWithResponses(responses);
 
@@ -337,6 +347,8 @@ describe("ordered IDM model detection", () => {
       missing(74),
       missing(1_147),
       missing(4_108),
+      missing(4_001),
+      missing(4_122),
       words([0, 32_704]),
     ];
     const first = clientWithResponses(invalidFirmware);

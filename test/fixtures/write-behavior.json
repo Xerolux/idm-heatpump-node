@@ -1,10 +1,10 @@
 {
   "baseline": {
-    "git_commit": "a5d44ed06e5bd317946ca41720f37151631bc9c6",
-    "git_tag": "v0.8.0",
+    "git_commit": "6b834747a05931c4512ebdbb03292b487a3f986d",
+    "git_tag": "v1.0.3",
     "parity_schema_version": 1,
     "python_package": "idm-heatpump-api",
-    "python_version": "0.8.0",
+    "python_version": "1.0.3",
     "repository": "https://github.com/Xerolux/idm-heatpump-api"
   },
   "generator_version": "1",
@@ -5246,9 +5246,7 @@
       ]
     },
     {
-      "clock": [
-        0.5
-      ],
+      "clock": [],
       "configuration": {
         "detectedModel": null,
         "host": "example.invalid",
@@ -5287,28 +5285,16 @@
               16938
             ]
           }
-        },
-        {
-          "kind": "write",
-          "request": {
-            "address": 4200,
-            "count": 2,
-            "functionCode": 16,
-            "registerType": "holding",
-            "unitId": 1,
-            "words": [
-              0,
-              16938
-            ]
-          }
         }
       ],
       "expected_result": {
         "steps": [
           {
             "result": {
-              "kind": "value",
-              "value": null
+              "category": "transport",
+              "errorType": "illegal_address",
+              "kind": "error",
+              "message": "Modbus Error: Illegal Data Address writing address 4200: ExceptionResponse(exception_code=2)"
             },
             "state": {
               "activeCyclicWrites": {},
@@ -5320,8 +5306,8 @@
                 "address": 4200,
                 "attempt": 1,
                 "count": 2,
-                "errorType": "modbus",
-                "message": "Modbus Error: Modbus error writing address 4200: ExceptionResponse(exception_code=2)",
+                "errorType": "illegal_address",
+                "message": "Modbus Error: Illegal Data Address writing address 4200: ExceptionResponse(exception_code=2)",
                 "operation": "write",
                 "registerType": "holding"
               },
@@ -5342,8 +5328,8 @@
           "address": 4200,
           "attempt": 1,
           "count": 2,
-          "errorType": "modbus",
-          "message": "Modbus Error: Modbus error writing address 4200: ExceptionResponse(exception_code=2)",
+          "errorType": "illegal_address",
+          "message": "Modbus Error: Illegal Data Address writing address 4200: ExceptionResponse(exception_code=2)",
           "operation": "write",
           "registerType": "holding"
         },
@@ -5351,7 +5337,7 @@
         "unsupportedRegisters": [],
         "writeThrottle": {}
       },
-      "name": "write_retry_code_2_is_modbus",
+      "name": "write_code_2_is_permanent",
       "operation": {
         "actions": [
           {
@@ -5377,14 +5363,9 @@
       },
       "transport_responses": [
         {
-          "errorType": "modbus",
+          "errorType": "illegal_address",
           "kind": "error",
           "message": "Illegal Data Address writing address 4200: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "address": 4200,
-          "count": 2,
-          "kind": "ack"
         }
       ]
     },

@@ -404,7 +404,7 @@ describe("ModbusSerialTransport", () => {
     }
   });
 
-  it("normalizes structured write Code 2 as generic Modbus without raw provider state", async () => {
+  it("normalizes structured write Code 2 as a permanent illegal address without raw provider state", async () => {
     const client = new MockModbusSerialClient();
     client.queueWrite({
       kind: "error",
@@ -422,12 +422,11 @@ describe("ModbusSerialTransport", () => {
 
     const error = await transport.write(writeRequest()).catch((caught: unknown) => caught);
 
-    expect(error).toBeInstanceOf(NormalizedTransportFailure);
+    expect(error).toBeInstanceOf(IllegalAddressError);
     expect(error).toMatchObject({
-      kind: NormalizedTransportFailureKind.MODBUS,
       message: "Code 2 writing <endpoint>",
     });
-    expect(error).not.toBeInstanceOf(IllegalAddressError);
+    expect(error).not.toBeInstanceOf(NormalizedTransportFailure);
     const serialized = JSON.stringify(error);
     expect(serialized).not.toContain("example.invalid");
     expect(serialized).not.toMatch(/cause|payload|result|value|words|16938/u);
@@ -491,19 +490,12 @@ describe("ModbusSerialTransport", () => {
     );
   });
 
-  it("retries real-adapter write Code 2 as Modbus and never mutates read failure state", async () => {
+  it("treats real-adapter write Code 2 as permanent and never mutates read failure state", async () => {
     const boundary = new MockModbusSerialClient();
-    boundary.queueWrite(
-      {
-        kind: "error",
-        error: { modbusCode: 2, message: "Code 2 writing example.invalid:15020" },
-      },
-      {
-        kind: "error",
-        error: { modbusCode: 2, message: "Code 2 writing example.invalid:15020" },
-      },
-      { kind: "result", result: { address: 4_502, length: 1 } },
-    );
+    boundary.queueWrite({
+      kind: "error",
+      error: { modbusCode: 2, message: "Code 2 writing example.invalid:15020" },
+    });
     const delays: number[] = [];
     const client = createInternalIdmModbusClient(
       "example.invalid",
@@ -529,19 +521,19 @@ describe("ModbusSerialTransport", () => {
       permanentlyFailedRegisters: ["existing_failed"],
     });
 
-    await expect(writeInternalRegister(client, register, 1)).resolves.toBeUndefined();
+    await expect(writeInternalRegister(client, register, 1)).rejects.toBeInstanceOf(
+      IllegalAddressError,
+    );
 
-    expect(boundary.events.filter((event) => event.kind === "write_registers")).toHaveLength(3);
-    expect(delays).toEqual([0.5, 1]);
-    expect(getInternalWriteStateSnapshot(client).writeThrottle).toEqual({
-      real_adapter_eeprom: 10,
-    });
+    expect(boundary.events.filter((event) => event.kind === "write_registers")).toHaveLength(1);
+    expect(delays).toEqual([]);
+    expect(getInternalWriteStateSnapshot(client).writeThrottle).toEqual({});
     expect(client.getUnsupportedRegisters()).toEqual(["existing_unsupported"]);
     expect(client.getDiagnostics().permanentlyFailedRegisters).toEqual(["existing_failed"]);
     expect(client.getLastErrorContext()).toMatchObject({
       operation: "write",
-      errorType: NormalizedTransportFailureKind.MODBUS,
-      attempt: 2,
+      errorType: NormalizedTransportFailureKind.ILLEGAL_ADDRESS,
+      attempt: 1,
     });
   });
 
@@ -775,7 +767,7 @@ describe("normal public client wiring", () => {
     expect(fakeTransport.connect).toHaveBeenCalledOnce();
   });
 
-  it("contains no public constructor injection or adapter/provider declaration", async () => {
+  it("exposes only the reviewed transport injection and no adapter/provider declaration", async () => {
     const clientPath = fileURLToPath(
       new URL("../../src/client/idm-modbus-client.ts", import.meta.url),
     );
@@ -785,9 +777,8 @@ describe("normal public client wiring", () => {
       clientSource.indexOf("export interface ProbeRegisterOptions"),
     );
 
-    expect(publicOptions).not.toMatch(
-      /adapter|factory|transport|clock|sleep|modbus-serial|ModbusRTU/u,
-    );
+    expect(publicOptions).toContain("readonly transport?: ModbusTransport;");
+    expect(publicOptions).not.toMatch(/adapter|factory|clock|sleep|modbus-serial|ModbusRTU/u);
     expect(new IdmModbusClient("example.invalid").isConnected).toBe(false);
   });
 });

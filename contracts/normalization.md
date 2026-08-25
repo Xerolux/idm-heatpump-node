@@ -162,21 +162,16 @@ is rejected; raw causes and payloads are not included.
       "timeout",
       "max_retries",
       "pymodbus_retries",
-      "max_group_size"
+      "max_group_size",
+      "transport"
     ],
     "typescript_required": ["host"],
-    "typescript_options": ["port", "slaveId", "timeout", "maxRetries", "maxGroupSize"],
+    "typescript_options": ["port", "slaveId", "timeout", "maxRetries", "maxGroupSize", "transport"],
     "internalized": {
       "code": "internal_adapter_retries_zero",
       "pymodbusRetries": 0
     },
-    "forbidden_public_options": [
-      "transport",
-      "transportFactory",
-      "clock",
-      "sleep",
-      "pymodbusRetries"
-    ]
+    "forbidden_public_options": ["transportFactory", "clock", "sleep", "pymodbusRetries"]
   },
   "transport_error_type_to_closed_kind": {
     "code": "transport_error_type_to_closed_kind",

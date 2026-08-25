@@ -21,9 +21,9 @@ erfolgreich laufen.
 
 Die exakt geprüfte Python-Baseline ist:
 
-- Paketversion: `0.8.0`
-- Git-Tag: `v0.8.0`
-- vollständiger Commit: `a5d44ed06e5bd317946ca41720f37151631bc9c6`
+- Paketversion: `1.0.3`
+- Git-Tag: `v1.0.3`
+- vollständiger Commit: `6b834747a05931c4512ebdbb03292b487a3f986d`
 
 `UPSTREAM-PARITY.json` steht auf `complete`. Keine Node-Hardwarevalidierung
 durchgeführt; sämtliche Prüfungen verwenden reproduzierbare Fake-Transporte,
@@ -35,7 +35,8 @@ Der Paket-Root stellt den vollständigen Semantik-Kern aus Phase 1 sowie den
 evidenzbasierten Lesepfad aus Phase 2 bereit:
 
 - `IdmModbusClient` mit geschlossenem Konstruktor
-  `new IdmModbusClient(host, options?)`;
+  `new IdmModbusClient(host, options?)` und öffentlicher Transport-Injektion
+  über `options.transport` (Gegenstück zu Python 1.0 `transport=`);
 - die öffentliche, adapterneutrale TypeScript-Schnittstelle
   `ModbusTransport`; der konkrete `modbus-serial`-Adapter bleibt intern;
 - Connect, Disconnect, Force-Reconnect und vollständige FIFO-Serialisierung;
@@ -58,7 +59,8 @@ evidenzbasierten Lesepfad aus Phase 2 bereit:
 - Typ-, Bereichs-, Enum-, Ausschlusswert- und Modell-Validierung; die
   `allowCustomRegister`-Option umgeht nur die Name-/Adress-Mitgliedschaft eines
   erkannten Modells, niemals die übrigen Schutzprüfungen;
-- eine EEPROM-Schreibsperre von 60 Sekunden und Cyclic-Heartbeats mit einer
+- eine EEPROM-Schreibsperre von 60 Sekunden, öffentlich konfigurierbar über
+  `eepromWriteInterval`, und Cyclic-Heartbeats mit einer
   Standard-TTL von 300 Sekunden, geprüft mit kontrollierter Uhr (Fake Clock);
 - Write-Retry und Reconnect mit konservativer at-least-once-Semantik sowie
   erfolgreicher Zustandsänderung erst nach bestätigtem Transporterfolg;
@@ -68,14 +70,21 @@ evidenzbasierten Lesepfad aus Phase 2 bereit:
   Login/CSRF, Cache, Notifications, Statistics, Capabilities, Diagnostik und
   geschlossener Fehlerhierarchie über den separaten Export `./web`;
 - vollständige Erkennung nicht zusammenhängender Heizkreise A–G über
-  Durchfluss- und Active-Mode-Signale entsprechend Python `0.8.0`.
+  Durchfluss- und Active-Mode-Signale;
+- Navigator-10-Erkennung mit Plausibilitätsprüfung der Leistungsgrenze (4108),
+  Booster-Fallback-Sonde (4001) und Standby-Leistungsmesspaar 4122/4126,
+  einschließlich Terra-SWM-Sentinel-Abgrenzung;
+- neutrale Binärregister-Metadaten (`BINARY_REGISTER_METADATA`,
+  `getBinaryRegisterMetadata`) mit dynamischen Zonen-Raum-Relais-Namen;
+- Sentinel-Autorität über `effectiveSentinelValues` je Registerdefinition;
+- öffentliches `setModelInfo` zum expliziten Setzen erkannter Modellinformation.
 
-Die Paritätsmatrix enthält exakt 89 öffentliche Python-Symbole. Alle 89
-Zuordnungen sind `complete` (59 Paket-Root, 30 Web);
-`IdmModbusClient` ist mit allen 29 öffentlichen Mitgliedern vollständig
+Die Paritätsmatrix enthält exakt 95 öffentliche Python-Symbole. Alle 95
+Zuordnungen sind `complete` (65 Paket-Root, 30 Web);
+`IdmModbusClient` ist mit allen 31 öffentlichen Mitgliedern vollständig
 abgebildet.
-`ModbusTransport` ist separat als vollständige additive TypeScript-Erweiterung
-dokumentiert.
+`ModbusTransport` ist das dokumentierte TypeScript-Gegenstück des öffentlichen
+Python-Protokolls `IdmModbusTransport`.
 
 Die exakte Zuordnung, Repräsentation und Testevidenz steht in
 [docs/API-PARITY.md](docs/API-PARITY.md). Der Exportpfad

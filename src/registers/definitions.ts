@@ -21,6 +21,23 @@ const DEFAULT_SUPPORTED_MODELS = Object.freeze([
 
 type SentinelValue = number | string;
 
+/**
+ * Declared "unused / not configured" sentinels per datatype, mirroring
+ * Python's ``DATATYPE_SENTINEL_DEFAULTS``. A register's explicit
+ * ``sentinelValues`` set is authoritative; otherwise the datatype-specific
+ * default applies. BOOL/BITFLAG/INT8 have no numeric sentinel.
+ */
+export const DATATYPE_SENTINEL_DEFAULTS: Readonly<Record<DataTypeValue, readonly SentinelValue[]>> =
+  Object.freeze({
+    [DataType.FLOAT]: Object.freeze([-1]),
+    [DataType.UCHAR]: Object.freeze([255]),
+    [DataType.UINT16]: Object.freeze([65_535]),
+    [DataType.INT16]: Object.freeze([-1, -32_768]),
+    [DataType.BOOL]: Object.freeze([]),
+    [DataType.INT8]: Object.freeze([]),
+    [DataType.BITFLAG]: Object.freeze([]),
+  });
+
 export interface RegisterDefInput {
   readonly address: number;
   readonly datatype: DataTypeValue;
@@ -73,6 +90,7 @@ export interface RegisterDef {
   readonly sourceVersion: string;
   readonly supportedModels: readonly string[];
   readonly sentinelValues: readonly SentinelValue[];
+  readonly effectiveSentinelValues: readonly SentinelValue[];
   readonly lastVerified: string | null;
   readonly size: 1 | 2;
 }
@@ -280,6 +298,10 @@ export function createRegisterDef(input: RegisterDefInput): RegisterDef {
     sourceVersion,
     supportedModels: cloneAndFreeze([...supportedModels]),
     sentinelValues: cloneAndFreeze([...sentinelValues]),
+    effectiveSentinelValues:
+      sentinelValues.length > 0
+        ? cloneAndFreeze([...sentinelValues])
+        : cloneAndFreeze([...DATATYPE_SENTINEL_DEFAULTS[input.datatype]]),
     lastVerified,
     size: DATA_TYPE_SIZE[input.datatype],
   };

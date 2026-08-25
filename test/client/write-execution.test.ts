@@ -224,6 +224,8 @@ describe("internal IdmModbusClient write execution", () => {
         74,
         1_147,
         4_108,
+        4_001,
+        4_122,
         4_120,
       ].map(missingProbe),
       { writeResponses: [{ kind: "write_ok" }] },
@@ -500,7 +502,7 @@ describe("internal IdmModbusClient write execution", () => {
     expect(getInternalWriteStateSnapshot(client).writeThrottle).toEqual({});
   });
 
-  it("promotes all 29 public members while keeping internal controls out of root exports", async () => {
+  it("promotes all 31 public members while keeping internal controls out of root exports", async () => {
     const mapping = JSON.parse(
       await readFile(new URL("../../contracts/api-mapping.json", import.meta.url), "utf8"),
     ) as {
@@ -525,6 +527,7 @@ describe("internal IdmModbusClient write execution", () => {
       "decodeValue",
       "detectModel",
       "disconnect",
+      "eepromWriteInterval",
       "encodeValue",
       "forceReconnect",
       "getActiveCyclicWrites",
@@ -546,6 +549,7 @@ describe("internal IdmModbusClient write execution", () => {
       "resetCyclicWriteState",
       "resetFailedRegisters",
       "resetWriteThrottle",
+      "setModelInfo",
       "setValue",
       "simulateWrite",
       "writeRegister",

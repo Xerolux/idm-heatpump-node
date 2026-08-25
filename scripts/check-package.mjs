@@ -113,11 +113,15 @@ assert(clientClass !== undefined, "Pinned IdmModbusClient class facts are missin
 const implementedMembers = clientClass.members.map(({ name }) => {
   return name.replace(/_([a-z0-9])/gu, (_match, character) => character.toUpperCase());
 });
-assert(implementedMembers.length === 29, "IdmModbusClient must expose exactly 29 members");
+assert(implementedMembers.length === 31, "IdmModbusClient must expose exactly 31 members");
 
+// Type-only counterparts are compile-time exports; they cannot appear as
+// runtime properties of the built module namespaces.
+const TYPE_ONLY_ROOT_SYMBOLS = new Set(["BinaryDeviceClass", "BinaryValue", "ModbusTransport"]);
 const expectedRuntimeExports = mapping.mappings
   .filter(({ export_path: exportPath, status }) => exportPath === "." && status === "complete")
-  .map(({ typescript_symbol: typescriptSymbol }) => typescriptSymbol);
+  .map(({ typescript_symbol: typescriptSymbol }) => typescriptSymbol)
+  .filter((symbol) => !TYPE_ONLY_ROOT_SYMBOLS.has(symbol));
 const expectedWebRuntimeExports = mapping.mappings
   .filter(({ export_path: exportPath, status }) => exportPath === "./web" && status === "complete")
   .map(({ typescript_symbol: typescriptSymbol }) => typescriptSymbol);
@@ -285,6 +289,7 @@ runSmoke().catch((error) => {
     join(typesDirectory, "consumer.ts"),
     `import {
   IdmClientDiagnostics,
+  IdmModelInfo,
   IdmModbusClient,
   IllegalAddressError,
   ModbusErrorContext,
@@ -305,6 +310,8 @@ class StructuralTransport implements ModbusTransport {
 }
 
 const transport = new StructuralTransport();
+const injectedClient = new IdmModbusClient("heatpump.example.invalid", { transport });
+void injectedClient.eepromWriteInterval;
 const client = new IdmModbusClient("heatpump.example.invalid");
 const diagnostics = IdmClientDiagnostics.create({ navigatorType: client.modelName, modbusConnected: false });
 const context = ModbusErrorContext.create({ operation: "read", address: 0, count: 1, registerType: "input", errorType: "timeout", message: "synthetic", attempt: 1 });
@@ -318,12 +325,21 @@ const result = WriteSafetyResult.create({
 const dryRun = await client.setValue("system_mode", 2, { dryRun: true });
 client.resetWriteThrottle();
 client.resetCyclicWriteState();
+client.setModelInfo(
+  IdmModelInfo.create({
+    modelName: "Navigator 10",
+    activeHeatingCircuits: ["A"],
+    zoneModules: 0,
+    hasSolar: false,
+    hasIsc: false,
+    hasPv: false,
+    hasCascade: false,
+  }),
+);
 const active: Readonly<Record<string, number>> = client.getActiveCyclicWrites();
 const expired: ReadonlySet<string> = client.getExpiredCyclicWrites();
 quietPymodbusLogging();
 
-// @ts-expect-error transport injection is an internal-only seam
-new IdmModbusClient("heatpump.example.invalid", { transport });
 // @ts-expect-error transport factory injection is an internal-only seam
 new IdmModbusClient("heatpump.example.invalid", { transportFactory: () => transport });
 // @ts-expect-error clock injection is an internal-only seam
