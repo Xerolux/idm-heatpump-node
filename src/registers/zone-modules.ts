@@ -65,6 +65,8 @@ export function getZoneModuleRegisters(
         name: `${prefix}_setpoint`,
         unit: "°C",
         writable: true,
+        // NAV10 manual p. 20: 0.5 °C steps; min/max columns are blank.
+        step: 0.5,
       },
       {
         address: roomBase + 4,

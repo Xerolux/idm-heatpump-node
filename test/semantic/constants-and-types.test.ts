@@ -18,6 +18,7 @@ interface ApiMappingRow {
   readonly python_symbol: string;
   readonly typescript_symbol: string;
   readonly owner_phase: number;
+  readonly evidence_category?: string;
   readonly representation: {
     readonly form: string;
     readonly constructor: string;
@@ -43,6 +44,16 @@ const publicClasses = JSON.parse(
 ) as PublicClasses;
 
 const EXPECTED_CONSTANTS = {
+  MODEL_NAVIGATOR_17: "Navigator 1.7",
+  PUMP_STATUS_OPTIONS: {
+    0: "Off",
+    1: "Running",
+    2: "Fault",
+  },
+  VALVE_HC_HEAT_COOL_OPTIONS: {
+    0: "Heating",
+    1: "Cooling",
+  },
   ACTIVE_HC_MODE_OPTIONS: {
     0: "Off",
     1: "Heating",
@@ -127,6 +138,7 @@ const EXPECTED_CONSTANTS = {
     0: "Standby",
     1: "Automatic",
     2: "Absent",
+    3: "Holiday",
     4: "Hot Water Only",
     5: "Heating/Cooling Only",
   },
@@ -156,19 +168,22 @@ function classFact(name: string): PublicClassFact {
 }
 
 describe("pinned constants and mapped semantic types", () => {
-  it("implements exactly the 35 pinned const.py exports owned by phase 1", () => {
+  it("implements exactly the 38 pinned const.py exports owned by phase 1", () => {
     const mappedConstantNames = mapping.mappings
       .filter(
         (row) =>
           row.owner_phase === 1 &&
           row.representation.form === "frozen_constant" &&
-          row.python_symbol !== "CORE_REGISTERS",
+          row.python_symbol !== "CORE_REGISTERS" &&
+          // UNINITIALIZED_TEMPERATURE_C lives in the plausibility module,
+          // not const.ts; its contract test is test/plausibility.test.ts.
+          row.evidence_category !== "plausibility",
       )
       .map((row) => row.typescript_symbol)
       .sort();
 
     expect(mappedConstantNames).toEqual(Object.keys(EXPECTED_CONSTANTS).sort());
-    expect(mappedConstantNames).toHaveLength(35);
+    expect(mappedConstantNames).toHaveLength(38);
 
     for (const [name, expected] of Object.entries(EXPECTED_CONSTANTS)) {
       const actual = constants[name as keyof typeof constants];
@@ -192,7 +207,7 @@ describe("pinned constants and mapped semantic types", () => {
       BOOL: "BOOL",
       BITFLAG: "BITFLAG",
     });
-    expect(RegisterType).toEqual({ INPUT: "input", HOLDING: "holding" });
+    expect(RegisterType).toEqual({ INPUT: "input", HOLDING: "holding", COIL: "coil" });
     expect(WriteClass).toEqual({
       FORBIDDEN: "forbidden",
       VOLATILE: "volatile",

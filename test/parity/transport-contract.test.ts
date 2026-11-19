@@ -302,11 +302,11 @@ const GENERATED_TRANSPORT_FIXTURE = resolve(
 function validTransportScenario(): Record<string, unknown> {
   return {
     baseline: {
-      git_commit: "6b834747a05931c4512ebdbb03292b487a3f986d",
-      git_tag: "v1.0.3",
+      git_commit: "0347f2553a046159c19f6913f63099625da88668",
+      git_tag: "v2.16.1",
       parity_schema_version: 1,
       python_package: "idm-heatpump-api",
-      python_version: "1.0.3",
+      python_version: "2.16.1",
       repository: "https://github.com/Xerolux/idm-heatpump-api",
     },
     generator_version: "1",
@@ -674,26 +674,26 @@ function requiredString(configuration: Readonly<Record<string, unknown>>, field:
 function responseError(response: { readonly errorType: string; readonly message: string }): Error {
   switch (response.errorType) {
     case NormalizedTransportFailureKind.ILLEGAL_ADDRESS:
-      return new IllegalAddressError(`Modbus Error: ${response.message}`);
+      return new IllegalAddressError(response.message);
     case NormalizedTransportFailureKind.DISCONNECTED:
       return new NormalizedTransportFailure(
         NormalizedTransportFailureKind.DISCONNECTED,
-        `Modbus Error: [Connection] ${response.message}`,
+        response.message,
       );
     case NormalizedTransportFailureKind.NO_RESPONSE:
       return new NormalizedTransportFailure(
         NormalizedTransportFailureKind.NO_RESPONSE,
-        `Modbus Error: [Input/Output] ${response.message}`,
+        response.message,
       );
     case NormalizedTransportFailureKind.MODBUS:
       return new NormalizedTransportFailure(
         NormalizedTransportFailureKind.MODBUS,
-        `Modbus Error: ${response.message}`,
+        response.message,
       );
     case NormalizedTransportFailureKind.INVALID_RESPONSE:
       return new NormalizedTransportFailure(
         NormalizedTransportFailureKind.INVALID_RESPONSE,
-        `Modbus Error: ${response.message}`,
+        response.message,
       );
     case NormalizedTransportFailureKind.TIMEOUT:
       return new NormalizedTransportFailure(
@@ -1002,7 +1002,12 @@ describe("generated non-detection transport scenarios", () => {
   it("executes every owned scenario through the real client and consumes each script", async () => {
     expect(scenarios).toHaveLength(32);
     for (const scenario of scenarios) {
-      const actual = await executeGeneratedScenario(scenario);
+      let actual;
+      try {
+        actual = await executeGeneratedScenario(scenario);
+      } catch (error) {
+        throw new Error(`scenario ${scenario.name}: ${String(error)}`, { cause: error });
+      }
       expect(actual.result, `${scenario.name} result`).toEqual(scenario.expected_result);
       expect(actual.requests, `${scenario.name} request trace`).toEqual(scenario.expected_requests);
       expect(actual.clock, `${scenario.name} clock`).toEqual(scenario.clock);
@@ -1038,7 +1043,12 @@ describe("generated detection transport scenarios", () => {
   it("executes every Python-generated detection scenario through the real client", async () => {
     expect(scenarios).toHaveLength(8);
     for (const scenario of scenarios) {
-      const actual = await executeGeneratedScenario(scenario);
+      let actual;
+      try {
+        actual = await executeGeneratedScenario(scenario);
+      } catch (error) {
+        throw new Error(`scenario ${scenario.name}: ${String(error)}`, { cause: error });
+      }
       expect(actual.result, `${scenario.name} result`).toEqual(scenario.expected_result);
       expect(actual.requests, `${scenario.name} request trace`).toEqual(scenario.expected_requests);
       expect(actual.clock, `${scenario.name} clock`).toEqual(scenario.clock);

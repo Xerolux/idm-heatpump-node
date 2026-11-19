@@ -10,6 +10,7 @@ export interface SerializedRegister {
   readonly writable: NormalizedContractValue;
   readonly min_val: NormalizedContractValue;
   readonly max_val: NormalizedContractValue;
+  readonly step: NormalizedContractValue;
   readonly enum_options: NormalizedContractValue;
   readonly multiplier: NormalizedContractValue;
   readonly register_type: NormalizedContractValue;
@@ -47,6 +48,7 @@ export function serializeRegisterDef(register: RegisterDef): SerializedRegister 
     writable: normalizeTaggedValue(register.writable),
     min_val: normalizeTaggedValue(register.minVal),
     max_val: normalizeTaggedValue(register.maxVal),
+    step: normalizeTaggedValue(register.step),
     enum_options: normalizeTaggedValue(enumOptions),
     multiplier: normalizeTaggedValue(register.multiplier),
     register_type: normalizeTaggedValue(register.registerType),

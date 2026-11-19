@@ -175,6 +175,9 @@ const SOLAR_INPUTS = [
     writable: true,
     minVal: 0,
     maxVal: 4,
+    // 255 = no solar on the plant, same evidence as bivalence_state
+    // (idm-heatpump-hass issue #532 diagnostics, 2026-10).
+    sentinelValues: [255],
     enumOptions: {
       0: "Automatic",
       1: "DHW",
@@ -290,7 +293,15 @@ const NAV10_INPUTS = [
   },
   {
     address: 1072,
-    datatype: DataType.UCHAR,
+    // The official IDM register doc lists UCHAR, but two independent field
+    // reads (idm-heatpump-hass discussion #516) prove the controller serves
+    // a word-swapped FLOAT32 here like its siblings 1068/1070: a direct HA
+    // modbus float32 read with word swap returns plausible L/min values,
+    // and the not-present pattern raw [0, 49024] is exactly the -1.0 FLOAT
+    // sentinel. UCHAR decoding read one byte of the low word and produced
+    // jumping, far-too-high values on plants with a live flow signal. The
+    // FLOAT datatype default sentinel (-1.0) covers not-present plants.
+    datatype: DataType.FLOAT,
     name: "heat_sink_flow_rate",
     unit: "L/min",
     stateClass: "measurement",
@@ -319,6 +330,13 @@ const NAV10_INPUTS = [
     address: 1680,
     datatype: DataType.UCHAR,
     name: "fault_heat_source_circuit",
+    // Official Navigator 10 table (2025-06-18): 0 ... Störung (fault),
+    // 1 ... Keine Störung (no fault) — inverted against the usual
+    // active-high convention. Siblings 1681-1683 document only the 0/1
+    // range without labels and stay raw until field captures confirm
+    // their polarity.
+    binary: true,
+    lastVerified: "2026-10-29",
   },
   {
     address: 1681,
@@ -526,6 +544,10 @@ const GLT_INPUTS = [
     writable: true,
     minVal: 20,
     maxVal: 65,
+    // 0 = no external demand source connected: Navigator 2.0 without a
+    // GLT demand writer holds 0, which is never a valid setpoint
+    // (idm-heatpump-hass issue #532 diagnostics, 2026-10).
+    sentinelValues: [0],
     eepromSensitive: true,
   },
   {
@@ -536,6 +558,8 @@ const GLT_INPUTS = [
     writable: true,
     minVal: 10,
     maxVal: 25,
+    // 0 = no external demand source connected (see heating above).
+    sentinelValues: [0],
     eepromSensitive: true,
   },
   {

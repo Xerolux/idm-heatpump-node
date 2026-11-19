@@ -101,17 +101,17 @@ function createDetectedModel(value: unknown): IdmModelInfoValue | null {
 
 function writeScriptMessage(errorType: string, message: string): string {
   if (errorType === NormalizedTransportFailureKind.DISCONNECTED) {
-    return `Modbus Error: [Connection] ${message}`;
+    return message;
   }
   if (errorType === NormalizedTransportFailureKind.NO_RESPONSE) {
-    return `Modbus Error: [Input/Output] ${message}`;
+    return message;
   }
   if (
     errorType === NormalizedTransportFailureKind.MODBUS ||
     errorType === NormalizedTransportFailureKind.ILLEGAL_ADDRESS
   ) {
     // pymodbus's ModbusException subclasses stringify with a shared prefix.
-    return `Modbus Error: ${message}`;
+    return message;
   }
   return message;
 }

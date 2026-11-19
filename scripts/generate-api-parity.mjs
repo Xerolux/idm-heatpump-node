@@ -28,9 +28,9 @@ const PATHS = Object.freeze({
 });
 const MAX_JSON_BYTES = 4 * 1024 * 1024;
 const MAX_STRING_LENGTH = 1024;
-const EXPECTED_SYMBOL_COUNT = 95;
-const EXPECTED_ROOT_COUNT = 65;
-const EXPECTED_WEB_COUNT = 30;
+const EXPECTED_SYMBOL_COUNT = 161;
+const EXPECTED_ROOT_COUNT = 77;
+const EXPECTED_WEB_COUNT = 84;
 const IDENTIFIER = /^[A-Za-z][A-Za-z0-9_]*$/u;
 const CAMEL_IDENTIFIER = /^[A-Za-z][A-Za-z0-9]*$/u;
 const ALLOWED_STATUSES = new Set(["planned", "partial", "complete", "not_applicable"]);
@@ -339,9 +339,17 @@ function validatePublicApi(value, expectedBaseline) {
       fail("public_inventory_invalid", `Invalid kind for ${symbol.name}`);
     }
     if (
-      !new Set(["binary_metadata", "client", "const", "registers", "transport", "web"]).has(
-        symbol.source_group,
-      )
+      !new Set([
+        "binary_metadata",
+        "client",
+        "const",
+        "error_codes",
+        "exceptions",
+        "plausibility",
+        "registers",
+        "transport",
+        "web",
+      ]).has(symbol.source_group)
     ) {
       fail("public_inventory_invalid", `Invalid source group for ${symbol.name}`);
     }
@@ -367,7 +375,7 @@ function validatePublicApi(value, expectedBaseline) {
     value.counts.root !== rootCount ||
     value.counts.web !== webCount
   ) {
-    fail("public_inventory_invalid", "Public inventory must contain exactly 95/65/30 symbols");
+    fail("public_inventory_invalid", "Public inventory must contain exactly 161/77/84 symbols");
   }
   const aliases = new Map();
   for (const [index, alias] of value.aliases.entries()) {

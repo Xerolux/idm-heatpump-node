@@ -61,7 +61,7 @@ describe("immutable RegisterDef factory", () => {
     expect(Object.isFrozen(RegisterDef)).toBe(true);
   });
 
-  it("consumes the sole mapping representation and closes all 27 Python members", () => {
+  it("consumes the sole mapping representation and closes all 28 Python members", () => {
     const row = mapping.mappings.find(({ python_symbol }) => python_symbol === "RegisterDef");
     const fact = publicClasses.classes.find(({ python_name }) => python_name === "RegisterDef");
     expect(row).toMatchObject({
@@ -78,7 +78,7 @@ describe("immutable RegisterDef factory", () => {
     const definition = createRegisterDef(baseInput());
     const mappedMembers = fact?.members.map(({ name }) => toCamelCase(name)).sort();
     expect(Object.keys(definition).sort()).toEqual(mappedMembers);
-    expect(mappedMembers).toHaveLength(27);
+    expect(mappedMembers).toHaveLength(28);
     expect(fact?.constructor.parameters.map(({ name }) => toCamelCase(name))).toEqual([
       "address",
       "datatype",
@@ -104,6 +104,7 @@ describe("immutable RegisterDef factory", () => {
       "supportedModels",
       "sentinelValues",
       "lastVerified",
+      "step",
     ]);
   });
 
@@ -141,6 +142,7 @@ describe("immutable RegisterDef factory", () => {
       sentinelValues: [],
       effectiveSentinelValues: [255],
       lastVerified: null,
+      step: null,
       size: 1,
     });
     expect(Object.isFrozen(definition)).toBe(true);
@@ -213,8 +215,13 @@ describe("immutable RegisterDef factory", () => {
     ],
     [
       "unknown register type",
-      baseInput({ registerType: "coil" as RegisterType }),
-      "Invalid register type: coil",
+      baseInput({ registerType: "block" as RegisterType }),
+      "Invalid register type: block",
+    ],
+    [
+      "coil with non-boolean datatype",
+      baseInput({ registerType: "coil" as RegisterType, datatype: "UINT16" as never }),
+      "Coil register test_register must use DataType.BOOL",
     ],
     [
       "null register type",

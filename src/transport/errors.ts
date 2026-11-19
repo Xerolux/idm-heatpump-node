@@ -59,17 +59,11 @@ export function redactDiagnosticMessage(message: string, endpoint?: DiagnosticEn
   return redacted;
 }
 
-export class IllegalAddressError extends Error {
-  public readonly isIllegalAddress = true as const;
+export { IllegalAddressError } from "../exceptions.js";
+import { IllegalAddressError } from "../exceptions.js";
+import { IdmTransportError } from "../exceptions.js";
 
-  public constructor(message: string) {
-    super(message);
-    this.name = "IllegalAddressError";
-    Object.freeze(this);
-  }
-}
-
-export class NormalizedTransportFailure extends Error {
+export class NormalizedTransportFailure extends IdmTransportError {
   public readonly kind: RetryableTransportFailureKind;
 
   public constructor(kind: RetryableTransportFailureKind, message: string) {

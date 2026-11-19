@@ -1,4 +1,5 @@
 import { DataType } from "../types.js";
+import { VALVE_HC_HEAT_COOL_OPTIONS } from "../constants.js";
 import type { RegisterDefInput } from "./definitions.js";
 import { buildRegisterDefinitions, mergeRegisterMaps } from "./map-utils.js";
 
@@ -20,6 +21,8 @@ const CORE_INPUTS = [
       0: "Standby",
       1: "Automatic",
       2: "Absent",
+      // 3 = Holiday: accepted since Python 2.14.5 (idm-heatpump-hass#596).
+      3: "Holiday",
       4: "Hot Water Only",
       5: "Heating/Cooling Only",
     },
@@ -75,6 +78,8 @@ const SYSTEM_INPUTS = [
       0: "Standby",
       1: "Automatic",
       2: "Absent",
+      // 3 = Holiday: accepted since Python 2.14.5 (idm-heatpump-hass#596).
+      3: "Holiday",
       4: "Hot Water Only",
       5: "Heating/Cooling Only",
     },
@@ -155,9 +160,16 @@ const SYSTEM_INPUTS = [
     name: "dhw_charge_off_temp",
     unit: "°C",
     writable: true,
+    // Official map documents 46..53, but the controller's own web interface
+    // (system/detail/freshwater) accepts 50..67 and stores real values up
+    // to 67 — idm-heatpump-hass issue #460 measured 63 on an AEOR ALM 4-12
+    // (firmware NAV10_20.23-903), which the old max rejected on every poll.
+    // Lower bound stays at the documented 46 so devices following the
+    // official map validate too.
     minVal: 46,
-    maxVal: 53,
+    maxVal: 67,
     eepromSensitive: true,
+    lastVerified: "2026-10-09",
   },
   {
     address: 1048,
@@ -326,6 +338,13 @@ const HP_INPUTS = [
     address: 1110,
     datatype: DataType.UINT16,
     name: "valve_hc_heat_cool",
+    enumOptions: VALVE_HC_HEAT_COOL_OPTIONS,
+    // Field evidence (2026-10-31): plants without the heating/cooling
+    // function answer 0xFFFF, the UINT16 "not configured" sentinel,
+    // although the official table documents only 0 and 1. Same shape as
+    // variable_input's documented 0-3 enum with a 255 sentinel.
+    sentinelValues: [65535],
+    lastVerified: "2026-10-31",
   },
   {
     address: 1111,
@@ -417,6 +436,13 @@ const HP_INPUTS = [
       2: "Bivalence 2 Active",
       3: "Bivalence 1+2 Active",
     },
+    // 255 = no bivalence configuration: Navigator 2.0 plants without the
+    // feature read the one-byte "not present" fill; sibling registers
+    // (compressor_status_*) show the same raw 0xFFFF (idm-heatpump-hass
+    // issue #532 diagnostics, 2026-10). Declaring it explicitly keeps the
+    // corrupt-batch re-read recovery of issue #69 intact for every other
+    // enum register.
+    sentinelValues: [255],
   },
   {
     address: 1147,

@@ -35,7 +35,7 @@ function missing(address: number): FakeModbusResponse {
   return Object.freeze({
     kind: "error",
     error: new IllegalAddressError(
-      `Modbus Error: Illegal Data Address reading address ${String(address)}: ExceptionResponse(exception_code=2)`,
+      `Illegal Data Address reading address ${String(address)}: ExceptionResponse(exception_code=2)`,
     ),
   });
 }
@@ -55,17 +55,32 @@ function expectedProbe(address: number, count: number): ModbusReadRequest {
   });
 }
 
-function heatingCircuitResponses(
-  slots: Readonly<
-    Record<number, { readonly flow: FakeModbusResponse; readonly mode: FakeModbusResponse }>
-  > = {},
+/**
+ * Python 2.14.5 detection request shape: the first slot of each signal is
+ * probed individually; when it answers, one adjacent batch per signal
+ * (1350-1363 / 1498-1504) fetches the remaining slots. `flowFirst` and
+ * `modeFirst` provide the gate answers; `flowRest`/`modeRest` provide the
+ * words the batch serves for slots 1-6 (slot 0 repeats its gate answer).
+ */
+function heatingSignals(
+  flowFirst: readonly number[],
+  flowRest: readonly number[],
+  modeFirst: readonly number[],
+  modeRest: readonly number[],
 ): readonly FakeModbusResponse[] {
-  return Array.from({ length: 7 }, (_, index) => {
-    const slot = slots[index];
-    return slot === undefined
-      ? [missing(1_350 + index * 2), missing(1_498 + index)]
-      : [slot.flow, slot.mode];
-  }).flat();
+  const flowBatch = [...flowFirst, ...flowRest].slice(0, 14);
+  const modeBatch = [...modeFirst, ...modeRest].slice(0, 7);
+  return [words(flowFirst), words(flowBatch), words(modeFirst), words(modeBatch)];
+}
+
+/** All heating-circuit probes rejected: gates fail, seven individual slots each. */
+function heatingAllMissing(): readonly FakeModbusResponse[] {
+  return [
+    missing(1_350),
+    ...Array.from({ length: 7 }, (_, index) => missing(1_350 + index * 2)),
+    missing(1_498),
+    ...Array.from({ length: 7 }, (_, index) => missing(1_498 + index)),
+  ];
 }
 
 function clientWithResponses(responses: readonly FakeModbusResponse[]) {
@@ -90,7 +105,7 @@ function featureNames(features: ReadonlySet<string>): readonly string[] {
 describe("ordered IDM model detection", () => {
   it("uses one two-second attempt in exact order and preserves read-failure state", async () => {
     const responses = [
-      ...heatingCircuitResponses(),
+      ...heatingAllMissing(),
       missing(2_000),
       missing(2_065),
       missing(1_850),
@@ -100,6 +115,7 @@ describe("ordered IDM model detection", () => {
       missing(4_108),
       missing(4_001),
       missing(4_122),
+      missing(1_000),
       missing(4_120),
     ];
     const { client, transport } = clientWithResponses(responses);
@@ -128,10 +144,10 @@ describe("ordered IDM model detection", () => {
     expect(featureNames(info.features)).toEqual([]);
     expect(client.modelName).toBe(MODEL_NAVIGATOR_20);
     expect(readRequests(transport.events)).toEqual([
-      ...Array.from({ length: 7 }, (_, index) => [
-        expectedProbe(1_350 + index * 2, 2),
-        expectedProbe(1_498 + index, 1),
-      ]).flat(),
+      expectedProbe(1_350, 2),
+      ...Array.from({ length: 7 }, (_, index) => expectedProbe(1_350 + index * 2, 2)),
+      expectedProbe(1_498, 1),
+      ...Array.from({ length: 7 }, (_, index) => expectedProbe(1_498 + index, 1)),
       expectedProbe(2_000, 1),
       expectedProbe(2_065, 1),
       expectedProbe(1_850, 2),
@@ -141,6 +157,7 @@ describe("ordered IDM model detection", () => {
       expectedProbe(4_108, 2),
       expectedProbe(4_001, 1),
       expectedProbe(4_122, 2),
+      expectedProbe(1_000, 2),
       expectedProbe(4_120, 2),
     ]);
     expect(client.getUnsupportedRegisters()).toEqual(["unsupported-before-detection"]);
@@ -153,9 +170,12 @@ describe("ordered IDM model detection", () => {
 
   it("detects Navigator 10 with every capability, firmware, and exact model map", async () => {
     const responses = [
-      ...heatingCircuitResponses({
-        0: { flow: words(ModbusCodec.encodeFloat32(25)), mode: words([0]) },
-      }),
+      ...heatingSignals(
+        ModbusCodec.encodeFloat32(25),
+        Array.from({ length: 6 }, () => ModbusCodec.encodeFloat32(-1)).flat(2),
+        [0],
+        [0xff, 0xff, 0xff, 0xff, 0xff, 0xff],
+      ),
       words([1]),
       missing(2_065),
       missing(2_130),
@@ -210,10 +230,10 @@ describe("ordered IDM model detection", () => {
     ).toBe(false);
     expect([...map.keys()].some((name) => /navigator.?1/iu.test(name))).toBe(false);
     expect(readRequests(transport.events)).toEqual([
-      ...Array.from({ length: 7 }, (_, index) => [
-        expectedProbe(1_350 + index * 2, 2),
-        expectedProbe(1_498 + index, 1),
-      ]).flat(),
+      expectedProbe(1_350, 2),
+      expectedProbe(1_350, 14),
+      expectedProbe(1_498, 1),
+      expectedProbe(1_498, 7),
       expectedProbe(2_000, 1),
       expectedProbe(2_065, 1),
       expectedProbe(2_130, 1),
@@ -229,15 +249,21 @@ describe("ordered IDM model detection", () => {
 
   it("treats exact undecodable/out-of-range circuit pairs as active and -1 as missing", async () => {
     const responses = [
-      ...heatingCircuitResponses({
-        0: { flow: words([0, 32_704]), mode: missing(1_498) },
-        1: { flow: words(ModbusCodec.encodeFloat32(123.5)), mode: missing(1_499) },
-        2: { flow: words(ModbusCodec.encodeFloat32(-1)), mode: words([0xffff]) },
-        3: { flow: words(ModbusCodec.encodeFloat32(-1)), mode: words([0xffff]) },
-        4: { flow: words(ModbusCodec.encodeFloat32(-1)), mode: words([0xffff]) },
-        5: { flow: words(ModbusCodec.encodeFloat32(-1)), mode: words([0xffff]) },
-        6: { flow: words(ModbusCodec.encodeFloat32(-1)), mode: words([0xffff]) },
-      }),
+      words([0, 32_704]),
+      words([
+        0,
+        32_704,
+        ...ModbusCodec.encodeFloat32(123.5),
+        ...ModbusCodec.encodeFloat32(-1),
+        ...ModbusCodec.encodeFloat32(-1),
+        ...ModbusCodec.encodeFloat32(-1),
+        ...ModbusCodec.encodeFloat32(-1),
+        ...ModbusCodec.encodeFloat32(-1),
+      ]),
+      missing(1_498),
+      missing(1_498),
+      missing(1_499),
+      ...Array.from({ length: 5 }, () => words([0xffff])),
       missing(2_000),
       missing(2_065),
       words([0, 32_704]),
@@ -269,19 +295,31 @@ describe("ordered IDM model detection", () => {
       FEATURE_SOLAR,
     ]);
     const requests = readRequests(transport.events);
-    expect(requests.slice(0, 14).map(({ address }) => address)).toEqual(
-      Array.from({ length: 7 }, (_, index) => [1_350 + index * 2, 1_498 + index]).flat(),
-    );
-    expect(requests.some(({ address }) => address === 1_362)).toBe(true);
+    expect(requests.slice(0, 4).map(({ address, count }) => ({ address, count }))).toEqual([
+      { address: 1_350, count: 2 },
+      { address: 1_350, count: 14 },
+      { address: 1_498, count: 1 },
+      { address: 1_498, count: 1 },
+    ]);
+    // The mode batch was rejected; the individual fallback probed every slot.
+    expect(
+      requests.filter(({ count, address }) => count === 1 && address >= 1_498 && address <= 1_504)
+        .length,
+    ).toBe(8);
+    // The flow batch covered the whole 1350-1363 span (slot G included).
+    expect(requests).toContainEqual(expectedProbe(1_350, 14));
     expect(requests.some(({ address }) => address === 4_120)).toBe(false);
     transport.assertResponsesConsumed();
   });
 
   it("gives zone evidence Navigator Pro priority over heating-circuit evidence", async () => {
     const responses = [
-      ...heatingCircuitResponses({
-        0: { flow: words(ModbusCodec.encodeFloat32(25)), mode: words([0]) },
-      }),
+      ...heatingSignals(
+        ModbusCodec.encodeFloat32(25),
+        Array.from({ length: 6 }, () => ModbusCodec.encodeFloat32(-1)).flat(2),
+        [0],
+        [0xff, 0xff, 0xff, 0xff, 0xff, 0xff],
+      ),
       words([1]),
       missing(2_065),
       missing(2_130),
@@ -306,17 +344,25 @@ describe("ordered IDM model detection", () => {
   });
 
   it("detects non-contiguous circuits through the active-mode fallback", async () => {
-    const unavailable = words(ModbusCodec.encodeFloat32(-1));
+    // Gate flow(25) answered, flow batch served (-1 for the rest); the mode
+    // gate answered, but the mode batch is rejected by the controller, so
+    // the per-slot fallback reads every slot and reveals circuit D's
+    // configured mode 2.
     const responses = [
-      ...heatingCircuitResponses({
-        0: { flow: words(ModbusCodec.encodeFloat32(25)), mode: words([0]) },
-        1: { flow: unavailable, mode: words([0xffff]) },
-        2: { flow: unavailable, mode: words([0xffff]) },
-        3: { flow: unavailable, mode: words([2]) },
-        4: { flow: unavailable, mode: words([0xffff]) },
-        5: { flow: unavailable, mode: words([0xffff]) },
-        6: { flow: unavailable, mode: words([0xffff]) },
-      }),
+      words(ModbusCodec.encodeFloat32(25)),
+      words([
+        ...ModbusCodec.encodeFloat32(25),
+        ...Array.from({ length: 6 }, () => ModbusCodec.encodeFloat32(-1)).flat(2),
+      ]),
+      words([0]),
+      missing(1_498),
+      words([0]),
+      words([0xffff]),
+      words([0xffff]),
+      words([2]),
+      words([0xffff]),
+      words([0xffff]),
+      words([0xffff]),
       missing(2_000),
       missing(2_065),
       missing(1_850),
@@ -339,7 +385,7 @@ describe("ordered IDM model detection", () => {
 
   it("returns null for non-finite firmware and emits no firmware request when disabled", async () => {
     const invalidFirmware = [
-      ...heatingCircuitResponses(),
+      ...heatingAllMissing(),
       missing(2_000),
       missing(2_065),
       missing(1_850),
@@ -349,6 +395,7 @@ describe("ordered IDM model detection", () => {
       missing(4_108),
       missing(4_001),
       missing(4_122),
+      missing(1_000),
       words([0, 32_704]),
     ];
     const first = clientWithResponses(invalidFirmware);

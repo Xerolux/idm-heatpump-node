@@ -92,12 +92,19 @@ export interface InternalTransportFactoryConfiguration {
   readonly adapterRetries: 0;
 }
 
+/** Minimal structured logger sink used for warn-once read diagnostics. */
+export interface ClientLogger {
+  readonly warn?: (message: string) => void;
+  readonly debug?: (message: string) => void;
+}
+
 export interface InternalClientDependencies {
   readonly transportFactory: (
     configuration: InternalTransportFactoryConfiguration,
   ) => ModbusTransport;
   readonly now: () => number;
   readonly sleep: (seconds: number) => Promise<void>;
+  readonly logger?: ClientLogger;
 }
 
 export interface InternalReadStateSeed {
@@ -105,6 +112,25 @@ export interface InternalReadStateSeed {
   readonly permanentlyFailedRegisters?: readonly string[];
   readonly transientFailures?: Readonly<Record<string, number>>;
   readonly unsupportedRegisters?: readonly string[];
+}
+
+/**
+ * Per-register record of the last read outcome, mirroring Python's
+ * `get_register_outcomes()` diagnostics shape.
+ */
+export interface RegisterReadOutcome {
+  readonly address: number;
+  readonly status: "ok" | "suspect" | "unsupported" | "device_error" | "decode_error";
+  readonly value: unknown;
+  readonly rawWords: readonly number[];
+  readonly reason:
+    | "below_min"
+    | "above_max"
+    | "not_in_enum"
+    | "illegal_address"
+    | "device_error"
+    | "decode_error"
+    | null;
 }
 
 export interface InternalClientSnapshot {
@@ -400,6 +426,53 @@ export function getInternalWriteStateSnapshot(client: IdmModbusClient): Internal
   return requireInternalTestControl(client).writeStateSnapshot();
 }
 
+/**
+ * Return why `value` violates `register`'s documented range, if it does.
+ *
+ * Same rules as the suspect check, but reports the concrete reason
+ * ("below_min"/"above_max"/"not_in_enum") so read diagnostics can explain
+ * a rejection instead of only noting it.
+ */
+function suspectReason(register: RegisterDef, value: unknown): string | null {
+  if (value === null || typeof value === "boolean") {
+    return null;
+  }
+  if (register.sentinelValues.includes(value as number | string)) {
+    return null;
+  }
+  if (register.enumOptions !== null) {
+    return typeof value === "number" && Object.hasOwn(register.enumOptions, value)
+      ? null
+      : "not_in_enum";
+  }
+  if (typeof value === "number") {
+    if (register.minVal !== null && value < register.minVal) {
+      return "below_min";
+    }
+    if (register.maxVal !== null && value > register.maxVal) {
+      return "above_max";
+    }
+  }
+  return null;
+}
+
+/** Render the documented valid range of `register` for warning messages. */
+function describeExpectedRange(register: RegisterDef): string {
+  if (register.enumOptions !== null) {
+    return "one of the documented options";
+  }
+  if (register.minVal !== null && register.maxVal !== null) {
+    return `${String(register.minVal)}..${String(register.maxVal)}`;
+  }
+  if (register.minVal !== null) {
+    return `>= ${String(register.minVal)}`;
+  }
+  if (register.maxVal !== null) {
+    return `<= ${String(register.maxVal)}`;
+  }
+  return "a valid value";
+}
+
 export class IdmModbusClient {
   readonly #gate = new FifoGate();
   readonly #host: string;
@@ -421,6 +494,24 @@ export class IdmModbusClient {
   readonly #unsupportedRegisters = new Set<string>();
   readonly #batchUnsafeRegisters = new Set<string>();
   readonly #registerFailures = new Map<string, number>();
+  // Per-register record of the last read outcome (value, raw words,
+  // rejection reason) so consumers can expose what the controller
+  // actually returned — including values discarded as out of range
+  // (idm-heatpump-hass issue #364: garbage words that hide a float).
+  readonly #registerOutcomes = new Map<string, RegisterReadOutcome>();
+  // Per-address record of whether the last probeRegister() call was
+  // rejected by the device with Illegal Data Address. Model detection
+  // reads it to tell "register not implemented" apart from "no answer".
+  readonly #probeIllegalRejections = new Map<number, boolean>();
+  // Registers whose invalid read (out-of-range value or undecodable data)
+  // has already produced a warning. A persistently invalid register is
+  // re-read on every poll by design — the value can come back into range
+  // at any time, e.g. after a controller menu change — so it must not be
+  // isolated like an Illegal Data Address register. But the warning is
+  // emitted only once per episode (idm-heatpump-hass issue #460: one
+  // warning per 12 s poll produced 6600+ log entries per day). Cleared
+  // when the register reads valid again or via resetFailedRegisters().
+  readonly #invalidValueWarned = new Set<string>();
   readonly #writeSafetyState = new WriteSafetyState();
 
   public constructor(host: string, options: IdmModbusClientOptions = {}) {
@@ -675,6 +766,34 @@ export class IdmModbusClient {
     return Object.freeze([...this.#unsupportedRegisters].sort(compareUnicodeCodePoints));
   }
 
+  /**
+   * Return the last read outcome per register name, for diagnostics.
+   *
+   * Each record is a plain frozen object with the register `address`, a
+   * `status` ("ok" | "suspect" | "unsupported" | "device_error" |
+   * "decode_error"), the last decoded `value` — kept even when it was
+   * rejected as outside the documented range — the raw 16-bit `rawWords`
+   * as last seen on the wire, and the `reason` for a rejection
+   * ("below_min" | "above_max" | "not_in_enum" | "illegal_address" |
+   * "device_error" | "decode_error"). Registers never read in this
+   * session (including write-only ones) have no entry. One slot per
+   * register name is kept and overwritten on every poll;
+   * resetFailedRegisters() clears the records along with the failure
+   * tracking.
+   *
+   * The point of keeping rejected values and raw words is field
+   * debugging: a register documented as UINT16 that actually carries the
+   * low word of a 32-bit float shows up here as a constant 0 with a
+   * suspicious neighbour instead of vanishing silently.
+   */
+  public getRegisterOutcomes(): Readonly<Record<string, RegisterReadOutcome>> {
+    const projected: Record<string, RegisterReadOutcome> = {};
+    for (const name of [...this.#registerOutcomes.keys()].sort(compareUnicodeCodePoints)) {
+      projected[name] = this.#registerOutcomes.get(name) as RegisterReadOutcome;
+    }
+    return Object.freeze(projected);
+  }
+
   public getBatchUnsafeRegisters(): readonly string[] {
     return Object.freeze([...this.#batchUnsafeRegisters].sort(compareUnicodeCodePoints));
   }
@@ -689,6 +808,8 @@ export class IdmModbusClient {
     this.#permanentlyFailedRegisters.clear();
     this.#unsupportedRegisters.clear();
     this.#registerFailures.clear();
+    this.#registerOutcomes.clear();
+    this.#invalidValueWarned.clear();
   }
 
   /** Validate and encode a write plan without connecting or sending. */
@@ -796,6 +917,7 @@ export class IdmModbusClient {
   public async detectModel(options: DetectModelOptions = {}): Promise<IdmModelInfo> {
     return this.#gate.runExclusive(async () => {
       await this.#ensureConnectedLocked();
+      this.#probeIllegalRejections.clear();
       const info = await detectModel(
         async (address, count) =>
           this.#probeRegisterLocked(address, count, {
@@ -803,7 +925,19 @@ export class IdmModbusClient {
             timeout: MODEL_DETECTION_TIMEOUT,
           }),
         options,
+        (address) => this.#probeIllegalRejections.get(address) ?? null,
       );
+      if (this.#connectionSuspect) {
+        // Every probe reports a failed read as "register not implemented"
+        // (probeRegister returns null for transport errors too), so a link
+        // that died half-way through would otherwise yield a confident and
+        // wrong result: fewer circuits, no features, the older model.
+        throw createNormalizedTransportFailure(
+          NormalizedTransportFailureKind.DISCONNECTED,
+          "Connection lost during model detection; the result would treat every unanswered probe as an unsupported register",
+          this.#endpoint,
+        );
+      }
       const registerMap = buildRegisterMap({ modelInfo: info });
       this.#modelInfo = info;
       this.#registerMap = registerMap;
@@ -925,13 +1059,24 @@ export class IdmModbusClient {
       const offset = register.address - start;
       try {
         const value = this.decodeValue(words.slice(offset, offset + register.size), register);
-        if (this.#isValueSuspect(register, value)) {
+        const reason = suspectReason(register, value);
+        if (reason !== null) {
           suspect.push(register);
+          this.#recordOutcome(
+            register,
+            "suspect",
+            value,
+            words.slice(offset, offset + register.size),
+            reason as RegisterReadOutcome["reason"],
+          );
         } else {
           data.set(register.name, value);
+          this.#invalidValueWarned.delete(register.name);
+          this.#recordOutcome(register, "ok", value, words.slice(offset, offset + register.size));
         }
       } catch {
         // Match Python: one undecodable data point does not discard the rest.
+        this.#recordOutcome(register, "decode_error", null, [], "decode_error");
       }
     }
 
@@ -956,6 +1101,7 @@ export class IdmModbusClient {
         if (error instanceof IllegalAddressError) {
           this.#permanentlyFailedRegisters.add(register.name);
           this.#unsupportedRegisters.add(register.name);
+          this.#recordOutcome(register, "unsupported", null, [], "illegal_address");
           continue;
         }
         if (error instanceof NormalizedTransportFailure) {
@@ -967,6 +1113,7 @@ export class IdmModbusClient {
           }
           const failures = (this.#registerFailures.get(register.name) ?? 0) + 1;
           this.#registerFailures.set(register.name, failures);
+          this.#recordOutcome(register, "device_error", null, [], "device_error");
           if (failures >= PERMANENT_FAILURE_THRESHOLD) {
             this.#permanentlyFailedRegisters.add(register.name);
           }
@@ -977,13 +1124,46 @@ export class IdmModbusClient {
 
       try {
         const value = this.decodeValue(words, register);
-        if (this.#isValueSuspect(register, value)) {
+        const reason = suspectReason(register, value);
+        if (reason !== null) {
+          // Warn once per episode: a persistently invalid register keeps
+          // being re-read (the value can come back into range), but the
+          // warning must not repeat on every poll (issue #460).
+          if (this.#invalidValueWarned.has(register.name)) {
+            this.#dependencies.logger?.debug?.(
+              `Register ${register.name} (address ${String(register.address)}) still returns an invalid value (${String(value)}, ${reason}); omitted from this update (already warned)`,
+            );
+          } else {
+            this.#invalidValueWarned.add(register.name);
+            this.#dependencies.logger?.warn?.(
+              `Register ${register.name} (address ${String(register.address)}) returned an invalid value during individual validation (${String(value)}, ${reason}; expected ${describeExpectedRange(register)}); omitting it from this update. Repeat occurrences are logged at debug level until the register reads valid again`,
+            );
+          }
+          this.#recordOutcome(
+            register,
+            "suspect",
+            value,
+            words,
+            reason as RegisterReadOutcome["reason"],
+          );
           continue;
         }
         data.set(register.name, value);
         this.#registerFailures.delete(register.name);
-      } catch {
-        // Match Python: decode failures are omitted without failure counters.
+        this.#invalidValueWarned.delete(register.name);
+        this.#recordOutcome(register, "ok", value, words);
+      } catch (error) {
+        if (this.#invalidValueWarned.has(register.name)) {
+          this.#dependencies.logger?.debug?.(
+            `Decoding still fails for register ${register.name} (address ${String(register.address)}): ${String(error)} (already warned)`,
+          );
+        } else {
+          this.#invalidValueWarned.add(register.name);
+          this.#dependencies.logger?.warn?.(
+            `Decoding failed for register ${register.name} (address ${String(register.address)}): ${String(error)}. Repeat occurrences are logged at debug level`,
+          );
+        }
+        this.#recordOutcome(register, "decode_error", null, words, "decode_error");
       }
     }
     return freezeResultEntries(data);
@@ -998,25 +1178,24 @@ export class IdmModbusClient {
     );
   }
 
-  #isValueSuspect(register: RegisterDef, value: unknown): boolean {
-    if (value === null || typeof value === "boolean") {
-      return false;
-    }
-    if (register.sentinelValues.includes(value as number | string)) {
-      return false;
-    }
-    if (register.enumOptions !== null) {
-      return typeof value !== "number" || !Object.hasOwn(register.enumOptions, value);
-    }
-    if (typeof value === "number") {
-      if (register.minVal !== null && value < register.minVal) {
-        return true;
-      }
-      if (register.maxVal !== null && value > register.maxVal) {
-        return true;
-      }
-    }
-    return false;
+  // Value-suspect classification lives in the module-level suspectReason()
+  // helper so the read paths keep the concrete rejection reason
+  // (below_min/above_max/not_in_enum) for the per-register outcomes.
+
+  #recordOutcome(
+    register: RegisterDef,
+    status: RegisterReadOutcome["status"],
+    value: unknown = null,
+    rawWords: readonly number[] = [],
+    reason: RegisterReadOutcome["reason"] = null,
+  ): void {
+    this.#registerOutcomes.set(register.name, {
+      address: register.address,
+      status,
+      value,
+      rawWords: Object.freeze([...rawWords]),
+      reason,
+    });
   }
 
   async #ensureConnectedLocked(): Promise<ModbusTransport> {
@@ -1032,7 +1211,15 @@ export class IdmModbusClient {
   }
 
   #requireTransportLocked(): ModbusTransport {
-    if (this.#transport === null || !this.#transport.connected) {
+    // Transports that declare `connectsLazily` (shared links, mirroring
+    // Python 2.15.0's `connects_lazily`) establish the wire on the first
+    // request, so a false `connected` right after connect() is not an
+    // error for them; every other transport still has to report an open
+    // socket before a request may go out.
+    const connectsLazily =
+      this.#transport !== null &&
+      (this.#transport as { connectsLazily?: unknown }).connectsLazily === true;
+    if (this.#transport === null || (!this.#transport.connected && !connectsLazily)) {
       throw createNormalizedTransportFailure(
         NormalizedTransportFailureKind.DISCONNECTED,
         `Not connected to ${this.#host}:${String(this.#port)}`,
@@ -1078,9 +1265,15 @@ export class IdmModbusClient {
 
     try {
       await this.#ensureConnectedLocked();
-      return await this.#retryReadLocked(request, retries);
+      const words = await this.#retryReadLocked(request, retries);
+      // Each probe records whether the device explicitly rejected the
+      // address with Illegal Data Address, so model detection can
+      // distinguish "register not implemented" from "no answer at all".
+      this.#probeIllegalRejections.set(address, false);
+      return words;
     } catch (error) {
       if (isKnownTransportFailure(error)) {
+        this.#probeIllegalRejections.set(address, error instanceof IllegalAddressError);
         return null;
       }
       throw error;
@@ -1113,7 +1306,7 @@ export class IdmModbusClient {
         } catch {
           throw createNormalizedTransportFailure(
             NormalizedTransportFailureKind.INVALID_RESPONSE,
-            `Modbus Error: Incomplete Modbus response at address ${String(request.address)}: got ${String(words.length)} registers, expected ${String(request.count)}`,
+            `Incomplete Modbus response at address ${String(request.address)}: got ${String(words.length)} registers, expected ${String(request.count)}`,
           );
         }
         this.#connectionSuspect = false;

@@ -84,6 +84,12 @@ export const BINARY_REGISTER_METADATA: Readonly<Record<string, BinaryRegisterMet
     hp_sum_alarm: metadataFor("problem"),
     compressor_status_1: metadataFor("running"),
     compressor_status_2: metadataFor("running"),
+    // 1100-1103 are documented identically and all four are binary=True;
+    // only 1 and 2 were listed originally, so getBinaryRegisterMetadata()
+    // returned null for 3 and 4 and consumers fell back to name
+    // heuristics. All four map to "running" (Python 2.0.1).
+    compressor_status_3: metadataFor("running"),
+    compressor_status_4: metadataFor("running"),
   });
 
 const ZONE_ROOM_RELAY_PATTERN = /^zm\d+_room\d+_relay$/u;

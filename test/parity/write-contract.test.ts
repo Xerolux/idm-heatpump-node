@@ -49,11 +49,11 @@ const EMPTY_STATE = Object.freeze({
 function validFixture(): Record<string, unknown> {
   return {
     baseline: {
-      git_commit: "6b834747a05931c4512ebdbb03292b487a3f986d",
-      git_tag: "v1.0.3",
+      git_commit: "0347f2553a046159c19f6913f63099625da88668",
+      git_tag: "v2.16.1",
       parity_schema_version: 1,
       python_package: "idm-heatpump-api",
-      python_version: "1.0.3",
+      python_version: "2.16.1",
       repository: "https://github.com/Xerolux/idm-heatpump-api",
     },
     generator_version: "1",

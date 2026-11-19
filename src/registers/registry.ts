@@ -1,4 +1,4 @@
-import { MAX_ROOMS_PER_ZONE, MODEL_NAVIGATOR_10 } from "../constants.js";
+import { MAX_ROOMS_PER_ZONE, MODEL_NAVIGATOR_10, MODEL_NAVIGATOR_17 } from "../constants.js";
 import { compareUnicodeCodePoints } from "../contracts/canonical-order.js";
 import { SemanticValidationError } from "../errors.js";
 import { DataType, type IdmModelInfo } from "../types.js";
@@ -14,6 +14,7 @@ import {
 } from "./feature-blocks.js";
 import { getHeatingCircuitRegisters } from "./heating-circuits.js";
 import { immutableRegisterMap, mergeRegisterMaps } from "./map-utils.js";
+import { getNavigator17Registers } from "./navigator17.js";
 import { getZoneModuleRegisters } from "./zone-modules.js";
 
 interface BuildRegisterMapOptions {
@@ -48,6 +49,7 @@ export interface RegisterRegistrySchemaEntry {
   readonly scale: number;
   readonly min_value: number | null;
   readonly max_value: number | null;
+  readonly step: number | null;
   readonly writable: boolean;
   readonly register_type: string;
   readonly write_class: string;
@@ -116,6 +118,7 @@ export class RegisterRegistry {
           scale: register.multiplier,
           min_value: register.minVal,
           max_value: register.maxVal,
+          step: register.step,
           writable: register.writable,
           register_type: register.registerType,
           write_class: register.writeClass,
@@ -172,14 +175,69 @@ function validateOptions(options: BuildRegisterMapOptions): {
   return { circuits, zoneModules, roomsPerZone, modelInfo };
 }
 
+/** Stamp a block that buildRegisterMap includes for Navigator 10 only. */
+export function navigator10Only(
+  registers: ReadonlyMap<string, RegisterDef>,
+): ReadonlyMap<string, RegisterDef> {
+  const entries: [string, RegisterDef][] = [];
+  for (const [key, register] of registers) {
+    entries.push([
+      key,
+      createRegisterDef({
+        address: register.address,
+        datatype: register.datatype,
+        name: register.name,
+        unit: register.unit,
+        writable: register.writable,
+        minVal: register.minVal,
+        maxVal: register.maxVal,
+        step: register.step,
+        enumOptions: register.enumOptions,
+        multiplier: register.multiplier,
+        registerType: register.registerType,
+        eepromSensitive: register.eepromSensitive,
+        cyclicRequired: register.cyclicRequired,
+        cyclicWriteTtl: register.cyclicWriteTtl,
+        binary: register.binary,
+        enabledByDefault: register.enabledByDefault,
+        stateClass: register.stateClass,
+        icon: register.icon,
+        writeOnly: register.writeOnly,
+        excludeFromWrite: register.excludeFromWrite,
+        source: register.source,
+        sourceVersion: register.sourceVersion,
+        // The builder excludes these blocks for every other detected
+        // model because those controllers answer the addresses with
+        // Illegal Data Address, so the per-register supported_models
+        // metadata has to say the same thing instead of the all-models
+        // default.
+        supportedModels: [MODEL_NAVIGATOR_10],
+        sentinelValues: register.sentinelValues,
+        lastVerified: register.lastVerified,
+      }),
+    ]);
+  }
+  return immutableRegisterMap(entries);
+}
+
 export function buildRegisterMap(
   options: BuildRegisterMapOptions = {},
 ): ReadonlyMap<string, RegisterDef> {
   const { circuits, zoneModules, roomsPerZone, modelInfo } = validateOptions(options);
+
+  if (modelInfo !== null && modelInfo.modelName === MODEL_NAVIGATOR_17) {
+    // Navigator 1.7 is a separate protocol family with its own official
+    // register table. The shared 2.0/10/Pro families must never be applied
+    // to it: most shared addresses are rejected with Illegal Data Address
+    // and the low input block carries different data points. The PV
+    // supplement is included only when the probe at address 74 responded.
+    return getNavigator17Registers({ hasPv: modelInfo.hasPv });
+  }
+
   const maps: ReadonlyMap<string, RegisterDef>[] = [getCommonRegisters()];
 
   if (modelInfo === null || modelInfo.modelName === MODEL_NAVIGATOR_10) {
-    maps.push(getNavigator10Registers());
+    maps.push(navigator10Only(getNavigator10Registers()));
   }
 
   let activeCircuits: readonly string[];
@@ -279,13 +337,16 @@ export function getDetectionRegisters(): readonly RegisterDef[] {
 }
 
 export function getRegister(name: string, options: ModelOption = {}): RegisterDef {
+  // The model map wins over CORE_REGISTERS when both define a name: the
+  // Navigator 1.7 map shadows error_acknowledge with its coil c3000, and
+  // resolving the name against a detected model must never hand back the
+  // shared family's holding-register 1999 definition instead (which would
+  // send the write to an undocumented address on a 1.x controller).
+  const register = buildRegisterMap({ modelInfo: options.modelInfo ?? null }).get(name);
+  if (register !== undefined) return register;
   const core = CORE_REGISTERS.get(name);
   if (core !== undefined) return core;
-  const register = buildRegisterMap({ modelInfo: options.modelInfo ?? null }).get(name);
-  if (register === undefined) {
-    throw new Error(`Register '${name}' not found.`);
-  }
-  return register;
+  throw new Error(`Register '${name}' not found.`);
 }
 
 export function getRegisterRegistry(options: ModelOption = {}): RegisterRegistry {

@@ -1,4 +1,35 @@
 {
   "schema_version": 1,
-  "extensions": []
+  "extensions": [
+    {
+      "typescript_symbol": "SYSTEM_MODE_17_OPTIONS",
+      "export_path": ".",
+      "kind": "type",
+      "owner_phase": 1,
+      "status": "complete",
+      "no_python_counterpart": true,
+      "rationale": "Navigator 1.7 enum table consumed by the mapped 1.7 register block; Python keeps it module-private (not in __all__), TypeScript re-exports it for register consumers.",
+      "contract_test": "test/semantic/constants-and-types.test.ts"
+    },
+    {
+      "typescript_symbol": "HC_OPERATING_MODE_17_OPTIONS",
+      "export_path": ".",
+      "kind": "type",
+      "owner_phase": 1,
+      "status": "complete",
+      "no_python_counterpart": true,
+      "rationale": "Navigator 1.7 heating-circuit operating-mode table consumed by the mapped 1.7 register block; Python keeps it module-private (not in __all__), TypeScript re-exports it for register consumers.",
+      "contract_test": "test/semantic/constants-and-types.test.ts"
+    },
+    {
+      "typescript_symbol": "SOLAR_OPERATING_MODE_17_OPTIONS",
+      "export_path": ".",
+      "kind": "type",
+      "owner_phase": 1,
+      "status": "complete",
+      "no_python_counterpart": true,
+      "rationale": "Navigator 1.7 solar operating-mode table consumed by the mapped 1.7 register block; Python keeps it module-private (not in __all__), TypeScript re-exports it for register consumers.",
+      "contract_test": "test/semantic/constants-and-types.test.ts"
+    }
+  ]
 }

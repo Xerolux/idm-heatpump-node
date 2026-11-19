@@ -40,6 +40,7 @@ export const MAX_ROOMS_PER_ZONE = 8;
 export const MODEL_NAVIGATOR_20 = "Navigator 2.0";
 export const MODEL_NAVIGATOR_PRO = "Navigator Pro";
 export const MODEL_NAVIGATOR_10 = "Navigator 10";
+export const MODEL_NAVIGATOR_17 = "Navigator 1.7";
 export const MODEL_UNKNOWN = "Unknown";
 
 export const FEATURE_SOLAR = "solar";
@@ -53,8 +54,53 @@ export const SYSTEM_MODE_OPTIONS = frozenOptions({
   0: "Standby",
   1: "Automatic",
   2: "Absent",
+  // 3 = Holiday: accepted since Python 2.14.5 (idm-heatpump-hass#596) —
+  // validated Modbus polls discarded register 1005 while the controller
+  // was on holiday although the web protocol already supported the mode.
+  3: "Holiday",
   4: "Hot Water Only",
   5: "Heating/Cooling Only",
+});
+
+/**
+ * Navigator 1.0/1.7 system mode (holding register 2000). The value set
+ * differs from the shared family's SYSTEM_MODE_OPTIONS on purpose: 2 is
+ * hot water charging and 3 a one-time hot water charge, values the shared
+ * family assigns differently. Official ma_de_812049 Rev.1 table; reads and
+ * writes confirmed against a real Navigator 1.7 (idm-heatpump-hass#319).
+ */
+export const SYSTEM_MODE_17_OPTIONS = frozenOptions({
+  0: "Standby",
+  1: "Automatic",
+  2: "Hot Water",
+  3: "Hot Water Once",
+});
+
+/**
+ * Navigator 1.0/1.7 heating-circuit operating mode (holding register 2002
+ * for circuit A). Not the shared family's active hc mode: this selects the
+ * circuit's operating mode, not the currently active function.
+ */
+export const HC_OPERATING_MODE_17_OPTIONS = frozenOptions({
+  0: "Off",
+  1: "Time Program",
+  2: "Normal",
+  3: "ECO",
+  4: "Heating Only",
+});
+
+/**
+ * Navigator 1.0/1.7 solar operating mode (holding register 2150, SC002).
+ * Selects what the solar circuit charges. Distinct from the read-only
+ * solar_mode status word at 1522, which reports the running state with a
+ * different value range.
+ */
+export const SOLAR_OPERATING_MODE_17_OPTIONS = frozenOptions({
+  0: "Automatic",
+  1: "Domestic Water",
+  2: "Heat Storage",
+  3: "Domestic Water + Heat Storage",
+  4: "Heat Source / Pool",
 });
 
 export const CIRCUIT_MODE_OPTIONS = frozenOptions({
@@ -100,6 +146,29 @@ export const VARIABLE_INPUT_OPTIONS = frozenOptions({
 export const EVU_LOCK_OPTIONS = frozenOptions({
   0: "Locked",
   1: "Not Locked",
+});
+
+/**
+ * Address 1110: heating-circuit changeover valve (M61). The official
+ * Navigator 10 table (2025-06-18) labels the two positions explicitly:
+ * 0 ... Heizen (Heating), 1 ... Kühlen (Cooling). The neighbouring valve
+ * status words (1111-1116) document only the 0/1 range without value
+ * labels, so they deliberately stay raw until field captures confirm
+ * their polarity.
+ */
+export const VALVE_HC_HEAT_COOL_OPTIONS = frozenOptions({
+  0: "Heating",
+  1: "Cooling",
+});
+
+/**
+ * Navigator 1.7 status registers (1513-1517): pump and compressor
+ * auxiliary statuses share one documented value set.
+ */
+export const PUMP_STATUS_OPTIONS = frozenOptions({
+  0: "Off",
+  1: "Running",
+  2: "Fault",
 });
 
 export const BIVALENCE_STATE_OPTIONS = frozenOptions({

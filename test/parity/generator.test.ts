@@ -23,7 +23,7 @@ const PYTHON =
   (process.platform === "win32" && process.env.LOCALAPPDATA !== undefined
     ? join(process.env.LOCALAPPDATA, "Programs/Python/Python313/python.exe")
     : "python3.12");
-const PINNED_COMMIT = "6b834747a05931c4512ebdbb03292b487a3f986d";
+const PINNED_COMMIT = "0347f2553a046159c19f6913f63099625da88668";
 const CANONICAL_ORIGIN = "https://github.com/Xerolux/idm-heatpump-api";
 const FIXTURE_NAMES = [
   "public-api.json",
@@ -422,8 +422,8 @@ describe("verified Python contract generator", () => {
       expect(fixture.baseline).toEqual({
         repository: CANONICAL_ORIGIN,
         python_package: "idm-heatpump-api",
-        python_version: "1.0.3",
-        git_tag: "v1.0.3",
+        python_version: "2.16.1",
+        git_tag: "v2.16.1",
         git_commit: PINNED_COMMIT,
         parity_schema_version: 1,
       });
@@ -438,8 +438,8 @@ describe("verified Python contract generator", () => {
       readonly counts: { readonly total: number; readonly root: number; readonly web: number };
       readonly aliases: readonly { readonly name: string; readonly target: string }[];
     };
-    expect(publicApi.symbols).toHaveLength(95);
-    expect(publicApi.counts).toEqual({ total: 95, root: 65, web: 30 });
+    expect(publicApi.symbols).toHaveLength(161);
+    expect(publicApi.counts).toEqual({ total: 161, root: 77, web: 84 });
     expect(publicApi.symbols.map(({ name }) => name)).toEqual([
       ...new Set(publicApi.symbols.map(({ name }) => name)),
     ]);
@@ -533,6 +533,8 @@ describe("verified Python contract generator", () => {
       ),
     ).toEqual({
       default: 267,
+      navigator_17: 149,
+      navigator_17_pv: 154,
       navigator_10_full: 587,
       navigator_20_circuit_a: 105,
     });
@@ -544,6 +546,7 @@ describe("verified Python contract generator", () => {
       "writable",
       "min_val",
       "max_val",
+      "step",
       "enum_options",
       "multiplier",
       "register_type",
@@ -604,7 +607,12 @@ describe("verified Python contract generator", () => {
     ).join("\n");
     expect(allFixtureText).toContain('"$number": "-0"');
     expect(allFixtureText).toContain('"$number": "NaN"');
-    expect(allFixtureText).not.toMatch(/Navigator 1\.[07]/u);
+    // The Navigator 1.x embargo ended with the public 2.16.1 baseline:
+    // its register schema documents the official 1.7 map. Plant-identifying
+    // data (addresses, PINs, serials) must never appear in any fixture.
+    expect(allFixtureText).not.toMatch(
+      /(?:10|127|169\.254|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}/u,
+    );
 
     expect(fixtures["web-contract.json"]).toMatchObject({
       evidence_kind: "web_behavior",
@@ -757,7 +765,7 @@ describe("verified Python contract generator", () => {
     const transportText = readFileSync(fixturePath(checkout, "transport-behavior.json"), "utf8");
     expect(transportText.endsWith("\n")).toBe(true);
     expect(transportText).not.toMatch(
-      /Navigator 1\.[07]|(?:10|127|169\.254|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}|"(?:pin|serial_number|device_id|raw_capture)"\s*:/iu,
+      /(?:10|127|169\.254|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}|"(?:pin|serial_number|device_id|raw_capture)"\s*:/iu,
     );
 
     const write = fixtures["write-behavior.json"] as TransportScenarioFixture;

@@ -1,10 +1,10 @@
 {
   "baseline": {
-    "git_commit": "6b834747a05931c4512ebdbb03292b487a3f986d",
-    "git_tag": "v1.0.3",
+    "git_commit": "0347f2553a046159c19f6913f63099625da88668",
+    "git_tag": "v2.16.1",
     "parity_schema_version": 1,
     "python_package": "idm-heatpump-api",
-    "python_version": "1.0.3",
+    "python_version": "2.16.1",
     "repository": "https://github.com/Xerolux/idm-heatpump-api"
   },
   "generator_version": "1",
@@ -1036,7 +1036,7 @@
           "attempt": 1,
           "count": 2,
           "errorType": "disconnected",
-          "message": "Modbus Error: [Connection] disconnected from <endpoint>",
+          "message": "disconnected from <endpoint>",
           "operation": "read",
           "registerType": "input"
         },
@@ -1210,7 +1210,7 @@
           "attempt": 1,
           "count": 2,
           "errorType": "no_response",
-          "message": "Modbus Error: [Input/Output] no response from <endpoint>",
+          "message": "no response from <endpoint>",
           "operation": "read",
           "registerType": "input"
         },
@@ -1291,7 +1291,7 @@
           "attempt": 1,
           "count": 2,
           "errorType": "modbus",
-          "message": "Modbus Error: device rejected read at <endpoint>",
+          "message": "device rejected read at <endpoint>",
           "operation": "read",
           "registerType": "input"
         },
@@ -1383,7 +1383,7 @@
           "attempt": 2,
           "count": 2,
           "errorType": "modbus",
-          "message": "Modbus Error: second rejection at <endpoint>",
+          "message": "second rejection at <endpoint>",
           "operation": "read",
           "registerType": "input"
         },
@@ -1447,7 +1447,7 @@
       "expected_result": {
         "error": {
           "errorType": "invalid_response",
-          "message": "Modbus Error: Incomplete Modbus response at address 1000: got 1 registers, expected 2"
+          "message": "Incomplete Modbus response at address 1000: got 1 registers, expected 2"
         }
       },
       "expected_state": {
@@ -1459,7 +1459,7 @@
           "attempt": 1,
           "count": 2,
           "errorType": "invalid_response",
-          "message": "Modbus Error: Incomplete Modbus response at address 1000: got 1 registers, expected 2",
+          "message": "Incomplete Modbus response at address 1000: got 1 registers, expected 2",
           "operation": "read",
           "registerType": "input"
         },
@@ -1542,7 +1542,7 @@
           "attempt": 1,
           "count": 4,
           "errorType": "modbus",
-          "message": "Modbus Error: batch rejected by <endpoint>",
+          "message": "batch rejected by <endpoint>",
           "operation": "read",
           "registerType": "input"
         },
@@ -1701,7 +1701,7 @@
           "attempt": 1,
           "count": 1,
           "errorType": "illegal_address",
-          "message": "Modbus Error: Illegal Data Address reading address 1005: ExceptionResponse(exception_code=2)",
+          "message": "Illegal Data Address reading address 1005: ExceptionResponse(exception_code=2)",
           "operation": "read",
           "registerType": "input"
         },
@@ -1829,7 +1829,7 @@
           "attempt": 1,
           "count": 1,
           "errorType": "modbus",
-          "message": "Modbus Error: device failure 6 at <endpoint>",
+          "message": "device failure 6 at <endpoint>",
           "operation": "read",
           "registerType": "input"
         },
@@ -2255,8 +2255,8 @@
         {
           "kind": "read",
           "request": {
-            "address": 1498,
-            "count": 1,
+            "address": 1350,
+            "count": 2,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -2277,30 +2277,8 @@
         {
           "kind": "read",
           "request": {
-            "address": 1499,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
             "address": 1354,
             "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1500,
-            "count": 1,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -2321,30 +2299,8 @@
         {
           "kind": "read",
           "request": {
-            "address": 1501,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
             "address": 1358,
             "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1502,
-            "count": 1,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -2365,7 +2321,18 @@
         {
           "kind": "read",
           "request": {
-            "address": 1503,
+            "address": 1362,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1498,
             "count": 1,
             "functionCode": 4,
             "registerType": "input",
@@ -2376,8 +2343,63 @@
         {
           "kind": "read",
           "request": {
-            "address": 1362,
-            "count": 2,
+            "address": 1498,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1499,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1500,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1501,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1502,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1503,
+            "count": 1,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -2487,6 +2509,17 @@
           "kind": "read",
           "request": {
             "address": 4122,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
             "count": 2,
             "functionCode": 4,
             "registerType": "input",
@@ -2620,7 +2653,7 @@
           "attempt": 1,
           "count": 2,
           "errorType": "illegal_address",
-          "message": "Modbus Error: Illegal Data Address reading address 4120: ExceptionResponse(exception_code=2)",
+          "message": "Illegal Data Address reading address 4120: ExceptionResponse(exception_code=2)",
           "operation": "read",
           "registerType": "input"
         },
@@ -2644,7 +2677,7 @@
         {
           "errorType": "illegal_address",
           "kind": "error",
-          "message": "Illegal Data Address reading address 1498: ExceptionResponse(exception_code=2)"
+          "message": "Illegal Data Address reading address 1350: ExceptionResponse(exception_code=2)"
         },
         {
           "errorType": "illegal_address",
@@ -2654,17 +2687,7 @@
         {
           "errorType": "illegal_address",
           "kind": "error",
-          "message": "Illegal Data Address reading address 1499: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
           "message": "Illegal Data Address reading address 1354: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1500: ExceptionResponse(exception_code=2)"
         },
         {
           "errorType": "illegal_address",
@@ -2674,17 +2697,7 @@
         {
           "errorType": "illegal_address",
           "kind": "error",
-          "message": "Illegal Data Address reading address 1501: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
           "message": "Illegal Data Address reading address 1358: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1502: ExceptionResponse(exception_code=2)"
         },
         {
           "errorType": "illegal_address",
@@ -2694,12 +2707,42 @@
         {
           "errorType": "illegal_address",
           "kind": "error",
-          "message": "Illegal Data Address reading address 1503: ExceptionResponse(exception_code=2)"
+          "message": "Illegal Data Address reading address 1362: ExceptionResponse(exception_code=2)"
         },
         {
           "errorType": "illegal_address",
           "kind": "error",
-          "message": "Illegal Data Address reading address 1362: ExceptionResponse(exception_code=2)"
+          "message": "Illegal Data Address reading address 1498: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1498: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1499: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1500: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1501: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1502: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1503: ExceptionResponse(exception_code=2)"
         },
         {
           "errorType": "illegal_address",
@@ -2754,6 +2797,11 @@
         {
           "errorType": "illegal_address",
           "kind": "error",
+          "message": "Illegal Data Address reading address 1000: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
           "message": "Illegal Data Address reading address 4120: ExceptionResponse(exception_code=2)"
         }
       ]
@@ -2783,6 +2831,17 @@
         {
           "kind": "read",
           "request": {
+            "address": 1350,
+            "count": 14,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
             "address": 1498,
             "count": 1,
             "functionCode": 4,
@@ -2794,129 +2853,8 @@
         {
           "kind": "read",
           "request": {
-            "address": 1352,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1499,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1354,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1500,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1356,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1501,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1358,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1502,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1360,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1503,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1362,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1504,
-            "count": 1,
+            "address": 1498,
+            "count": 7,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -3157,7 +3095,7 @@
           "attempt": 1,
           "count": 2,
           "errorType": "illegal_address",
-          "message": "Modbus Error: Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)",
+          "message": "Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)",
           "operation": "read",
           "registerType": "input"
         },
@@ -3183,68 +3121,39 @@
         {
           "kind": "words",
           "words": [
+            0,
+            16840,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
             0
           ]
         },
         {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1352: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1499: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1354: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1500: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1356: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1501: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1358: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1502: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1360: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1503: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1362: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1504: ExceptionResponse(exception_code=2)"
+          "kind": "words",
+          "words": [
+            0,
+            255,
+            255,
+            255,
+            255,
+            255,
+            255
+          ]
         },
         {
           "errorType": "illegal_address",
@@ -3318,8 +3227,8 @@
         {
           "kind": "read",
           "request": {
-            "address": 1498,
-            "count": 1,
+            "address": 1350,
+            "count": 2,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -3340,30 +3249,8 @@
         {
           "kind": "read",
           "request": {
-            "address": 1499,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
             "address": 1354,
             "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1500,
-            "count": 1,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -3384,30 +3271,8 @@
         {
           "kind": "read",
           "request": {
-            "address": 1501,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
             "address": 1358,
             "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1502,
-            "count": 1,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -3428,7 +3293,18 @@
         {
           "kind": "read",
           "request": {
-            "address": 1503,
+            "address": 1362,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1498,
             "count": 1,
             "functionCode": 4,
             "registerType": "input",
@@ -3439,8 +3315,63 @@
         {
           "kind": "read",
           "request": {
-            "address": 1362,
-            "count": 2,
+            "address": 1498,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1499,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1500,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1501,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1502,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1503,
+            "count": 1,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -3561,6 +3492,17 @@
           "kind": "read",
           "request": {
             "address": 4122,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
             "count": 2,
             "functionCode": 4,
             "registerType": "input",
@@ -3713,11 +3655,11 @@
         "connected": true,
         "connectionSuspect": false,
         "lastError": {
-          "address": 4122,
+          "address": 1000,
           "attempt": 1,
           "count": 2,
           "errorType": "illegal_address",
-          "message": "Modbus Error: Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)",
+          "message": "Illegal Data Address reading address 1000: ExceptionResponse(exception_code=2)",
           "operation": "read",
           "registerType": "input"
         },
@@ -3741,7 +3683,7 @@
         {
           "errorType": "illegal_address",
           "kind": "error",
-          "message": "Illegal Data Address reading address 1498: ExceptionResponse(exception_code=2)"
+          "message": "Illegal Data Address reading address 1350: ExceptionResponse(exception_code=2)"
         },
         {
           "errorType": "illegal_address",
@@ -3751,17 +3693,7 @@
         {
           "errorType": "illegal_address",
           "kind": "error",
-          "message": "Illegal Data Address reading address 1499: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
           "message": "Illegal Data Address reading address 1354: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1500: ExceptionResponse(exception_code=2)"
         },
         {
           "errorType": "illegal_address",
@@ -3771,17 +3703,7 @@
         {
           "errorType": "illegal_address",
           "kind": "error",
-          "message": "Illegal Data Address reading address 1501: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
           "message": "Illegal Data Address reading address 1358: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1502: ExceptionResponse(exception_code=2)"
         },
         {
           "errorType": "illegal_address",
@@ -3791,12 +3713,42 @@
         {
           "errorType": "illegal_address",
           "kind": "error",
-          "message": "Illegal Data Address reading address 1503: ExceptionResponse(exception_code=2)"
+          "message": "Illegal Data Address reading address 1362: ExceptionResponse(exception_code=2)"
         },
         {
           "errorType": "illegal_address",
           "kind": "error",
-          "message": "Illegal Data Address reading address 1362: ExceptionResponse(exception_code=2)"
+          "message": "Illegal Data Address reading address 1498: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1498: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1499: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1500: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1501: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1502: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1503: ExceptionResponse(exception_code=2)"
         },
         {
           "errorType": "illegal_address",
@@ -3853,6 +3805,11 @@
           "errorType": "illegal_address",
           "kind": "error",
           "message": "Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1000: ExceptionResponse(exception_code=2)"
         }
       ]
     },
@@ -3881,6 +3838,17 @@
         {
           "kind": "read",
           "request": {
+            "address": 1350,
+            "count": 14,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
             "address": 1498,
             "count": 1,
             "functionCode": 4,
@@ -3892,129 +3860,8 @@
         {
           "kind": "read",
           "request": {
-            "address": 1352,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1499,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1354,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1500,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1356,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1501,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1358,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1502,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1360,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1503,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1362,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1504,
-            "count": 1,
+            "address": 1498,
+            "count": 7,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -4358,7 +4205,7 @@
           "attempt": 1,
           "count": 1,
           "errorType": "illegal_address",
-          "message": "Modbus Error: Illegal Data Address reading address 2130: ExceptionResponse(exception_code=2)",
+          "message": "Illegal Data Address reading address 2130: ExceptionResponse(exception_code=2)",
           "operation": "read",
           "registerType": "input"
         },
@@ -4384,68 +4231,39 @@
         {
           "kind": "words",
           "words": [
+            0,
+            16840,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
             0
           ]
         },
         {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1352: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1499: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1354: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1500: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1356: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1501: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1358: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1502: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1360: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1503: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1362: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1504: ExceptionResponse(exception_code=2)"
+          "kind": "words",
+          "words": [
+            0,
+            255,
+            255,
+            255,
+            255,
+            255,
+            255
+          ]
         },
         {
           "kind": "words",
@@ -4531,6 +4349,17 @@
         {
           "kind": "read",
           "request": {
+            "address": 1350,
+            "count": 14,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
             "address": 1498,
             "count": 1,
             "functionCode": 4,
@@ -4542,129 +4371,8 @@
         {
           "kind": "read",
           "request": {
-            "address": 1352,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1499,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1354,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1500,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1356,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1501,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1358,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1502,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1360,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1503,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1362,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1504,
-            "count": 1,
+            "address": 1498,
+            "count": 7,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -4923,7 +4631,7 @@
           "attempt": 1,
           "count": 2,
           "errorType": "illegal_address",
-          "message": "Modbus Error: Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)",
+          "message": "Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)",
           "operation": "read",
           "registerType": "input"
         },
@@ -4949,6 +4657,25 @@
         {
           "kind": "words",
           "words": [
+            0,
+            16840,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
             0
           ]
         },
@@ -4956,78 +4683,12 @@
           "kind": "words",
           "words": [
             0,
-            49024
-          ]
-        },
-        {
-          "kind": "words",
-          "words": [
-            65535
-          ]
-        },
-        {
-          "kind": "words",
-          "words": [
-            0,
-            49024
-          ]
-        },
-        {
-          "kind": "words",
-          "words": [
-            65535
-          ]
-        },
-        {
-          "kind": "words",
-          "words": [
-            0,
-            49024
-          ]
-        },
-        {
-          "kind": "words",
-          "words": [
-            65535
-          ]
-        },
-        {
-          "kind": "words",
-          "words": [
-            0,
-            49024
-          ]
-        },
-        {
-          "kind": "words",
-          "words": [
-            65535
-          ]
-        },
-        {
-          "kind": "words",
-          "words": [
-            0,
-            49024
-          ]
-        },
-        {
-          "kind": "words",
-          "words": [
-            65535
-          ]
-        },
-        {
-          "kind": "words",
-          "words": [
-            0,
-            49024
-          ]
-        },
-        {
-          "kind": "words",
-          "words": [
-            65535
+            255,
+            255,
+            255,
+            255,
+            255,
+            255
           ]
         },
         {
@@ -5109,6 +4770,17 @@
         {
           "kind": "read",
           "request": {
+            "address": 1350,
+            "count": 14,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
             "address": 1498,
             "count": 1,
             "functionCode": 4,
@@ -5120,129 +4792,8 @@
         {
           "kind": "read",
           "request": {
-            "address": 1352,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1499,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1354,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1500,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1356,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1501,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1358,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1502,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1360,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1503,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1362,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1504,
-            "count": 1,
+            "address": 1498,
+            "count": 7,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -5483,7 +5034,7 @@
           "attempt": 1,
           "count": 2,
           "errorType": "illegal_address",
-          "message": "Modbus Error: Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)",
+          "message": "Illegal Data Address reading address 4122: ExceptionResponse(exception_code=2)",
           "operation": "read",
           "registerType": "input"
         },
@@ -5509,68 +5060,39 @@
         {
           "kind": "words",
           "words": [
+            0,
+            16840,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
             0
           ]
         },
         {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1352: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1499: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1354: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1500: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1356: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1501: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1358: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1502: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1360: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1503: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1362: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1504: ExceptionResponse(exception_code=2)"
+          "kind": "words",
+          "words": [
+            0,
+            255,
+            255,
+            255,
+            255,
+            255,
+            255
+          ]
         },
         {
           "errorType": "illegal_address",
@@ -5647,6 +5169,17 @@
         {
           "kind": "read",
           "request": {
+            "address": 1350,
+            "count": 14,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
             "address": 1498,
             "count": 1,
             "functionCode": 4,
@@ -5658,129 +5191,8 @@
         {
           "kind": "read",
           "request": {
-            "address": 1352,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1499,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1354,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1500,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1356,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1501,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1358,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1502,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1360,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1503,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1362,
-            "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1504,
-            "count": 1,
+            "address": 1498,
+            "count": 7,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -6065,7 +5477,7 @@
           "attempt": 1,
           "count": 1,
           "errorType": "illegal_address",
-          "message": "Modbus Error: Illegal Data Address reading address 1147: ExceptionResponse(exception_code=2)",
+          "message": "Illegal Data Address reading address 1147: ExceptionResponse(exception_code=2)",
           "operation": "read",
           "registerType": "input"
         },
@@ -6091,68 +5503,39 @@
         {
           "kind": "words",
           "words": [
+            0,
+            16840,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024,
+            0,
+            49024
+          ]
+        },
+        {
+          "kind": "words",
+          "words": [
             0
           ]
         },
         {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1352: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1499: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1354: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1500: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1356: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1501: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1358: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1502: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1360: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1503: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1362: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1504: ExceptionResponse(exception_code=2)"
+          "kind": "words",
+          "words": [
+            0,
+            255,
+            255,
+            255,
+            255,
+            255,
+            255
+          ]
         },
         {
           "errorType": "illegal_address",
@@ -6238,8 +5621,8 @@
         {
           "kind": "read",
           "request": {
-            "address": 1498,
-            "count": 1,
+            "address": 1350,
+            "count": 2,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -6260,30 +5643,8 @@
         {
           "kind": "read",
           "request": {
-            "address": 1499,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
             "address": 1354,
             "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1500,
-            "count": 1,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -6304,30 +5665,8 @@
         {
           "kind": "read",
           "request": {
-            "address": 1501,
-            "count": 1,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
             "address": 1358,
             "count": 2,
-            "functionCode": 4,
-            "registerType": "input",
-            "timeoutMs": 2000,
-            "unitId": 1
-          }
-        },
-        {
-          "kind": "read",
-          "request": {
-            "address": 1502,
-            "count": 1,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -6348,7 +5687,18 @@
         {
           "kind": "read",
           "request": {
-            "address": 1503,
+            "address": 1362,
+            "count": 2,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1498,
             "count": 1,
             "functionCode": 4,
             "registerType": "input",
@@ -6359,8 +5709,63 @@
         {
           "kind": "read",
           "request": {
-            "address": 1362,
-            "count": 2,
+            "address": 1498,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1499,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1500,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1501,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1502,
+            "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1503,
+            "count": 1,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -6471,6 +5876,17 @@
           "request": {
             "address": 4001,
             "count": 1,
+            "functionCode": 4,
+            "registerType": "input",
+            "timeoutMs": 2000,
+            "unitId": 1
+          }
+        },
+        {
+          "kind": "read",
+          "request": {
+            "address": 1000,
+            "count": 2,
             "functionCode": 4,
             "registerType": "input",
             "timeoutMs": 2000,
@@ -6655,11 +6071,11 @@
         "connected": true,
         "connectionSuspect": false,
         "lastError": {
-          "address": 4108,
+          "address": 1000,
           "attempt": 1,
           "count": 2,
           "errorType": "illegal_address",
-          "message": "Modbus Error: Illegal Data Address reading address 4108: ExceptionResponse(exception_code=2)",
+          "message": "Illegal Data Address reading address 1000: ExceptionResponse(exception_code=2)",
           "operation": "read",
           "registerType": "input"
         },
@@ -6683,7 +6099,7 @@
         {
           "errorType": "illegal_address",
           "kind": "error",
-          "message": "Illegal Data Address reading address 1498: ExceptionResponse(exception_code=2)"
+          "message": "Illegal Data Address reading address 1350: ExceptionResponse(exception_code=2)"
         },
         {
           "errorType": "illegal_address",
@@ -6693,17 +6109,7 @@
         {
           "errorType": "illegal_address",
           "kind": "error",
-          "message": "Illegal Data Address reading address 1499: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
           "message": "Illegal Data Address reading address 1354: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1500: ExceptionResponse(exception_code=2)"
         },
         {
           "errorType": "illegal_address",
@@ -6713,17 +6119,7 @@
         {
           "errorType": "illegal_address",
           "kind": "error",
-          "message": "Illegal Data Address reading address 1501: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
           "message": "Illegal Data Address reading address 1358: ExceptionResponse(exception_code=2)"
-        },
-        {
-          "errorType": "illegal_address",
-          "kind": "error",
-          "message": "Illegal Data Address reading address 1502: ExceptionResponse(exception_code=2)"
         },
         {
           "errorType": "illegal_address",
@@ -6733,12 +6129,42 @@
         {
           "errorType": "illegal_address",
           "kind": "error",
-          "message": "Illegal Data Address reading address 1503: ExceptionResponse(exception_code=2)"
+          "message": "Illegal Data Address reading address 1362: ExceptionResponse(exception_code=2)"
         },
         {
           "errorType": "illegal_address",
           "kind": "error",
-          "message": "Illegal Data Address reading address 1362: ExceptionResponse(exception_code=2)"
+          "message": "Illegal Data Address reading address 1498: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1498: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1499: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1500: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1501: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1502: ExceptionResponse(exception_code=2)"
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1503: ExceptionResponse(exception_code=2)"
         },
         {
           "errorType": "illegal_address",
@@ -6791,6 +6217,11 @@
           "words": [
             3
           ]
+        },
+        {
+          "errorType": "illegal_address",
+          "kind": "error",
+          "message": "Illegal Data Address reading address 1000: ExceptionResponse(exception_code=2)"
         }
       ]
     },

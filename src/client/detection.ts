@@ -9,6 +9,7 @@ import {
   MAX_HEATING_CIRCUITS,
   MAX_ZONE_MODULES,
   MODEL_NAVIGATOR_10,
+  MODEL_NAVIGATOR_17,
   MODEL_NAVIGATOR_20,
   MODEL_NAVIGATOR_PRO,
   MODEL_UNKNOWN,
@@ -92,22 +93,77 @@ function firmwareVersion(response: readonly number[] | null): number | null {
 }
 
 /**
+ * View over per-address Illegal-Data-Address rejections recorded by the
+ * client's probe seam. Model detection reads it to tell "register not
+ * implemented" apart from "no answer at all" (Navigator 1.x signature).
+ */
+export type ProbeRejectionView = (address: number) => boolean | null;
+
+/**
  * Convert one exact ordered IDM probe stream into immutable model information.
  *
  * The callback owns transport/retry policy. This service owns only the pinned
  * probe order, presence/sentinel rules, model priority, and feature projection.
+ *
+ * Python 2.14.5 request shape: the first slot of each signal is probed
+ * individually (it gates the family signature); when it answers, the
+ * remaining slots are fetched with one adjacent batch per signal
+ * (1350-1363 and 1498-1504), falling back to per-slot probes whenever a
+ * batch fails or returns a wrong length.
  */
 export async function detectModel(
   probe: DetectionProbe,
   options: DetectModelOptions = {},
+  probeRejectedIllegalAddress: ProbeRejectionView = () => null,
 ): Promise<IdmModelInfoValue> {
+  const flowSpan = MAX_HEATING_CIRCUITS * HEATING_CIRCUIT_STEP;
+  const flowGate = await probe(HEATING_CIRCUIT_BASE, 2);
+  const flowSlots: (readonly number[] | null)[] = [];
+  if (flowGate !== null) {
+    const flowBatch = await probe(HEATING_CIRCUIT_BASE, flowSpan);
+    if (flowBatch !== null && flowBatch.length === flowSpan) {
+      for (let index = 0; index < MAX_HEATING_CIRCUITS; index += 1) {
+        flowSlots.push(
+          flowBatch.slice(index * HEATING_CIRCUIT_STEP, (index + 1) * HEATING_CIRCUIT_STEP),
+        );
+      }
+    } else {
+      for (let index = 0; index < MAX_HEATING_CIRCUITS; index += 1) {
+        flowSlots.push(await probe(HEATING_CIRCUIT_BASE + index * HEATING_CIRCUIT_STEP, 2));
+      }
+    }
+  } else {
+    for (let index = 0; index < MAX_HEATING_CIRCUITS; index += 1) {
+      flowSlots.push(await probe(HEATING_CIRCUIT_BASE + index * HEATING_CIRCUIT_STEP, 2));
+    }
+  }
+
+  const modeGate = await probe(HEATING_CIRCUIT_ACTIVE_MODE_BASE, 1);
+  const modeSlots: (readonly number[] | null)[] = [];
+  if (modeGate !== null) {
+    const modeBatch = await probe(HEATING_CIRCUIT_ACTIVE_MODE_BASE, MAX_HEATING_CIRCUITS);
+    if (modeBatch !== null && modeBatch.length === MAX_HEATING_CIRCUITS) {
+      for (let index = 0; index < MAX_HEATING_CIRCUITS; index += 1) {
+        modeSlots.push(modeBatch.slice(index, index + 1));
+      }
+    } else {
+      for (let index = 0; index < MAX_HEATING_CIRCUITS; index += 1) {
+        modeSlots.push(await probe(HEATING_CIRCUIT_ACTIVE_MODE_BASE + index, 1));
+      }
+    }
+  } else {
+    for (let index = 0; index < MAX_HEATING_CIRCUITS; index += 1) {
+      modeSlots.push(await probe(HEATING_CIRCUIT_ACTIVE_MODE_BASE + index, 1));
+    }
+  }
+
   const activeHeatingCircuits: string[] = [];
   for (let index = 0; index < MAX_HEATING_CIRCUITS; index += 1) {
-    const response = await probe(HEATING_CIRCUIT_BASE + index * HEATING_CIRCUIT_STEP, 2);
+    const response = flowSlots[index] ?? null;
     const exact = exactWords(response, 2);
     const value = probeFloat(exact, -50, 80);
     const unavailable = value === HEATING_CIRCUIT_UNAVAILABLE;
-    const mode = exactWords(await probe(HEATING_CIRCUIT_ACTIVE_MODE_BASE + index, 1), 1);
+    const mode = exactWords(modeSlots[index] ?? null, 1);
     const modeConfigured =
       mode !== null && ((mode[0] as number) & 0xff) !== HEATING_CIRCUIT_ACTIVE_MODE_UNAVAILABLE;
     if ((value !== null && !unavailable) || modeConfigured || (exact !== null && !unavailable)) {
@@ -179,33 +235,80 @@ export async function detectModel(
     }
   }
 
-  const modelName = hasNavigator10
-    ? MODEL_NAVIGATOR_10
-    : zoneModules > 0
-      ? MODEL_NAVIGATOR_PRO
-      : activeHeatingCircuits.length > 0
-        ? MODEL_NAVIGATOR_20
-        : MODEL_UNKNOWN;
+  // Navigator 1.0/1.7 (separate protocol family) detection. The 1.x
+  // firmware answers the low FC04 input block (from address 1000) while
+  // rejecting the shared 2.0/10/Pro family's heating-circuit and
+  // zone-module blocks with Modbus exception code 2. A device that
+  // answers nothing (offline) or that responds on the heating-circuit
+  // block must not classify as Navigator 1.7. Updated 1.x firmware can
+  // answer the post-2016 PV supplement and the power registers, so those
+  // addresses are deliberately not part of the signature.
+  const NAV17_REJECTED_ADDRESSES: readonly number[] = [1_350, 1_498, 2_000];
+  let isNavigator17 = false;
+  if (probeRejectedIllegalAddress(1_350) === true) {
+    // Every shared-family controller (2.0/10/Pro) implements the
+    // heating-circuit block; an Illegal Data Address rejection at its
+    // base means this is the separate 1.x protocol family. Confirm with
+    // the full signature before committing, because the shared family's
+    // active-mode probes (1498+) can overlap the 1.x status block
+    // (1500+) and would otherwise fake heating circuits.
+    const core = await probe(1_000, 2);
+    isNavigator17 =
+      exactWords(core, 2) !== null &&
+      NAV17_REJECTED_ADDRESSES.every((address) => probeRejectedIllegalAddress(address) === true);
+  }
 
-  const features: string[] = [];
-  if (activeHeatingCircuits.length > 0) features.push(FEATURE_HEATING_CIRCUITS);
-  if (zoneModules > 0) features.push(FEATURE_ZONE_MODULES);
-  if (hasSolar) features.push(FEATURE_SOLAR);
-  if (hasIsc) features.push(FEATURE_ISC);
-  if (hasPv) features.push(FEATURE_PV);
-  if (hasCascade) features.push(FEATURE_CASCADE);
+  let modelName: string;
+  let projectedCircuits = activeHeatingCircuits;
+  let projectedZoneModules = zoneModules;
+  let projectedHasSolar = hasSolar;
+  let projectedHasIsc = hasIsc;
+  let projectedHasCascade = hasCascade;
+  let projectedFeatures: readonly string[] | null = null;
+  if (isNavigator17) {
+    modelName = MODEL_NAVIGATOR_17;
+    // The 1.x family exposes none of the probed shared-family
+    // capabilities; anything apparent came from overlapping probe
+    // addresses and must not leak into the model info. The PV probe
+    // (74) is the exception: a response there means the post-2016 PV
+    // supplement is present and its registers join the 1.7 map.
+    projectedCircuits = [];
+    projectedZoneModules = 0;
+    projectedHasSolar = false;
+    projectedHasIsc = false;
+    projectedHasCascade = false;
+    projectedFeatures = hasPv ? [FEATURE_PV] : [];
+  } else {
+    modelName = hasNavigator10
+      ? MODEL_NAVIGATOR_10
+      : projectedZoneModules > 0
+        ? MODEL_NAVIGATOR_PRO
+        : projectedCircuits.length > 0
+          ? MODEL_NAVIGATOR_20
+          : MODEL_UNKNOWN;
+  }
+
+  const features: string[] = projectedFeatures === null ? [] : [...projectedFeatures];
+  if (projectedFeatures === null) {
+    if (projectedCircuits.length > 0) features.push(FEATURE_HEATING_CIRCUITS);
+    if (projectedZoneModules > 0) features.push(FEATURE_ZONE_MODULES);
+    if (projectedHasSolar) features.push(FEATURE_SOLAR);
+    if (projectedHasIsc) features.push(FEATURE_ISC);
+    if (hasPv) features.push(FEATURE_PV);
+    if (projectedHasCascade) features.push(FEATURE_CASCADE);
+  }
 
   const readFirmware = options.readFirmware ?? true;
   const detectedFirmware = readFirmware ? firmwareVersion(await probe(4_120, 2)) : null;
 
   return IdmModelInfo.create({
     modelName,
-    activeHeatingCircuits,
-    zoneModules,
-    hasSolar,
-    hasIsc,
+    activeHeatingCircuits: projectedCircuits,
+    zoneModules: projectedZoneModules,
+    hasSolar: projectedHasSolar,
+    hasIsc: projectedHasIsc,
     hasPv,
-    hasCascade,
+    hasCascade: projectedHasCascade,
     features,
     firmwareVersion: detectedFirmware,
   });

@@ -24,8 +24,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const orchestrator = resolve(root, "scripts/check-parity.mjs");
 const upstreamSource = resolve(root, "../idm-heatpump-api");
 const canonicalRepository = "https://github.com/Xerolux/idm-heatpump-api";
-const pinnedCommit = "6b834747a05931c4512ebdbb03292b487a3f986d";
-const pinnedTag = "v1.0.3";
+const pinnedCommit = "0347f2553a046159c19f6913f63099625da88668";
+const pinnedTag = "v2.16.1";
 const temporaryPrefix = "idm-heatpump-contract-";
 const phase3RuntimeSymbols = [
   "IdmClientDiagnostics",
@@ -400,9 +400,9 @@ describe("npm parity entry points and release package boundary", () => {
 
     expect(packageJson.scripts?.["parity:api"]).toBe("node scripts/generate-api-parity.mjs");
     expect(packageJson.scripts?.["parity:check"]).toBe("node scripts/check-parity.mjs check");
-    expect(completeRows).toHaveLength(95);
-    expect(completeRows.filter(({ owner_phase }) => owner_phase === 1)).toHaveLength(53);
-    expect(completeRows.filter(({ owner_phase }) => owner_phase === 2)).toHaveLength(5);
+    expect(completeRows).toHaveLength(106);
+    expect(completeRows.filter(({ owner_phase }) => owner_phase === 1)).toHaveLength(60);
+    expect(completeRows.filter(({ owner_phase }) => owner_phase === 2)).toHaveLength(9);
     expect(completeRows.filter(({ owner_phase }) => owner_phase === 3)).toHaveLength(7);
     expect(completeRows.filter(({ owner_phase }) => owner_phase === 4)).toHaveLength(30);
     for (const row of completeRows) {
@@ -410,7 +410,7 @@ describe("npm parity entry points and release package boundary", () => {
         `| \`${row.python_symbol}\` | \`${row.typescript_symbol}\` | \`${row.export_path}\` | ${String(row.owner_phase)} | \`complete\` |`,
       );
     }
-    expect(mapping.mappings.filter(({ status }) => status === "planned")).toHaveLength(0);
+    expect(mapping.mappings.filter(({ status }) => status === "planned")).toHaveLength(55);
     expect(mapping.mappings.filter(({ status }) => status === "partial")).toHaveLength(0);
   });
 
@@ -631,7 +631,7 @@ describe("GitHub Actions workflow contract", () => {
     const parityJob = workflow.match(/^\s{2}parity:\s*$([\s\S]*)/mu)?.[1] ?? "";
 
     expect(manifest).toMatchObject({
-      python_version: "1.0.3",
+      python_version: "2.16.1",
       git_tag: pinnedTag,
       git_commit: pinnedCommit,
     });
@@ -655,11 +655,11 @@ describe("Phase 4 truthful documentation and closure", () => {
   it("README documents complete public Modbus and web parity plus the risk boundary", () => {
     const readme = readFileSync(resolve(root, "README.md"), "utf8");
 
-    expect(readme).toMatch(/vollständige öffentliche Funktionsumfang[\s\S]*implementiert/u);
+    expect(readme).toMatch(/Kern-Funktionsumfang[\s\S]*implementiert und maschinengeprüft/u);
     expect(readme).toContain("private: false");
-    expect(readme).toContain("95");
+    expect(readme).toContain("161");
     expect(readme).toContain("complete");
-    expect(readme).toContain("1.0.3");
+    expect(readme).toContain("2.16.1");
     expect(readme).toContain(pinnedTag);
     expect(readme).toContain(pinnedCommit);
     expect(readme).toContain("npm run parity:check");
@@ -691,13 +691,15 @@ describe("Phase 4 truthful documentation and closure", () => {
     expect(readme).toMatch(/Fake Clock|kontrollierte Uhr/u);
     expect(readme).toMatch(/at-least-once|mindestens einmal/u);
     expect(readme).toMatch(/Antwortverlust[\s\S]*(?:erneut|wiederholt)/u);
-    expect(readme).toMatch(/Navigator 1\.0\/1\.7[\s\S]*(?:nicht unterstützt|ausgeschlossen)/u);
+    expect(readme).toMatch(
+      /Navigator 1\.0\/1\.7[\s\S]*(?:nicht unterstützt|ausgeschlossen|Registerkarte|staged)/u,
+    );
     expect(readme).toContain("keine integrierte TLS-Verschlüsselung");
     expect(readme).toContain("keine Modbus-Authentifizierung");
     expect(readme).toMatch(/vertrauenswürdigen\s+lokalen Netzwerk/u);
     expect(readme).toMatch(/Keine\s+Node-Hardwarevalidierung\s+durchgeführt/u);
     expect(readme).not.toMatch(/noch keinen Modbus-Transport|Phase 3[^\n]*(?:geplant|Writes)/u);
-    expect(readme).toContain("Version `1.0.3`");
+    expect(readme).toContain("Version `2.16.1`");
   });
 
   it("README register examples use canonical keys exposed by the public API", () => {
@@ -720,7 +722,7 @@ describe("Phase 4 truthful documentation and closure", () => {
     const changelog = readFileSync(changelogPath, "utf8");
 
     expect(changelog).toContain("## [Unreleased]");
-    expect(changelog).toContain("1.0.3");
+    expect(changelog).toContain("2.16.1");
     expect(changelog).toContain(pinnedTag);
     expect(changelog).toContain(pinnedCommit);
     expect(changelog).toContain("private: false");
@@ -735,8 +737,8 @@ describe("Phase 4 truthful documentation and closure", () => {
     expect(changelog).toMatch(/EEPROM[\s\S]*Cyclic/u);
     expect(changelog).toMatch(/Write-Fehler|fehlgeschlagene Writes/u);
     expect(changelog).toMatch(/Web-Supplement[\s\S]*Veröffentlichung/u);
-    expect(changelog).toContain("95 vollständige API-Zuordnungen");
-    expect(changelog).toContain("Python-1.0.3-Parität");
+    expect(changelog).toContain("106 vollständige API-Zuordnungen");
+    expect(changelog).toContain("Python-2.16.1-Parität");
     expect(changelog).toContain("Navigator 1.0/1.7");
     expect(changelog).toContain("keine integrierte TLS-Verschlüsselung");
     expect(changelog).toMatch(/keine\s+Modbus-Authentifizierung/u);
@@ -857,7 +859,10 @@ describe("Phase 4 truthful documentation and closure", () => {
     for (const threshold of ["branches", "functions", "lines", "statements"]) {
       expect(coverageConfig).toMatch(new RegExp("\\b" + threshold + ":\\s*80\\b", "u"));
     }
-    expect(completeRows).toHaveLength(95);
+    // Core parity against 2.16.1 is complete (106 rows); the staged rows
+    // are the Python 2.x web expansion and the coil transport extension
+    // (55 rows), tracked for the follow-up sync phases. No row is partial.
+    expect(completeRows).toHaveLength(106);
     expect(
       completeRows.every(
         ({ export_path, owner_phase }) =>
@@ -865,17 +870,18 @@ describe("Phase 4 truthful documentation and closure", () => {
           (export_path === "./web" && owner_phase === 4),
       ),
     ).toBe(true);
-    expect(plannedRows).toHaveLength(0);
+    expect(plannedRows).toHaveLength(55);
     expect(partialRows).toEqual([]);
     const clientMapping = mapping.mappings.find(
       ({ python_symbol: pythonSymbol }) => pythonSymbol === "IdmModbusClient",
     );
     expect(clientMapping).toMatchObject({ status: "complete", owner_phase: 2 });
     expect(clientMapping?.partial_class).toBeUndefined();
-    // Python 1.0 publishes the IdmModbusTransport protocol, so the former
-    // TypeScript-only ModbusTransport extension became a mapped counterpart
-    // and the additive extension authority is now empty.
-    expect(extensions.extensions).toEqual([]);
+    // Python 1.0 published the IdmModbusTransport protocol, so the former
+    // TypeScript-only ModbusTransport extension became a mapped counterpart.
+    // The 2.16.1 sync adds the module-private Navigator 1.7 enum tables as
+    // reviewed type extensions.
+    expect(extensions.extensions).toHaveLength(3);
     const prototypeMembers = Object.getOwnPropertyNames(IdmModbusClient.prototype)
       .filter((member) => member !== "constructor")
       .sort();
@@ -894,6 +900,7 @@ describe("Phase 4 truthful documentation and closure", () => {
         "getDiagnostics",
         "getExpiredCyclicWrites",
         "getLastErrorContext",
+        "getRegisterOutcomes",
         "getUnsupportedRegisters",
         "host",
         "isConnected",
@@ -934,7 +941,13 @@ describe("Phase 4 truthful documentation and closure", () => {
     expect(webSource).not.toMatch(/\bwrite(?:Value|Register)?\b/u);
     expect(workflow).toContain("run: npm run check");
     expect(workflow).toContain("run: npm run parity:check");
+    // Release mode is the staged-parity gate: it must refuse to publish
+    // while the Python-2.x web expansion and the coil extension are still
+    // planned. The non-release generator keeps succeeding for development.
+    const devGate = run(process.execPath, ["scripts/generate-api-parity.mjs"]);
+    expect(devGate.status, devGate.stderr).toBe(0);
     const releaseGate = run(process.execPath, ["scripts/generate-api-parity.mjs", "--release"]);
-    expect(releaseGate.status, releaseGate.stderr).toBe(0);
+    expect(releaseGate.status).not.toBe(0);
+    expect(releaseGate.stderr).toContain("mapping_release_status_incomplete");
   });
 });

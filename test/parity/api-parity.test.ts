@@ -34,10 +34,13 @@ const GENERATOR_INPUTS = [
   "test/semantic/constants-and-types.test.ts",
   "test/semantic/binary-metadata.test.ts",
   "test/codec.test.ts",
+  "test/error-codes.test.ts",
+  "test/plausibility.test.ts",
   "test/registers/builders.test.ts",
   "test/registers/register-def.test.ts",
   "test/client/diagnostics.test.ts",
   "test/client/errors.test.ts",
+  "test/transport/modbus-serial-adapter.test.ts",
   "test/parity/transport-contract.test.ts",
   "test/parity/web-contract.test.ts",
   "test/parity/write-contract.test.ts",
@@ -292,6 +295,7 @@ const IDM_MODBUS_PHASE_3_MEMBERS = [
   "eepromWriteInterval",
   "getActiveCyclicWrites",
   "getExpiredCyclicWrites",
+  "getRegisterOutcomes",
   "resetCyclicWriteState",
   "resetWriteThrottle",
   "setModelInfo",
@@ -313,6 +317,7 @@ const IDM_MODBUS_COMPLETE_MEMBERS = [
   "getDiagnostics",
   "getExpiredCyclicWrites",
   "getLastErrorContext",
+  "getRegisterOutcomes",
   "getUnsupportedRegisters",
   "host",
   "isConnected",
@@ -340,6 +345,76 @@ function readJson<T>(relativePath: string): T {
 const publicApi = readJson<PublicApiFixture>("test/fixtures/public-api.json");
 const publicClasses = readJson<PublicClassesFixture>("test/fixtures/public-classes.json");
 const apiMapping = readJson<ApiMapping>("contracts/api-mapping.json");
+const extensions = readJson<{
+  readonly extensions: readonly {
+    readonly export_path: string;
+    readonly status: string;
+    readonly typescript_symbol: string;
+  }[];
+}>("contracts/typescript-extensions.json");
+
+/**
+ * Python 2.16.1 symbols whose TypeScript counterparts are staged for the
+ * follow-up sync phases: the 2.x web expansion (52 symbols) and the
+ * optional coil transport extension. Everything else is mapped complete.
+ */
+const STAGED_PYTHON_SYMBOLS: ReadonlySet<string> = new Set([
+  "IdmCoilTransportExtension",
+  "IdmWebDemandReason",
+  "IdmWebEnergyflow",
+  "IdmWebFreshwater",
+  "IdmWebHeatingCircuit",
+  "IdmWebHeatingCircuitChoice",
+  "IdmWebHeatingCircuitRef",
+  "IdmWebHeatingCircuitValue",
+  "IdmWebHomeDetail",
+  "IdmWebHomeOverview",
+  "IdmWebIon",
+  "IdmWebPerformance",
+  "IdmWebSettingParameter",
+  "IdmWebStatus",
+  "IdmWebSystemCircuit",
+  "IdmWebSystemMode",
+  "IdmWebSystemOverview",
+  "IdmWebWeatherDay",
+  "IdmWebWeatherDetail",
+  "NAVIGATOR10_DATETIME_SETTING_ID",
+  "NAVIGATOR10_DHW_DEMAND_REASON_BITS",
+  "NAVIGATOR10_DHW_SETPOINT_PARAM",
+  "NAVIGATOR10_DHW_SETPOINT_SETTING_ID",
+  "NAVIGATOR10_HEATING_DEMAND_REASON_BITS",
+  "NAVIGATOR10_STATISTIC_EMEH",
+  "NAVIGATOR10_STATISTIC_EMHP",
+  "NAVIGATOR10_STATISTIC_ENERGY_FLOW",
+  "NAVIGATOR10_STATISTIC_HEAT_QUANTITIES",
+  "NAVIGATOR10_STATISTIC_PERIOD_DAILY",
+  "NAVIGATOR10_STATISTIC_PERIOD_TODAY",
+  "NAVIGATOR10_STATISTIC_PERIOD_TOTAL",
+  "NAVIGATOR10_STATISTIC_RUNTIME_BIVALENCE",
+  "NAVIGATOR10_STATISTIC_RUNTIME_HEATPUMP",
+  "NAVIGATOR10_SYSTEM_MODE_AUTOMATIC",
+  "NAVIGATOR10_SYSTEM_MODE_AWAY",
+  "NAVIGATOR10_SYSTEM_MODE_HEATING_COOLING_ONLY",
+  "NAVIGATOR10_SYSTEM_MODE_HOLIDAY",
+  "NAVIGATOR10_SYSTEM_MODE_HOT_WATER_ONLY",
+  "NAVIGATOR10_SYSTEM_MODE_STANDBY",
+  "NAVIGATOR10_WRITABLE_SYSTEM_MODES",
+  "decode_navigator10_demand_reason",
+  "parse_navigator20_response",
+  "parse_navigator20_statistics_response",
+  "parse_navigator_energyflow_response",
+  "parse_navigator_freshwater_response",
+  "parse_navigator_heatingcircuit_response",
+  "parse_navigator_home_overview_response",
+  "parse_navigator_home_response",
+  "parse_navigator_ion_response",
+  "parse_navigator_performance_response",
+  "parse_navigator_save_response",
+  "parse_navigator_setting_parameter",
+  "parse_navigator_status_response",
+  "parse_navigator_system_overview_response",
+  "parse_navigator_weather_response",
+]);
 
 function camelCase(name: string): string {
   return name.replace(/_([a-z0-9])/g, (_, character: string) => character.toUpperCase());
@@ -497,8 +572,8 @@ afterEach(() => {
 });
 
 describe("API mapping inventory", () => {
-  it("mapping has exact one-to-one coverage of the 95 pinned Python exports", () => {
-    expect(publicApi.counts).toEqual({ root: 65, total: 95, web: 30 });
+  it("mapping has exact one-to-one coverage of the 161 pinned Python exports", () => {
+    expect(publicApi.counts).toEqual({ root: 77, total: 161, web: 84 });
     expect(apiMapping.schema_version).toBe(1);
     expect(apiMapping.baseline).toEqual(
       readJson<{ readonly baseline: ApiMapping["baseline"] }>("test/fixtures/public-api.json")
@@ -508,18 +583,18 @@ describe("API mapping inventory", () => {
     const expectedSymbols = publicApi.symbols.map(({ name }) => name);
     const mappedSymbols = apiMapping.mappings.map(({ python_symbol }) => python_symbol);
 
-    expect(apiMapping.mappings).toHaveLength(95);
-    expect(new Set(mappedSymbols)).toHaveLength(95);
+    expect(apiMapping.mappings).toHaveLength(161);
+    expect(new Set(mappedSymbols)).toHaveLength(161);
     expect(mappedSymbols).toEqual(expectedSymbols);
   });
 
-  it("mapping boundary keeps 65 root and 30 web rows including every alias", () => {
+  it("mapping boundary keeps 77 root and 84 web rows including every alias", () => {
     const fixtureByName = new Map(publicApi.symbols.map((symbol) => [symbol.name, symbol]));
     const aliases = new Map(publicApi.aliases.map((alias) => [alias.name, alias.target]));
 
-    expect(apiMapping.mappings.filter(({ export_path }) => export_path === ".")).toHaveLength(65);
+    expect(apiMapping.mappings.filter(({ export_path }) => export_path === ".")).toHaveLength(77);
     expect(apiMapping.mappings.filter(({ export_path }) => export_path === "./web")).toHaveLength(
-      30,
+      84,
     );
 
     for (const row of apiMapping.mappings) {
@@ -559,16 +634,22 @@ describe("API mapping inventory", () => {
     ]);
     const counterpartKeys = new Set<string>();
     const completedRows = apiMapping.mappings.filter(({ status }) => status === "complete");
+    const stagedRows = apiMapping.mappings.filter(({ status }) => status === "planned");
 
-    expect(completedRows).toHaveLength(95);
-    expect(completedRows.map(({ python_symbol }) => python_symbol)).toEqual(
-      apiMapping.mappings
-        .filter(({ owner_phase }) => owner_phase <= 4)
-        .map(({ python_symbol }) => python_symbol),
+    // Core parity against 2.16.1 is complete; the staged rows are the
+    // Python-2.x web expansion and the coil transport extension, tracked
+    // for the follow-up sync phases.
+    expect(completedRows).toHaveLength(106);
+    expect(stagedRows.map(({ python_symbol }) => python_symbol).sort()).toEqual(
+      [...STAGED_PYTHON_SYMBOLS].sort(),
     );
+    expect(
+      completedRows.map(({ python_symbol }) => python_symbol).length +
+        stagedRows.map(({ python_symbol }) => python_symbol).length,
+    ).toBe(apiMapping.mappings.length);
 
     for (const row of apiMapping.mappings) {
-      const expectedStatus = "complete";
+      const expectedStatus = STAGED_PYTHON_SYMBOLS.has(row.python_symbol) ? "planned" : "complete";
       expect(row.status, row.python_symbol).toBe(expectedStatus);
       expect(row.typescript_symbol, row.python_symbol).toMatch(/^[A-Za-z][A-Za-z0-9_]*$/);
       expect([1, 2, 3, 4], row.python_symbol).toContain(row.owner_phase);
@@ -608,6 +689,10 @@ describe("API mapping inventory", () => {
     expect(Object.keys(phaseTwo)).toEqual([
       "IdmClientDiagnostics",
       "IdmModbusClient",
+      "IdmConnectionError",
+      "IdmDeviceError",
+      "IdmModbusError",
+      "IdmTransportError",
       "IllegalAddressError",
       "ModbusErrorContext",
       "quiet_pymodbus_logging",
@@ -739,13 +824,22 @@ describe("Phase-1 class representation mapping", () => {
     const rootSource = readFileSync(resolve(ROOT, "src/index.ts"), "utf8");
     const webSource = readFileSync(resolve(ROOT, "src/web/index.ts"), "utf8");
     const webRows = apiMapping.mappings.filter(({ owner_phase }) => owner_phase === 4);
+    const completedWebRows = webRows.filter(({ status }) => status === "complete");
 
-    expect(webRows).toHaveLength(30);
+    expect(webRows).toHaveLength(84);
+    expect(completedWebRows).toHaveLength(30);
     for (const row of webRows) {
-      expect(row.status, row.python_symbol).toBe("complete");
-      expect(rootSource, row.typescript_symbol).not.toContain(row.typescript_symbol);
-      expect(webExports, row.typescript_symbol).toHaveProperty(row.typescript_symbol);
-      expect(webSource).toContain(row.typescript_symbol);
+      if (row.status === "complete") {
+        // Word-boundary check: the library-owned Idm*Error hierarchy in the
+        // root entry point legitimately shares name suffixes with the web
+        // aliases (IdmConnectionError vs ConnectionError).
+        const rootLeak = new RegExp(`\\b${row.typescript_symbol}\\b`).test(rootSource);
+        expect(rootLeak, row.typescript_symbol).toBe(false);
+        expect(webExports, row.typescript_symbol).toHaveProperty(row.typescript_symbol);
+        expect(webSource).toContain(row.typescript_symbol);
+      } else {
+        expect(STAGED_PYTHON_SYMBOLS.has(row.python_symbol), row.python_symbol).toBe(true);
+      }
     }
   });
 });
@@ -755,9 +849,15 @@ describe("checked mapping export closure", () => {
     // Type-only counterparts are compile-time exports; they cannot appear as
     // runtime properties of the module namespace object.
     const typeOnlyRootSymbols = new Set(["BinaryDeviceClass", "BinaryValue", "ModbusTransport"]);
-    const expectedRuntimeSymbols = apiMapping.mappings
+    const extensionSymbols = extensions.extensions
       .filter(({ export_path, status }) => export_path === "." && status === "complete")
-      .map(({ typescript_symbol }) => typescript_symbol)
+      .map(({ typescript_symbol }) => typescript_symbol);
+    const expectedRuntimeSymbols = [
+      ...apiMapping.mappings
+        .filter(({ export_path, status }) => export_path === "." && status === "complete")
+        .map(({ typescript_symbol }) => typescript_symbol),
+      ...extensionSymbols,
+    ]
       .filter((symbol) => !typeOnlyRootSymbols.has(symbol))
       .sort();
     const expectedTypeOnlySymbols = apiMapping.mappings
@@ -776,7 +876,7 @@ describe("checked mapping export closure", () => {
         .filter((symbol) => expectedWebSymbols.includes(symbol))
         .sort(),
     ).toEqual(expectedWebSymbols);
-    expect(expectedRuntimeSymbols).toHaveLength(62);
+    expect(expectedRuntimeSymbols).toHaveLength(76);
     expect(expectedTypeOnlySymbols).toHaveLength(3);
     expect(expectedWebSymbols).toHaveLength(30);
     expect(rootExports).not.toHaveProperty("ModbusTransport");
@@ -867,9 +967,14 @@ describe("checked mapping export closure", () => {
     requireSuccess(build, "package build for declaration closure");
 
     const typeOnlyRootSymbols = new Set(["BinaryDeviceClass", "BinaryValue", "ModbusTransport"]);
-    const expectedRuntimeSymbols = apiMapping.mappings
-      .filter(({ export_path, status }) => export_path === "." && status === "complete")
-      .map(({ typescript_symbol }) => typescript_symbol)
+    const expectedRuntimeSymbols = [
+      ...apiMapping.mappings
+        .filter(({ export_path, status }) => export_path === "." && status === "complete")
+        .map(({ typescript_symbol }) => typescript_symbol),
+      ...extensions.extensions
+        .filter(({ export_path, status }) => export_path === "." && status === "complete")
+        .map(({ typescript_symbol }) => typescript_symbol),
+    ]
       .filter((symbol) => !typeOnlyRootSymbols.has(symbol))
       .sort();
     const esm = (await import(
@@ -929,7 +1034,7 @@ describe("checked mapping export closure", () => {
 });
 
 describe("generated API and baseline documentation", () => {
-  it("keeps the exact 95-row Python inventory separate from additive extension and partial authorities", () => {
+  it("keeps the exact 161-row Python inventory separate from additive extension and partial authorities", () => {
     const project = createGeneratorProject();
     writeExtensionAuthority(project, FABRICATED_TYPE_EXTENSION);
     preparePartialIdmModbusClient(project);
@@ -941,7 +1046,7 @@ describe("generated API and baseline documentation", () => {
     ) as ApiMapping;
     const apiDocument = readFileSync(resolve(project, "docs/API-PARITY.md"), "utf8");
 
-    expect(mapping.mappings).toHaveLength(95);
+    expect(mapping.mappings).toHaveLength(161);
     expect(mapping.mappings.map(({ python_symbol }) => python_symbol)).toEqual(
       publicApi.symbols.map(({ name }) => name),
     );
@@ -950,7 +1055,7 @@ describe("generated API and baseline documentation", () => {
     expect(apiDocument).toContain("no Python counterpart");
     expect(apiDocument).toContain("## Partial class lifecycle");
     expect(apiDocument).toContain("`IdmModbusClient`");
-    expect(apiDocument).toContain("22 implemented, 9 omitted");
+    expect(apiDocument).toContain("22 implemented, 10 omitted");
   });
 
   it("rejects unknown, missing, duplicate, fabricated, and invalid-evidence extensions", () => {
@@ -1333,6 +1438,15 @@ describe("generated API and baseline documentation", () => {
         args: ["--release"],
         code: "baseline_release_status_incomplete",
         mutate(project) {
+          // Promote the staged rows first so the release gate reaches the
+          // baseline manifest check instead of failing on mapping status.
+          mutateProjectJson<ApiMapping>(project, "contracts/api-mapping.json", (mapping) => {
+            for (const row of mapping.mappings) {
+              if (row.status === "planned") {
+                (row as { status: string }).status = "complete";
+              }
+            }
+          });
           mutateProjectJson<{ parity_status: string }>(
             project,
             "UPSTREAM-PARITY.json",
@@ -1365,7 +1479,7 @@ describe("generated API and baseline documentation", () => {
     }
   });
 
-  it("generator renders all 95 mapping rows and complete Phase-1 class member evidence", () => {
+  it("generator renders all 161 mapping rows and complete Phase-1 class member evidence", () => {
     const project = createGeneratorProject();
     requireSuccess(runGenerator(project), "documentation generation");
 
@@ -1373,8 +1487,8 @@ describe("generated API and baseline documentation", () => {
     const baselineDocument = readFileSync(resolve(project, "docs/BASELINE.md"), "utf8");
 
     expect(apiDocument).toMatch(/^<!-- GENERATED FILE/u);
-    expect(apiDocument).toContain("6b834747a05931c4512ebdbb03292b487a3f986d");
-    expect(apiDocument).toContain("95 public symbols: 65 root, 30 web");
+    expect(apiDocument).toContain("0347f2553a046159c19f6913f63099625da88668");
+    expect(apiDocument).toContain("161 public symbols: 77 root, 84 web");
     for (const row of apiMapping.mappings) {
       expect(apiDocument, row.python_symbol).toContain(`| \`${row.python_symbol}\` |`);
     }
@@ -1383,9 +1497,9 @@ describe("generated API and baseline documentation", () => {
     expect(apiDocument).toContain("`RegisterRegistry.to_schema` → `toSchema`");
 
     expect(baselineDocument).toMatch(/^<!-- GENERATED FILE/u);
-    expect(baselineDocument).toContain("| Python version | `1.0.3` |");
-    expect(baselineDocument).toContain("| Parity status | `complete` |");
-    expect(baselineDocument).toContain("| Verified on | `2026-08-25` |");
+    expect(baselineDocument).toContain("| Python version | `2.16.1` |");
+    expect(baselineDocument).toContain("| Parity status | `partial` |");
+    expect(baselineDocument).toContain("| Verified on | `2026-11-19` |");
     expect(baselineDocument).not.toContain("PollRateLimiter");
   });
 

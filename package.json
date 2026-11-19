@@ -1,6 +1,6 @@
 {
   "name": "@xerolux/idm-heatpump",
-  "version": "1.0.3",
+  "version": "2.16.1",
   "description": "Unofficial Node.js client for IDM Navigator heat pumps over Modbus TCP",
   "license": "MIT",
   "author": "Basti (Xerolux)",

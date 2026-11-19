@@ -216,7 +216,13 @@ describe("internal IdmModbusClient write execution", () => {
     });
     const transport = new FakeModbusTransport(
       [
-        ...Array.from({ length: 7 }, (_, index) => [1_350 + index * 2, 1_498 + index]).flat(),
+        // Python 2.14.5 detection order: flow gate, seven individual flow
+        // slots (gate rejected), mode gate, seven individual mode slots,
+        // then the capability probes.
+        1_350,
+        ...Array.from({ length: 7 }, (_, index) => 1_350 + index * 2),
+        1_498,
+        ...Array.from({ length: 7 }, (_, index) => 1_498 + index),
         2_000,
         2_065,
         1_850,
@@ -226,6 +232,7 @@ describe("internal IdmModbusClient write execution", () => {
         4_108,
         4_001,
         4_122,
+        1_000,
         4_120,
       ].map(missingProbe),
       { writeResponses: [{ kind: "write_ok" }] },
@@ -502,7 +509,7 @@ describe("internal IdmModbusClient write execution", () => {
     expect(getInternalWriteStateSnapshot(client).writeThrottle).toEqual({});
   });
 
-  it("promotes all 31 public members while keeping internal controls out of root exports", async () => {
+  it("promotes all 32 public members while keeping internal controls out of root exports", async () => {
     const mapping = JSON.parse(
       await readFile(new URL("../../contracts/api-mapping.json", import.meta.url), "utf8"),
     ) as {
@@ -535,6 +542,7 @@ describe("internal IdmModbusClient write execution", () => {
       "getDiagnostics",
       "getExpiredCyclicWrites",
       "getLastErrorContext",
+      "getRegisterOutcomes",
       "getUnsupportedRegisters",
       "host",
       "isConnected",

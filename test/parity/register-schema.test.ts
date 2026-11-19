@@ -45,8 +45,28 @@ const navigator20CircuitA = IdmModelInfo.create({
   hasCascade: false,
 });
 
+const navigator17 = IdmModelInfo.create({
+  modelName: "Navigator 1.7",
+  activeHeatingCircuits: [],
+  zoneModules: 0,
+  hasSolar: false,
+  hasIsc: false,
+  hasPv: false,
+  hasCascade: false,
+});
+
+const navigator17Pv = IdmModelInfo.create({
+  modelName: "Navigator 1.7",
+  activeHeatingCircuits: [],
+  zoneModules: 0,
+  hasSolar: false,
+  hasIsc: false,
+  hasPv: true,
+  hasCascade: false,
+});
+
 describe("complete register-schema parity", () => {
-  it("matches all three authoritative complete maps across every one of 26 fields", () => {
+  it("matches all five authoritative complete maps across every one of 27 fields", () => {
     const expected = fixture().maps;
     const actual = {
       default: serializeRegisterMap(registerApi.buildRegisterMap()),
@@ -55,6 +75,10 @@ describe("complete register-schema parity", () => {
       ),
       navigator_20_circuit_a: serializeRegisterMap(
         registerApi.buildRegisterMap({ modelInfo: navigator20CircuitA }),
+      ),
+      navigator_17: serializeRegisterMap(registerApi.buildRegisterMap({ modelInfo: navigator17 })),
+      navigator_17_pv: serializeRegisterMap(
+        registerApi.buildRegisterMap({ modelInfo: navigator17Pv }),
       ),
     };
 
@@ -85,6 +109,7 @@ describe("complete register-schema parity", () => {
       "source",
       "source_version",
       "state_class",
+      "step",
       "supported_models",
       "unit",
       "writable",
@@ -135,8 +160,8 @@ describe("complete register-schema parity", () => {
     const abbreviated = registry.toSchema();
     const full = serializeRegisterMap(registry.registers);
 
-    expect(Object.keys(abbreviated[0] ?? {})).toHaveLength(11);
-    expect(Object.keys(Object.values(full)[0] as object)).toHaveLength(26);
+    expect(Object.keys(abbreviated[0] ?? {})).toHaveLength(12);
+    expect(Object.keys(Object.values(full)[0] as object)).toHaveLength(27);
     expect(abbreviated).not.toEqual(Object.values(full));
     expect(
       readFileSync(new URL("../../src/registers/registry.ts", import.meta.url), "utf8"),

@@ -41,7 +41,9 @@ describe("repository bootstrap contracts", () => {
     expect(parity.python_package).toBe("idm-heatpump-api");
     expect(parity.git_tag).toBe(`v${parity.python_version}`);
     expect(parity.git_commit).toMatch(/^[0-9a-f]{40}$/u);
-    expect(parity.parity_status).toBe("complete");
+    // Core parity against 2.16.1; the staged web expansion and the
+    // Navigator 1.7 runtime keep the manifest partial until they land.
+    expect(parity.parity_status).toBe("partial");
   });
 
   it("keeps the compatibility matrix aligned with the baseline", () => {
