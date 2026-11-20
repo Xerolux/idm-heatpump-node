@@ -40,6 +40,7 @@ const GENERATOR_INPUTS = [
   "test/registers/register-def.test.ts",
   "test/client/diagnostics.test.ts",
   "test/client/errors.test.ts",
+  "test/client/coils.test.ts",
   "test/transport/modbus-serial-adapter.test.ts",
   "test/parity/transport-contract.test.ts",
   "test/parity/web-contract.test.ts",
@@ -359,7 +360,6 @@ const extensions = readJson<{
  * optional coil transport extension. Everything else is mapped complete.
  */
 const STAGED_PYTHON_SYMBOLS: ReadonlySet<string> = new Set([
-  "IdmCoilTransportExtension",
   "IdmWebDemandReason",
   "IdmWebEnergyflow",
   "IdmWebFreshwater",
@@ -639,7 +639,7 @@ describe("API mapping inventory", () => {
     // Core parity against 2.16.1 is complete; the staged rows are the
     // Python-2.x web expansion and the coil transport extension, tracked
     // for the follow-up sync phases.
-    expect(completedRows).toHaveLength(106);
+    expect(completedRows).toHaveLength(107);
     expect(stagedRows.map(({ python_symbol }) => python_symbol).sort()).toEqual(
       [...STAGED_PYTHON_SYMBOLS].sort(),
     );
@@ -848,7 +848,12 @@ describe("checked mapping export closure", () => {
   it("exports exactly the authorized complete mappings", () => {
     // Type-only counterparts are compile-time exports; they cannot appear as
     // runtime properties of the module namespace object.
-    const typeOnlyRootSymbols = new Set(["BinaryDeviceClass", "BinaryValue", "ModbusTransport"]);
+    const typeOnlyRootSymbols = new Set([
+      "BinaryDeviceClass",
+      "BinaryValue",
+      "IdmCoilTransportExtension",
+      "ModbusTransport",
+    ]);
     const extensionSymbols = extensions.extensions
       .filter(({ export_path, status }) => export_path === "." && status === "complete")
       .map(({ typescript_symbol }) => typescript_symbol);
@@ -877,7 +882,7 @@ describe("checked mapping export closure", () => {
         .sort(),
     ).toEqual(expectedWebSymbols);
     expect(expectedRuntimeSymbols).toHaveLength(76);
-    expect(expectedTypeOnlySymbols).toHaveLength(3);
+    expect(expectedTypeOnlySymbols).toHaveLength(4);
     expect(expectedWebSymbols).toHaveLength(30);
     expect(rootExports).not.toHaveProperty("ModbusTransport");
   });
@@ -966,7 +971,12 @@ describe("checked mapping export closure", () => {
     );
     requireSuccess(build, "package build for declaration closure");
 
-    const typeOnlyRootSymbols = new Set(["BinaryDeviceClass", "BinaryValue", "ModbusTransport"]);
+    const typeOnlyRootSymbols = new Set([
+      "BinaryDeviceClass",
+      "BinaryValue",
+      "IdmCoilTransportExtension",
+      "ModbusTransport",
+    ]);
     const expectedRuntimeSymbols = [
       ...apiMapping.mappings
         .filter(({ export_path, status }) => export_path === "." && status === "complete")

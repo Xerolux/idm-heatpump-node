@@ -17,6 +17,11 @@ export { isUninitializedTemperature, UNINITIALIZED_TEMPERATURE_C } from "./plaus
 export { IllegalAddressError } from "./transport/errors.js";
 export { quietPymodbusLogging } from "./transport/logging.js";
 export type { ModbusTransport } from "./transport/types.js";
+export type {
+  CoilReadRequestInput,
+  IdmCoilTransportExtension as CoilTransportExtension,
+  CoilWriteRequestInput,
+} from "./transport/types.js";
 export {
   ACTIVE_HC_MODE_OPTIONS,
   BIVALENCE_STATE_OPTIONS,

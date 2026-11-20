@@ -400,17 +400,17 @@ describe("npm parity entry points and release package boundary", () => {
 
     expect(packageJson.scripts?.["parity:api"]).toBe("node scripts/generate-api-parity.mjs");
     expect(packageJson.scripts?.["parity:check"]).toBe("node scripts/check-parity.mjs check");
-    expect(completeRows).toHaveLength(106);
+    expect(completeRows).toHaveLength(107);
     expect(completeRows.filter(({ owner_phase }) => owner_phase === 1)).toHaveLength(60);
     expect(completeRows.filter(({ owner_phase }) => owner_phase === 2)).toHaveLength(9);
-    expect(completeRows.filter(({ owner_phase }) => owner_phase === 3)).toHaveLength(7);
+    expect(completeRows.filter(({ owner_phase }) => owner_phase === 3)).toHaveLength(8);
     expect(completeRows.filter(({ owner_phase }) => owner_phase === 4)).toHaveLength(30);
     for (const row of completeRows) {
       expect(apiDocument, row.python_symbol).toContain(
         `| \`${row.python_symbol}\` | \`${row.typescript_symbol}\` | \`${row.export_path}\` | ${String(row.owner_phase)} | \`complete\` |`,
       );
     }
-    expect(mapping.mappings.filter(({ status }) => status === "planned")).toHaveLength(55);
+    expect(mapping.mappings.filter(({ status }) => status === "planned")).toHaveLength(54);
     expect(mapping.mappings.filter(({ status }) => status === "partial")).toHaveLength(0);
   });
 
@@ -862,7 +862,7 @@ describe("Phase 4 truthful documentation and closure", () => {
     // Core parity against 2.16.1 is complete (106 rows); the staged rows
     // are the Python 2.x web expansion and the coil transport extension
     // (55 rows), tracked for the follow-up sync phases. No row is partial.
-    expect(completeRows).toHaveLength(106);
+    expect(completeRows).toHaveLength(107);
     expect(
       completeRows.every(
         ({ export_path, owner_phase }) =>
@@ -870,7 +870,7 @@ describe("Phase 4 truthful documentation and closure", () => {
           (export_path === "./web" && owner_phase === 4),
       ),
     ).toBe(true);
-    expect(plannedRows).toHaveLength(55);
+    expect(plannedRows).toHaveLength(54);
     expect(partialRows).toEqual([]);
     const clientMapping = mapping.mappings.find(
       ({ python_symbol: pythonSymbol }) => pythonSymbol === "IdmModbusClient",

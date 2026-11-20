@@ -25,6 +25,8 @@ import {
   type DiagnosticEndpoint,
   type NormalizedTransportFailureKind as NormalizedTransportFailureKindValue,
 } from "../transport/errors.js";
+import { IdmTransportError } from "../exceptions.js";
+import type { IdmCoilTransportExtension as CoilTransportExtensionView } from "../transport/types.js";
 import { createModbusSerialTransport } from "../transport/modbus-serial-adapter.js";
 import {
   createModbusReadRequest,
@@ -1280,11 +1282,127 @@ export class IdmModbusClient {
     }
   }
 
+  #requireCoilTransportLocked(): CoilTransportExtensionView {
+    const transport = this.#requireTransportLocked();
+    const candidate = transport as {
+      readCoils?: unknown;
+      writeCoil?: unknown;
+    };
+    if (typeof candidate.readCoils !== "function" || typeof candidate.writeCoil !== "function") {
+      throw new IdmTransportError(
+        "The injected transport does not implement coil access (FC01/FC05); add readCoils/writeCoil (CoilTransportExtension) to it",
+      );
+    }
+    return candidate as CoilTransportExtensionView;
+  }
+
+  async #readCoilWordsLocked(address: number, count: number): Promise<readonly number[]> {
+    // Capability check outside the retry loop: a transport without FC01/FC05
+    // support will never succeed, so retrying (and reconnecting) would only
+    // add noise before the same failure.
+    const coilTransport = this.#requireCoilTransportLocked();
+    for (let attemptIndex = 0; attemptIndex < this.#maxRetries; attemptIndex += 1) {
+      try {
+        const bits = await coilTransport.readCoils({ address, count });
+        if (bits.length !== count) {
+          throw createNormalizedTransportFailure(
+            NormalizedTransportFailureKind.INVALID_RESPONSE,
+            `Incomplete Modbus response at address ${String(address)}: got ${String(bits.length)} registers, expected ${String(count)}`,
+            this.#endpoint,
+          );
+        }
+        // Same normalisation as every other transport: raw booleans become
+        // 0/1 words so decodeValue() handles them uniformly.
+        const words = bits.map((bit) => (bit ? 1 : 0));
+        this.#connectionSuspect = false;
+        return words;
+      } catch (error) {
+        const attempt = attemptIndex + 1;
+        if (error instanceof IllegalAddressError) {
+          this.#recordCoilErrorContext("read", address, count, error, attempt);
+          throw error;
+        }
+        if (!(error instanceof NormalizedTransportFailure)) {
+          throw error;
+        }
+        this.#recordCoilErrorContext("read", address, count, error, attempt);
+        const reconnect = reconnectFailureKinds.has(error.kind);
+        if (reconnect) {
+          this.#connectionSuspect = true;
+        }
+        if (attempt === this.#maxRetries) {
+          throw error;
+        }
+        if (reconnect) {
+          await this.#tryReconnectLocked();
+        }
+        await this.#dependencies.sleep(RETRY_BACKOFF_BASE * 2 ** attemptIndex);
+      }
+    }
+    throw new Error("Unreachable retry state");
+  }
+
+  async #writeCoilLocked(address: number, value: boolean): Promise<void> {
+    const coilTransport = this.#requireCoilTransportLocked();
+    for (let attemptIndex = 0; attemptIndex < this.#maxRetries; attemptIndex += 1) {
+      try {
+        await coilTransport.writeCoil({ address, value });
+        return;
+      } catch (error) {
+        const attempt = attemptIndex + 1;
+        if (error instanceof IllegalAddressError) {
+          this.#recordCoilErrorContext("write", address, 1, error, attempt);
+          throw error;
+        }
+        if (!(error instanceof NormalizedTransportFailure)) {
+          throw error;
+        }
+        this.#recordCoilErrorContext("write", address, 1, error, attempt);
+        const reconnect = reconnectFailureKinds.has(error.kind);
+        if (reconnect) {
+          this.#connectionSuspect = true;
+        }
+        if (attempt === this.#maxRetries) {
+          throw error;
+        }
+        if (reconnect) {
+          await this.#tryReconnectLocked();
+        }
+        await this.#dependencies.sleep(RETRY_BACKOFF_BASE * 2 ** attemptIndex);
+      }
+    }
+    throw new Error("Unreachable retry state");
+  }
+
+  #recordCoilErrorContext(
+    operation: "read" | "write",
+    address: number,
+    count: number,
+    error: IllegalAddressError | NormalizedTransportFailure,
+    attempt: number,
+  ): void {
+    this.#lastErrorContext = ModbusErrorContext.create({
+      operation,
+      address,
+      count,
+      registerType: RegisterType.COIL,
+      errorType:
+        error instanceof IllegalAddressError
+          ? NormalizedTransportFailureKind.ILLEGAL_ADDRESS
+          : error.kind,
+      message: redactDiagnosticMessage(error.message, this.#endpoint),
+      attempt,
+    });
+  }
+
   async #readWordsLocked(
     registerType: RegisterType,
     address: number,
     count: number,
   ): Promise<readonly number[]> {
+    if (registerType === RegisterType.COIL) {
+      return this.#readCoilWordsLocked(address, count);
+    }
     const holding = registerType === RegisterType.HOLDING;
     const request = createModbusReadRequest({
       unitId: this.#slaveId,
@@ -1358,6 +1476,11 @@ export class IdmModbusClient {
 
   async #executeWritePlanLocked(plan: WriteSafetyResult): Promise<void> {
     await this.#ensureConnectedLocked();
+    if (plan.register.registerType === RegisterType.COIL) {
+      await this.#writeCoilLocked(plan.register.address, plan.encodedRegisters[0] === 1);
+      this.#writeSafetyState.recordSuccessfulWrite(plan.register, this.#dependencies.now());
+      return;
+    }
     const request = createModbusWriteRequest({
       unitId: this.#slaveId,
       registerType: RegisterType.HOLDING,

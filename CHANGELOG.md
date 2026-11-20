@@ -5,6 +5,21 @@ dokumentiert.
 
 ## [Unreleased]
 
+### Added
+
+- **Coil-Transport-Erweiterung `IdmCoilTransportExtension` (FC01/FC05)**
+  portiert: das optionale Interface ergänzt `readCoils`/`writeCoil` neben
+  den Wort-Methoden (Gegenstück zu Pythons 2.5.0-Erweiterung); der
+  modbus-serial-Adapter implementiert es, Byte-Padding wird auf die
+  angeforderte Bitzahl gekürzt, Kurzantworten als Invalid-Response
+  klassifiziert. Der Client erkennt die Fähigkeit per Duck-Checking und
+  meldet eine handlungsanleitende `IdmTransportError`, wenn ein
+  Coil-Register (c3000 Störung quittieren, c3003 Vorrangladung anfordern)
+  über einen Transport ohne Coil-Unterstützung gelesen oder geschrieben
+  wird. Coil-Leseflüsse laufen durch Batching, Retry,
+  Illegal-Data-Address-Quarantäne und Lesediagnostik, normalisiert auf
+  0/1-Wörter. Damit ist die Navigator-1.7-Runtime vollständig.
+
 ## [2.16.1] - 2026-11-19
 
 Sync der Python-Baseline von `1.0.3` auf `2.16.1` (Tag `v2.16.1`, Commit

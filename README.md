@@ -89,8 +89,9 @@ evidenzbasierten Lesepfad aus Phase 2 bereit:
 Die Paritätsmatrix enthält exakt 161 öffentliche Python-Symbole der Baseline
 `2.16.1`. 106 Zuordnungen sind `complete` (76 Paket-Root inklusive der
 Module `exceptions`, `error_codes` und `plausibility`, 30 Web der
-1.0.3-Baseline); die 55 gestaffelten Zuordnungen sind die Python-2.x-Web-Erweiterung
-und `IdmCoilTransportExtension` (FC01/FC05).
+1.0.3-Baseline); die 54 gestaffelten Zuordnungen sind die Python-2.x-Web-Erweiterung;
+`IdmCoilTransportExtension` (FC01/FC05) ist seit diesem Stand vollständig
+portiert.
 `IdmModbusClient` ist mit allen 32 öffentlichen Mitgliedern vollständig
 abgebildet, einschließlich `getRegisterOutcomes()` für die
 Lesediagnostik je Register (Wert, Rohwörter, Ablehnungsgrund).
