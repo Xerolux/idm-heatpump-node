@@ -648,7 +648,37 @@ def _codec_fixture(manifest: Mapping[str, Any], client_module: Any) -> dict[str,
     codec = client_module.ModbusCodec
     datatype = client_module.DataType
     register_def = client_module.RegisterDef
-    client = client_module.IdmModbusClient("example.invalid")
+
+    class _CodecOnlyTransport:
+        """Satisfies the transport protocol without ever connecting.
+
+        Python 2.0.0 makes pymodbus an optional extra: constructing a client
+        without an injected transport now imports pymodbus eagerly. The codec
+        fixtures only call decode/encode helpers, so a stub keeps the
+        generator runnable in a pymodbus-less environment.
+        """
+
+        connected = False
+
+        async def connect(self) -> None:
+            return None
+
+        async def close(self) -> None:
+            return None
+
+        async def destroy(self) -> None:
+            return None
+
+        async def read_input_registers(self, *, address: int, count: int) -> list[int]:
+            raise RuntimeError("codec fixtures never read registers")
+
+        async def read_holding_registers(self, *, address: int, count: int) -> list[int]:
+            raise RuntimeError("codec fixtures never read registers")
+
+        async def write_registers(self, *, address: int, values: list[int]) -> None:
+            raise RuntimeError("codec fixtures never write registers")
+
+    client = client_module.IdmModbusClient("example.invalid", transport=_CodecOnlyTransport())
     primitive: list[dict[str, Any]] = [
         _success_case("primitive_float32_low_word_first", "decode_float32", {"words": [0, 16256], "swapped": False}, lambda: codec.decode_float32([0, 16256])),
         _success_case("primitive_float32_swapped", "decode_float32", {"words": [16256, 0], "swapped": True}, lambda: codec.decode_float32([16256, 0], swapped=True)),
