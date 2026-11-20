@@ -211,3 +211,30 @@ export function validateModbusWords(
   });
   return Object.freeze(owned);
 }
+
+/**
+ * Optional coil access (Modbus FC01/FC05), needed for the Navigator 1.x
+ * coil block from address 3000. The TypeScript counterpart of Python's
+ * `IdmCoilTransportExtension`: deliberately not part of `ModbusTransport`
+ * so transports written against the original word-only boundary keep
+ * satisfying the base protocol and the client's constructor validation.
+ * The client duck-checks these methods at call time and raises an
+ * actionable error when a coil register is read or written through a
+ * transport without coil support.
+ */
+export interface CoilReadRequestInput {
+  readonly address: number;
+  readonly count: number;
+}
+
+export interface CoilWriteRequestInput {
+  readonly address: number;
+  readonly value: boolean;
+}
+
+export interface IdmCoilTransportExtension {
+  /** Read `count` coils (FC01) starting at `address`, one boolean each. */
+  readCoils(input: CoilReadRequestInput): Promise<readonly boolean[]>;
+  /** Write a single coil (FC05). */
+  writeCoil(input: CoilWriteRequestInput): Promise<void>;
+}

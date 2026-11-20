@@ -117,7 +117,12 @@ assert(implementedMembers.length === 32, "IdmModbusClient must expose exactly 32
 
 // Type-only counterparts are compile-time exports; they cannot appear as
 // runtime properties of the built module namespaces.
-const TYPE_ONLY_ROOT_SYMBOLS = new Set(["BinaryDeviceClass", "BinaryValue", "ModbusTransport"]);
+const TYPE_ONLY_ROOT_SYMBOLS = new Set([
+  "BinaryDeviceClass",
+  "BinaryValue",
+  "IdmCoilTransportExtension",
+  "ModbusTransport",
+]);
 const typeScriptExtensions = readJson(resolve(root, "contracts/typescript-extensions.json"));
 const expectedRuntimeExports = [
   ...mapping.mappings

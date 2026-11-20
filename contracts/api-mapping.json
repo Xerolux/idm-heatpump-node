@@ -974,9 +974,9 @@
       "export_path": ".",
       "kind": "class",
       "owner_phase": 3,
-      "status": "planned",
+      "status": "complete",
       "evidence_category": "transport_protocol",
-      "contract_test": "test/transport/modbus-serial-adapter.test.ts",
+      "contract_test": "test/client/coils.test.ts",
       "normalizations": ["snake_case_to_camelCase"],
       "representation": {
         "form": "readonly_object_factory",

@@ -10,6 +10,8 @@ import {
 } from "./errors.js";
 import {
   createModbusWriteRequest,
+  type CoilReadRequestInput,
+  type CoilWriteRequestInput,
   type ModbusReadRequest,
   type ModbusTransport,
   type ModbusWriteRequest,
@@ -32,6 +34,8 @@ export interface ModbusSerialClientBoundary {
   readHoldingRegisters(address: number, count: number): Promise<unknown>;
   readInputRegisters(address: number, count: number): Promise<unknown>;
   writeRegisters(address: number, values: number[]): Promise<unknown>;
+  readCoils?(address: number, count: number): Promise<unknown>;
+  writeCoil?(address: number, value: boolean): Promise<unknown>;
   close(callback: (status?: unknown) => void): void;
   destroy(callback: (status?: unknown) => void): void;
 }
@@ -120,6 +124,36 @@ function invalidResponse(request: ModbusReadRequest, endpoint: DiagnosticEndpoin
     `Invalid Modbus response at address ${String(request.address)}: expected exactly ${String(request.count)} words`,
     endpoint,
   );
+}
+
+function extractBits(
+  result: unknown,
+  request: CoilReadRequestInput,
+  endpoint: DiagnosticEndpoint,
+): readonly boolean[] {
+  const record = errorRecord(result);
+  const data = Array.isArray(record?.data)
+    ? record.data
+    : Array.isArray(result)
+      ? (result as unknown[])
+      : null;
+  if (data === null) {
+    throw createNormalizedTransportFailure(
+      NormalizedTransportFailureKind.INVALID_RESPONSE,
+      `Invalid Modbus coil response at address ${String(request.address)}: expected exactly ${String(request.count)} bits`,
+      endpoint,
+    );
+  }
+  // FC01 answers pad to byte boundaries; keep only the requested bits.
+  const bits = data.slice(0, request.count).map((bit) => bit === true || bit === 1);
+  if (bits.length !== request.count) {
+    throw createNormalizedTransportFailure(
+      NormalizedTransportFailureKind.INVALID_RESPONSE,
+      `Incomplete Modbus coil response at address ${String(request.address)}: got ${String(bits.length)} bits, expected ${String(request.count)}`,
+      endpoint,
+    );
+  }
+  return Object.freeze(bits);
 }
 
 function extractWords(
@@ -254,6 +288,41 @@ class ModbusSerialTransport implements ModbusTransport {
         ...ownedRequest.words,
       ]);
       validateWriteAcknowledgement(result, ownedRequest, this.#endpoint);
+    } catch (error) {
+      throw normalizeAdapterError(error, "write", this.#endpoint);
+    }
+  }
+
+  public async readCoils(input: CoilReadRequestInput): Promise<readonly boolean[]> {
+    const readCoils = this.#client.readCoils;
+    if (readCoils === undefined) {
+      throw createNormalizedTransportFailure(
+        NormalizedTransportFailureKind.NO_RESPONSE,
+        "The modbus-serial backend does not expose readCoils (FC01)",
+        this.#endpoint,
+      );
+    }
+    this.#client.setID(this.#configuration.unitId);
+    try {
+      const result = await readCoils.call(this.#client, input.address, input.count);
+      return extractBits(result, input, this.#endpoint);
+    } catch (error) {
+      throw normalizeAdapterError(error, "read", this.#endpoint);
+    }
+  }
+
+  public async writeCoil(input: CoilWriteRequestInput): Promise<void> {
+    const writeCoil = this.#client.writeCoil;
+    if (writeCoil === undefined) {
+      throw createNormalizedTransportFailure(
+        NormalizedTransportFailureKind.NO_RESPONSE,
+        "The modbus-serial backend does not expose writeCoil (FC05)",
+        this.#endpoint,
+      );
+    }
+    this.#client.setID(this.#configuration.unitId);
+    try {
+      await writeCoil.call(this.#client, input.address, input.value);
     } catch (error) {
       throw normalizeAdapterError(error, "write", this.#endpoint);
     }
