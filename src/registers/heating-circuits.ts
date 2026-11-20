@@ -88,6 +88,10 @@ export function getHeatingCircuitRegisters(
       writable: true,
       minVal: 0.1,
       maxVal: 3.5,
+      // Controller precision 0.05: the capture on firmware N1.MLj
+      // (idm-heatpump-hass issue #364) shows 0.35, off the old 0.1 hint
+      // grid, and the controller UI steps by 0.05.
+      step: 0.05,
       eepromSensitive: true,
     },
     {
@@ -118,6 +122,10 @@ export function getHeatingCircuitRegisters(
       writable: true,
       minVal: 15,
       maxVal: 30,
+      // 0.0 = cooling not configured for this circuit: the controller
+      // fills the pair with the "no value" zero instead of the FLOAT -1.0
+      // pattern (idm-heatpump-hass issue #532 diagnostics, 2026-10).
+      sentinelValues: [0.0],
       eepromSensitive: true,
     },
     {
@@ -128,6 +136,8 @@ export function getHeatingCircuitRegisters(
       writable: true,
       minVal: 15,
       maxVal: 30,
+      // 0.0 = cooling not configured for this circuit (see normal above).
+      sentinelValues: [0.0],
       eepromSensitive: true,
     },
     {

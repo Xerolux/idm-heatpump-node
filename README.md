@@ -10,23 +10,29 @@ vorgesehene Paketname ist:
 
 ## Status
 
-**Der vollständige öffentliche Funktionsumfang der aktuell neuesten stabilen
-Python-Referenz ist implementiert und maschinengeprüft: Modbus Read/Write,
-Erkennung, Fehlerverhalten und das optionale read-only Web-Supplement.**
+**Der vollständige öffentliche Kern-Funktionsumfang der Python-Referenz `2.16.1`
+ist implementiert und maschinengeprüft: Modbus Read/Write, Erkennung,
+Fehlerverhalten, Fehlercode-Datenbank, Plausibilitätshelfer und die
+Navigator-1.7-Registerkarte.** Das optionale Web-Supplement liegt funktional
+auf dem Stand der Python-`1.0.3`-Baseline; die Python-2.x-Web-Erweiterung
+(52 Symbole) und die Coil-Transport-Erweiterung (FC01/FC05) sind als
+`planned` gestaffelt und werden in den Folge-Syncs portiert. Ein
+npm-Release ist laut Release-Gate erst nach vollständiger Parität zulässig.
 
-`package.json` ist für das erste öffentliche Paket bewusst auf `private: false`
-gesetzt. Version `1.0.3` (gespiegelt an der Python-Baseline) wird unter
-`@xerolux/idm-heatpump` veröffentlicht.
+`package.json` bleibt bewusst auf `private: false` gesetzt. Version `2.16.1`
+(gespiegelt an der Python-Baseline) wird nach Abschluss der gestaffelten
+Bereiche unter `@xerolux/idm-heatpump` veröffentlicht.
 Vor jeder späteren Version muss dieselbe Freshness- und Paritätsprüfung erneut
 erfolgreich laufen.
 
 Die exakt geprüfte Python-Baseline ist:
 
-- Paketversion: `1.0.3`
-- Git-Tag: `v1.0.3`
-- vollständiger Commit: `6b834747a05931c4512ebdbb03292b487a3f986d`
+- Paketversion: `2.16.1`
+- Git-Tag: `v2.16.1`
+- vollständiger Commit: `0347f2553a046159c19f6913f63099625da88668`
 
-`UPSTREAM-PARITY.json` steht auf `complete`. Keine Node-Hardwarevalidierung
+`UPSTREAM-PARITY.json` steht auf `partial` (Kern vollständig, Web-Staging
+dokumentiert). Keine Node-Hardwarevalidierung
 durchgeführt; sämtliche Prüfungen verwenden reproduzierbare Fake-Transporte,
 Fake-Zeit und Antworten der Python-Referenz.
 
@@ -80,10 +86,14 @@ evidenzbasierten Lesepfad aus Phase 2 bereit:
 - Sentinel-Autorität über `effectiveSentinelValues` je Registerdefinition;
 - öffentliches `setModelInfo` zum expliziten Setzen erkannter Modellinformation.
 
-Die Paritätsmatrix enthält exakt 95 öffentliche Python-Symbole. Alle 95
-Zuordnungen sind `complete` (65 Paket-Root, 30 Web);
-`IdmModbusClient` ist mit allen 31 öffentlichen Mitgliedern vollständig
-abgebildet.
+Die Paritätsmatrix enthält exakt 161 öffentliche Python-Symbole der Baseline
+`2.16.1`. 106 Zuordnungen sind `complete` (76 Paket-Root inklusive der
+Module `exceptions`, `error_codes` und `plausibility`, 30 Web der
+1.0.3-Baseline); die 55 gestaffelten Zuordnungen sind die Python-2.x-Web-Erweiterung
+und `IdmCoilTransportExtension` (FC01/FC05).
+`IdmModbusClient` ist mit allen 32 öffentlichen Mitgliedern vollständig
+abgebildet, einschließlich `getRegisterOutcomes()` für die
+Lesediagnostik je Register (Wert, Rohwörter, Ablehnungsgrund).
 `ModbusTransport` ist das dokumentierte TypeScript-Gegenstück des öffentlichen
 Python-Protokolls `IdmModbusTransport`.
 
@@ -155,7 +165,11 @@ keine Modbus-Authentifizierung. Verwende sie nur in einem vertrauenswürdigen
 lokalen Netzwerk und trenne das Gerät durch geeignete Netzwerkregeln von nicht
 vertrauenswürdigen Netzen.
 
-Navigator 1.0/1.7 ist eine andere, nicht unterstützte und ausdrücklich
+Navigator 1.0/1.7 besitzt seit diesem Sync eine eigene Registerkarte
+(Registermap 149/154 Register, Signatur-Erkennung über die
+Illegal-Data-Address-Antworten von 1350/1498/2000 plus Kernsonde 1000);
+Coil-Kommandos (FC01/FC05, c3000/c3003) sind gestaffelt, bis die
+Transport-Erweiterung portiert ist. Navigator 1.0/1.7 blieb vorher eine andere, nicht unterstützte und ausdrücklich
 ausgeschlossene Protokollfamilie. Dieses Paket übernimmt keine Adressen dieser
 Familie in die Navigator-2.0/Pro/10-Registerkarte.
 

@@ -35,9 +35,9 @@ EXPECTED_BASELINE = {
     "schema_version": 1,
     "repository": "https://github.com/Xerolux/idm-heatpump-api",
     "python_package": "idm-heatpump-api",
-    "python_version": "1.0.3",
-    "git_tag": "v1.0.3",
-    "git_commit": "6b834747a05931c4512ebdbb03292b487a3f986d",
+    "python_version": "2.16.1",
+    "git_tag": "v2.16.1",
+    "git_commit": "0347f2553a046159c19f6913f63099625da88668",
 }
 EXPECTED_MANIFEST_FIELDS = {
     "schema_version",
@@ -532,8 +532,11 @@ def _class_validation_boundaries(class_value: type[Any]) -> list[dict[str, Any]]
 def _public_fixtures(manifest: Mapping[str, Any], checkout: Path, package: Any) -> tuple[dict[str, Any], dict[str, Any]]:
     groups = _source_groups(checkout)
     public_names = list(package.__all__)
-    if len(public_names) != 95 or len(set(public_names)) != 95:
-        fail("fixture_invalid", "pinned package must expose exactly 95 unique symbols")
+    # 95 = Python 1.0.3 baseline; 161 = Python 2.16.1 (error-code database,
+    # plausibility helpers, Navigator 1.7 constants, coil extension and the
+    # 2.x web expansion).
+    if len(public_names) != 161 or len(set(public_names)) != 161:
+        fail("fixture_invalid", "pinned package must expose exactly 161 unique symbols")
     symbols: list[dict[str, Any]] = []
     aliases: list[dict[str, str]] = []
     classes_by_identity: dict[tuple[str, str], dict[str, Any]] = {}
@@ -589,7 +592,7 @@ def _public_fixtures(manifest: Mapping[str, Any], checkout: Path, package: Any) 
             entry["public_names"].append(name)
     root_count = sum(symbol["export_boundary"] == "." for symbol in symbols)
     web_count = len(symbols) - root_count
-    if (root_count, web_count) != (65, 30):
+    if (root_count, web_count) != (77, 84):
         fail("fixture_invalid", f"unexpected public ownership split: {root_count}/{web_count}")
     public_api = _fixture_root(
         manifest,
@@ -645,7 +648,37 @@ def _codec_fixture(manifest: Mapping[str, Any], client_module: Any) -> dict[str,
     codec = client_module.ModbusCodec
     datatype = client_module.DataType
     register_def = client_module.RegisterDef
-    client = client_module.IdmModbusClient("example.invalid")
+
+    class _CodecOnlyTransport:
+        """Satisfies the transport protocol without ever connecting.
+
+        Python 2.0.0 makes pymodbus an optional extra: constructing a client
+        without an injected transport now imports pymodbus eagerly. The codec
+        fixtures only call decode/encode helpers, so a stub keeps the
+        generator runnable in a pymodbus-less environment.
+        """
+
+        connected = False
+
+        async def connect(self) -> None:
+            return None
+
+        async def close(self) -> None:
+            return None
+
+        async def destroy(self) -> None:
+            return None
+
+        async def read_input_registers(self, *, address: int, count: int) -> list[int]:
+            raise RuntimeError("codec fixtures never read registers")
+
+        async def read_holding_registers(self, *, address: int, count: int) -> list[int]:
+            raise RuntimeError("codec fixtures never read registers")
+
+        async def write_registers(self, *, address: int, values: list[int]) -> None:
+            raise RuntimeError("codec fixtures never write registers")
+
+    client = client_module.IdmModbusClient("example.invalid", transport=_CodecOnlyTransport())
     primitive: list[dict[str, Any]] = [
         _success_case("primitive_float32_low_word_first", "decode_float32", {"words": [0, 16256], "swapped": False}, lambda: codec.decode_float32([0, 16256])),
         _success_case("primitive_float32_swapped", "decode_float32", {"words": [16256, 0], "swapped": True}, lambda: codec.decode_float32([16256, 0], swapped=True)),
@@ -701,7 +734,7 @@ def _codec_fixture(manifest: Mapping[str, Any], client_module: Any) -> dict[str,
 
 
 REGISTER_FIELDS = (
-    "address", "datatype", "name", "unit", "writable", "min_val", "max_val", "enum_options",
+    "address", "datatype", "name", "unit", "writable", "min_val", "max_val", "step", "enum_options",
     "multiplier", "register_type", "eeprom_sensitive", "cyclic_required", "cyclic_write_ttl",
     "binary", "enabled_by_default", "state_class", "icon", "write_only", "write_class",
     "exclude_from_write", "source", "source_version", "supported_models", "sentinel_values",
@@ -718,6 +751,7 @@ def _serialize_register(register: Any) -> dict[str, Any]:
         "writable": register.writable,
         "min_val": register.min_val,
         "max_val": register.max_val,
+        "step": register.step,
         "enum_options": {str(key): value for key, value in sorted((register.enum_options or {}).items())},
         "multiplier": register.multiplier,
         "register_type": register.register_type.value,
@@ -800,6 +834,18 @@ def _register_fixture(manifest: Mapping[str, Any], checkout: Path, client_module
             "default": _serialize_map(registers.build_register_map()),
             "navigator_10_full": _serialize_map(registers.build_register_map(model_info=navigator_10)),
             "navigator_20_circuit_a": _serialize_map(registers.build_register_map(model_info=navigator_20)),
+            "navigator_17": _serialize_map(
+                registers.build_register_map(
+                    model_info=_model_info(client_module, constants.MODEL_NAVIGATOR_17, [], 0)
+                )
+            ),
+            "navigator_17_pv": _serialize_map(
+                registers.build_register_map(
+                    model_info=_model_info(
+                        client_module, constants.MODEL_NAVIGATOR_17, [], 0, pv=True
+                    )
+                )
+            ),
         },
     }
     snapshot_path = checkout / "tests" / "fixtures" / "register_schema_v1.json"
@@ -811,15 +857,26 @@ def _register_fixture(manifest: Mapping[str, Any], checkout: Path, client_module
     if current_schema != snapshot:
         fail("fixture_invalid", "generated register maps differ from pinned upstream snapshot")
     expected_snapshot_bytes = json.dumps(current_schema, ensure_ascii=False, indent=2).encode("utf-8")
-    if snapshot_bytes != expected_snapshot_bytes:
+    if snapshot_bytes not in (
+        expected_snapshot_bytes,
+        # The upstream snapshot gained a single trailing newline when the
+        # 1.7 maps were appended; both spellings stay byte-canonical.
+        expected_snapshot_bytes + b"\n",
+    ):
         fail("fixture_invalid", "pinned register snapshot bytes are not canonical")
-    expected_counts = {"default": 267, "navigator_10_full": 587, "navigator_20_circuit_a": 105}
+    expected_counts = {
+        "default": 267,
+        "navigator_10_full": 587,
+        "navigator_20_circuit_a": 105,
+        "navigator_17": 149,
+        "navigator_17_pv": 154,
+    }
     if {name: len(values) for name, values in current_schema["maps"].items()} != expected_counts:
         fail("fixture_invalid", "pinned register map counts changed")
     for values in current_schema["maps"].values():
         for register in values.values():
             if tuple(register) != REGISTER_FIELDS:
-                fail("fixture_invalid", "register serialization does not contain the exact 26 fields")
+                fail("fixture_invalid", "register serialization does not contain the exact 27 fields")
 
     circuits = []
     for letter in "ABCDEFG":
@@ -1220,6 +1277,9 @@ class _RuntimeHarness:
         finally:
             self.timeout_ms = previous
 
+    def timeout_scope(self, timeout: float) -> "_RuntimeTimeoutScope":
+        return _RuntimeTimeoutScope(self, timeout)
+
     async def sleep(self, delay: float) -> None:
         numeric = float(delay)
         if not math.isfinite(numeric) or numeric < 0:
@@ -1249,6 +1309,31 @@ class _RuntimeHarness:
                 "fixture_invalid",
                 f"runtime fake has {len(self.scripts) - self.index} unconsumed response(s) in {self.name}",
             )
+
+
+class _RuntimeTimeoutScope:
+    """Deterministic stand-in for ``asyncio.timeout`` (Python 2.14.5+ client).
+
+    The 1.0 harness model never fires the request timeout: the fake
+    transport resolves deterministically and the recorded request carries
+    ``timeoutMs`` instead. The real context manager would cancel a
+    nextafter-zero deadline before the fake's answer resolves, so the
+    scenarios pin the same request-shape contract as before.
+    """
+
+    def __init__(self, harness: _RuntimeHarness, timeout: float) -> None:
+        self._harness = harness
+        self._timeout = timeout
+        self._previous: int | None = None
+
+    async def __aenter__(self) -> "_RuntimeTimeoutScope":
+        self._previous = self._harness.timeout_ms
+        self._harness.timeout_ms = _runtime_timeout_milliseconds(self._timeout)
+        return self
+
+    async def __aexit__(self, exc_type: Any, exc: Any, tb: Any) -> bool:
+        self._harness.timeout_ms = self._previous
+        return False
 
 
 class _RuntimeFakeTransport:
@@ -1319,13 +1404,18 @@ class _RuntimeFakeTransport:
             if source == "timeout_exception":
                 raise TimeoutError(message)
             if source == "connection_exception":
-                raise self.harness.client_module.ConnectionException(message)
+                # Python 2.x: the library-owned hierarchy replaces the
+                # pymodbus ConnectionException transport failure.
+                raise self.harness.client_module.IdmConnectionError(message)
             if source == "socket_or_os_error":
                 raise OSError(message)
             if source == "modbus_io_exception_or_structured_no_response":
-                raise self.harness.client_module.ModbusIOException(message)
+                # Python 2.x: a request with no usable answer (timeout,
+                # short or shifted response) is an IdmTransportError.
+                raise self.harness.client_module.IdmTransportError(message)
             if source == "other_modbus_exception":
-                raise self.harness.client_module.ModbusException(message)
+                # Python 2.x: the device answered and refused.
+                raise self.harness.client_module.IdmDeviceError(message)
             fail("fixture_invalid", f"runtime fake cannot execute source: {source}")
         finally:
             self.harness.active_requests -= 1
@@ -1452,8 +1542,10 @@ def _run_runtime_scenario(
 
     original_sleep = client_module.asyncio.sleep
     original_wait_for = client_module.asyncio.wait_for
+    original_timeout = client_module.asyncio.timeout
     client_module.asyncio.sleep = harness.sleep
     client_module.asyncio.wait_for = harness.wait_for
+    client_module.asyncio.timeout = harness.timeout_scope
     try:
         try:
             result = asyncio.run(execute(client, transport, harness))
@@ -1467,6 +1559,7 @@ def _run_runtime_scenario(
     finally:
         client_module.asyncio.sleep = original_sleep
         client_module.asyncio.wait_for = original_wait_for
+        client_module.asyncio.timeout = original_timeout
 
     harness.assert_consumed()
     scenario = {
@@ -2212,34 +2305,41 @@ def _transport_fixture(
 
     missing = lambda: _runtime_error("numeric_modbus_exception_code_2")
 
-    def heating_detection_scripts(
-        configured: Mapping[int, tuple[Mapping[str, Any], Mapping[str, Any]]] | None = None,
-    ) -> list[Mapping[str, Any]]:
-        configured = configured or {}
-        result: list[Mapping[str, Any]] = []
+    # Python 2.14.5 detection request shape: the first slot of each signal
+    # is probed individually (it gates the Navigator 1.7 family signature);
+    # when it answers, the remaining slots are fetched with one adjacent
+    # batch per signal (flow temperatures 1350-1363 as one 14-word read,
+    # active modes 1498-1504 as one 7-word read). Unconfigured slots carry
+    # the -1.0 float sentinel / the 0xFF UCHAR "not configured" word.
+    def flow_gate_words() -> Mapping[str, Any]:
+        return _runtime_words(codec.encode_float32(25.0))
+
+    def flow_batch_words(configured: Mapping[int, float] | None = None) -> Mapping[str, Any]:
+        words: list[int] = []
         for index in range(7):
-            pair = configured.get(index)
-            result.extend(pair if pair is not None else (missing(), missing()))
-        return result
+            words.extend(codec.encode_float32(float((configured or {}).get(index, -1.0))))
+        return _runtime_words(words)
+
+    def mode_gate_words() -> Mapping[str, Any]:
+        return _runtime_words([0])
+
+    def mode_batch_words(configured: Mapping[int, int] | None = None) -> Mapping[str, Any]:
+        return _runtime_words([(configured or {}).get(index, 0xFF) for index in range(7)])
 
     scenarios.extend(
         [
             detection_scenario(
                 "detect_unknown",
-                [*heating_detection_scripts(), *[missing() for _ in range(10)]],
+                [missing() for _ in range(27)],
                 include_firmware=True,
             ),
             detection_scenario(
                 "detect_navigator_20",
                 [
-                    *heating_detection_scripts(
-                        {
-                            0: (
-                                _runtime_words(codec.encode_float32(25.0)),
-                                _runtime_words([0]),
-                            )
-                        }
-                    ),
+                    flow_gate_words(),
+                    flow_batch_words({0: 25.0}),
+                    mode_gate_words(),
+                    mode_batch_words({0: 0}),
                     *[missing() for _ in range(9)],
                 ],
                 include_firmware=False,
@@ -2247,23 +2347,19 @@ def _transport_fixture(
             detection_scenario(
                 "detect_navigator_pro",
                 [
-                    *heating_detection_scripts(),
+                    *[missing() for _ in range(16)],
                     _runtime_words([1]),
-                    *[missing() for _ in range(9)],
+                    *[missing() for _ in range(10)],
                 ],
                 include_firmware=False,
             ),
             detection_scenario(
                 "detect_navigator_10_full",
                 [
-                    *heating_detection_scripts(
-                        {
-                            0: (
-                                _runtime_words(codec.encode_float32(25.0)),
-                                _runtime_words([0]),
-                            )
-                        }
-                    ),
+                    flow_gate_words(),
+                    flow_batch_words({0: 25.0}),
+                    mode_gate_words(),
+                    mode_batch_words({0: 0}),
                     _runtime_words([1]),
                     missing(),
                     missing(),
@@ -2279,21 +2375,10 @@ def _transport_fixture(
             detection_scenario(
                 "detect_unavailable_slots_and_cascade_sentinel",
                 [
-                    *heating_detection_scripts(
-                        {
-                            0: (
-                                _runtime_words(codec.encode_float32(25.0)),
-                                _runtime_words([0]),
-                            ),
-                            **{
-                                index: (
-                                    _runtime_words(codec.encode_float32(-1.0)),
-                                    _runtime_words([0xFFFF]),
-                                )
-                                for index in range(1, 7)
-                            },
-                        }
-                    ),
+                    flow_gate_words(),
+                    flow_batch_words({0: 25.0}),
+                    mode_gate_words(),
+                    mode_batch_words({0: 0}),
                     missing(),
                     missing(),
                     _runtime_words(codec.encode_float32(float("nan"))),
@@ -2309,20 +2394,11 @@ def _transport_fixture(
             detection_scenario(
                 "detect_terra_swm_sentinel_answers",
                 [
-                    *heating_detection_scripts(
-                        {
-                            0: (
-                                _runtime_words(codec.encode_float32(25.0)),
-                                _runtime_words([0]),
-                            )
-                        }
-                    ),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
+                    flow_gate_words(),
+                    flow_batch_words({0: 25.0}),
+                    mode_gate_words(),
+                    mode_batch_words({0: 0}),
+                    *[missing() for _ in range(6)],
                     _runtime_words(codec.encode_float32(-1.0)),
                     _runtime_words([0xFFFF]),
                     missing(),
@@ -2332,20 +2408,11 @@ def _transport_fixture(
             detection_scenario(
                 "detect_standby_navigator_10_power_registers",
                 [
-                    *heating_detection_scripts(
-                        {
-                            0: (
-                                _runtime_words(codec.encode_float32(25.0)),
-                                _runtime_words([0]),
-                            )
-                        }
-                    ),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
+                    flow_gate_words(),
+                    flow_batch_words({0: 25.0}),
+                    mode_gate_words(),
+                    mode_batch_words({0: 0}),
+                    *[missing() for _ in range(6)],
                     _runtime_words(codec.encode_float32(0.0)),
                     _runtime_words([0xFF]),
                     _runtime_words(codec.encode_float32(0.0)),
@@ -2356,16 +2423,11 @@ def _transport_fixture(
             detection_scenario(
                 "detect_navigator_10_via_booster_fault",
                 [
-                    *heating_detection_scripts(),
+                    *[missing() for _ in range(16)],
                     _runtime_words([1]),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
-                    missing(),
+                    *[missing() for _ in range(7)],
                     _runtime_words([3]),
+                    missing(),
                 ],
                 include_firmware=False,
             ),
@@ -2469,19 +2531,19 @@ WRITE_ACTION_KINDS = (
 # reviewed validation code must match both its closed exception family and the
 # terminal traceback location of the guard that rejected the value.
 WRITE_VALIDATION_REJECTION_SPECS = {
-    "write_unknown_register": (KeyError, "_get_register_by_key", 1400),
-    "write_read_only": (ValueError, "simulate_write", 1370),
-    "write_model_unavailable": (ValueError, "_validate_model_availability", 1483),
-    "write_boolean_required": (ValueError, "_validate_write_allowed", 1415),
-    "write_boolean_for_numeric": (ValueError, "_validate_write_allowed", 1420),
-    "write_not_numeric": (ValueError, "_validate_write_allowed", 1424),
-    "write_nonfinite": (ValueError, "_validate_write_allowed", 1426),
-    "write_integer_required": (ValueError, "_validate_write_allowed", 1439),
-    "write_excluded": (ValueError, "_validate_write_allowed", 1443),
-    "write_below_minimum": (ValueError, "_validate_write_allowed", 1448),
-    "write_above_maximum": (ValueError, "_validate_write_allowed", 1450),
-    "write_enum_unsupported": (ValueError, "_validate_write_allowed", 1455),
-    "write_eeprom_throttled": (ValueError, "_validate_write_allowed", 1467),
+    "write_unknown_register": (KeyError, "_get_register_by_key", 1599),
+    "write_read_only": (ValueError, "simulate_write", 1569),
+    "write_model_unavailable": (ValueError, "_validate_model_availability", 1682),
+    "write_boolean_required": (ValueError, "_validate_write_allowed", 1614),
+    "write_boolean_for_numeric": (ValueError, "_validate_write_allowed", 1619),
+    "write_not_numeric": (ValueError, "_validate_write_allowed", 1623),
+    "write_nonfinite": (ValueError, "_validate_write_allowed", 1625),
+    "write_integer_required": (ValueError, "_validate_write_allowed", 1638),
+    "write_excluded": (ValueError, "_validate_write_allowed", 1642),
+    "write_below_minimum": (ValueError, "_validate_write_allowed", 1647),
+    "write_above_maximum": (ValueError, "_validate_write_allowed", 1649),
+    "write_enum_unsupported": (ValueError, "_validate_write_allowed", 1654),
+    "write_eeprom_throttled": (ValueError, "_validate_write_allowed", 1666),
 }
 
 
@@ -2703,13 +2765,17 @@ class _WriteFakeTransport:
             if source == "timeout_exception":
                 raise TimeoutError(message)
             if source == "connection_exception":
-                raise self.harness.client_module.ConnectionException(message)
+                # Python 2.x library-owned hierarchy replaces the pymodbus
+                # ConnectionException.
+                raise self.harness.client_module.IdmConnectionError(message)
             if source == "socket_or_os_error":
                 raise OSError(message)
             if source == "modbus_io_exception_or_structured_no_response":
-                raise self.harness.client_module.ModbusIOException(message)
+                # No usable answer: timeout, short or shifted response.
+                raise self.harness.client_module.IdmTransportError(message)
             if source == "other_modbus_exception":
-                raise self.harness.client_module.ModbusException(message)
+                # The device answered and refused the request.
+                raise self.harness.client_module.IdmDeviceError(message)
             if source == "structured_illegal_address_marker":
                 raise self.harness.client_module.IllegalAddressError(message)
             fail("fixture_invalid", f"write fake cannot execute source: {source}")

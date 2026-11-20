@@ -46,9 +46,9 @@ const EXPECTED_BASELINE = Object.freeze({
   schema_version: 1,
   repository: "https://github.com/Xerolux/idm-heatpump-api",
   python_package: "idm-heatpump-api",
-  python_version: "1.0.3",
-  git_tag: "v1.0.3",
-  git_commit: "6b834747a05931c4512ebdbb03292b487a3f986d",
+  python_version: "2.16.1",
+  git_tag: "v2.16.1",
+  git_commit: "0347f2553a046159c19f6913f63099625da88668",
 });
 const GENERATED_PATHS = Object.freeze([
   "test/fixtures/public-api.json",
@@ -413,7 +413,11 @@ function provisionPython(runtime, ownedRoot) {
   runPython(
     runtime,
     "python3.12",
-    ["-m", "venv", "--copies", runtimeVenv],
+    // --copies is only required where venv symlinks are unavailable
+    // (Windows). Copied interpreters break on standalone Python builds
+    // such as the uv-managed CPython used in local development, while
+    // symlink venvs are the Python default everywhere else.
+    ["-m", "venv", ...(process.platform === "win32" ? ["--copies"] : []), runtimeVenv],
     "Python 3.12 venv creation",
     tmpdir(),
   );

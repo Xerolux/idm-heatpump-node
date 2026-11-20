@@ -46,6 +46,7 @@ export interface RegisterDefInput {
   readonly writable?: boolean;
   readonly minVal?: number | null;
   readonly maxVal?: number | null;
+  readonly step?: number | null;
   readonly enumOptions?: Readonly<Record<number, string>> | null;
   readonly multiplier?: number;
   readonly registerType?: RegisterTypeValue;
@@ -73,6 +74,7 @@ export interface RegisterDef {
   readonly writable: boolean;
   readonly minVal: number | null;
   readonly maxVal: number | null;
+  readonly step: number | null;
   readonly enumOptions: Readonly<Record<number, string>> | null;
   readonly multiplier: number;
   readonly registerType: RegisterTypeValue;
@@ -202,6 +204,11 @@ export function createRegisterDef(input: RegisterDefInput): RegisterDef {
   if (!(Object.values(RegisterType) as readonly unknown[]).includes(requestedRegisterType)) {
     invalid(`Invalid register type: ${String(requestedRegisterType)}`);
   }
+  if (requestedRegisterType === RegisterType.COIL && input.datatype !== DataType.BOOL) {
+    // A coil is one bit; any wider datatype cannot be transported by
+    // FC01/FC05 and would silently decode garbage from a word read.
+    invalid(`Coil register ${input.name} must use DataType.BOOL`);
+  }
   if (input.address < 0) {
     invalid(`Register address must be non-negative, got ${String(input.address)}`);
   }
@@ -210,6 +217,7 @@ export function createRegisterDef(input: RegisterDefInput): RegisterDef {
   const writable = input.writable ?? false;
   const minVal = input.minVal ?? null;
   const maxVal = input.maxVal ?? null;
+  const step = input.step ?? null;
   const enumOptions = input.enumOptions ?? null;
   const multiplier = input.multiplier ?? 1;
   const registerType = requestedRegisterType;
@@ -248,6 +256,9 @@ export function createRegisterDef(input: RegisterDefInput): RegisterDef {
   if (maxVal !== null && !Number.isFinite(maxVal)) {
     invalid(`Maximum value must be finite, got ${String(maxVal)}`);
   }
+  if (step !== null && (!Number.isFinite(step) || step <= 0)) {
+    invalid(`Step must be finite and positive, got ${String(step)}`);
+  }
   if (minVal !== null && maxVal !== null && minVal > maxVal) {
     invalid(`Minimum value ${String(minVal)} exceeds maximum ${String(maxVal)}`);
   }
@@ -280,6 +291,7 @@ export function createRegisterDef(input: RegisterDefInput): RegisterDef {
     writable,
     minVal,
     maxVal,
+    step,
     enumOptions: enumOptions === null ? null : cloneAndFreeze(enumOptions),
     multiplier,
     registerType,

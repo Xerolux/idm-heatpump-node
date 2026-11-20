@@ -13,6 +13,7 @@ export type DataType = (typeof DataType)[keyof typeof DataType];
 export const RegisterType = Object.freeze({
   INPUT: "input",
   HOLDING: "holding",
+  COIL: "coil",
 } as const);
 
 export type RegisterType = (typeof RegisterType)[keyof typeof RegisterType];

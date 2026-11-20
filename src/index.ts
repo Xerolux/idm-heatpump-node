@@ -6,6 +6,14 @@ export {
   getBinaryRegisterMetadata,
 } from "./binary-metadata.js";
 export type { BinaryDeviceClass, BinaryValue } from "./binary-metadata.js";
+export {
+  IdmConnectionError,
+  IdmDeviceError,
+  IdmModbusError,
+  IdmTransportError,
+} from "./exceptions.js";
+export { ErrorCodeInfo, getErrorCodeInfo } from "./error-codes.js";
+export { isUninitializedTemperature, UNINITIALIZED_TEMPERATURE_C } from "./plausibility.js";
 export { IllegalAddressError } from "./transport/errors.js";
 export { quietPymodbusLogging } from "./transport/logging.js";
 export type { ModbusTransport } from "./transport/types.js";
@@ -25,6 +33,7 @@ export {
   FEATURE_PV,
   FEATURE_SOLAR,
   FEATURE_ZONE_MODULES,
+  HC_OPERATING_MODE_17_OPTIONS,
   HEATING_CIRCUIT_LETTERS,
   HP_OPERATING_MODE_OPTIONS,
   ISC_MODE_OPTIONS,
@@ -35,14 +44,19 @@ export {
   MODEL_DETECTION_MAX_RETRIES,
   MODEL_DETECTION_TIMEOUT,
   MODEL_NAVIGATOR_10,
+  MODEL_NAVIGATOR_17,
   MODEL_NAVIGATOR_20,
   MODEL_NAVIGATOR_PRO,
   MODEL_UNKNOWN,
+  PUMP_STATUS_OPTIONS,
   RETRY_BACKOFF_BASE,
   ROOM_MODE_OPTIONS,
   SMART_GRID_OPTIONS,
   SOLAR_MODE_OPTIONS,
+  SOLAR_OPERATING_MODE_17_OPTIONS,
+  SYSTEM_MODE_17_OPTIONS,
   SYSTEM_MODE_OPTIONS,
+  VALVE_HC_HEAT_COOL_OPTIONS,
   VARIABLE_INPUT_OPTIONS,
   ZONE_MODULE_MODE_OPTIONS,
 } from "./constants.js";

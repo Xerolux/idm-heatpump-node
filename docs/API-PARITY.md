@@ -10,12 +10,12 @@ It documents development intent; only `complete` rows with passing evidence may 
 
 - Repository: `https://github.com/Xerolux/idm-heatpump-api`
 - Python package: `idm-heatpump-api`
-- Python version/tag: `1.0.3` / `v1.0.3`
-- Full commit: `6b834747a05931c4512ebdbb03292b487a3f986d`
+- Python version/tag: `2.16.1` / `v2.16.1`
+- Full commit: `0347f2553a046159c19f6913f63099625da88668`
 - Parity schema: `1`
-- Development status: `complete`
+- Development status: `partial`
 
-**95 public symbols: 65 root, 30 web.**
+**161 public symbols: 77 root, 84 web.**
 
 ## Symbol matrix
 
@@ -32,6 +32,7 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `DEFAULT_TIMEOUT` | `DEFAULT_TIMEOUT` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `EEPROM_SENSITIVE_ADDRESSES` | `EEPROM_SENSITIVE_ADDRESSES` | `.` | 1 | `complete` | `frozen_constant` | `set_to_immutable_set_like` | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `EVU_LOCK_OPTIONS` | `EVU_LOCK_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `VALVE_HC_HEAT_COOL_OPTIONS` | `VALVE_HC_HEAT_COOL_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `FEATURE_CASCADE` | `FEATURE_CASCADE` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `FEATURE_HEATING_CIRCUITS` | `FEATURE_HEATING_CIRCUITS` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `FEATURE_ISC` | `FEATURE_ISC` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
@@ -48,14 +49,17 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `MODEL_DETECTION_MAX_RETRIES` | `MODEL_DETECTION_MAX_RETRIES` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `MODEL_DETECTION_TIMEOUT` | `MODEL_DETECTION_TIMEOUT` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `MODEL_NAVIGATOR_10` | `MODEL_NAVIGATOR_10` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `MODEL_NAVIGATOR_17` | `MODEL_NAVIGATOR_17` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `MODEL_NAVIGATOR_20` | `MODEL_NAVIGATOR_20` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `MODEL_NAVIGATOR_PRO` | `MODEL_NAVIGATOR_PRO` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `MODEL_UNKNOWN` | `MODEL_UNKNOWN` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `PUMP_STATUS_OPTIONS` | `PUMP_STATUS_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `RETRY_BACKOFF_BASE` | `RETRY_BACKOFF_BASE` | `.` | 1 | `complete` | `frozen_constant` | — | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `ROOM_MODE_OPTIONS` | `ROOM_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `SMART_GRID_OPTIONS` | `SMART_GRID_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `SOLAR_MODE_OPTIONS` | `SOLAR_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `SYSTEM_MODE_OPTIONS` | `SYSTEM_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
+| `UNINITIALIZED_TEMPERATURE_C` | `UNINITIALIZED_TEMPERATURE_C` | `.` | 1 | `complete` | `frozen_constant` | — | `plausibility`: `test/plausibility.test.ts` |
 | `VARIABLE_INPUT_OPTIONS` | `VARIABLE_INPUT_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `ZONE_MODULE_MODE_OPTIONS` | `ZONE_MODULE_MODE_OPTIONS` | `.` | 1 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `constants`: `test/semantic/constants-and-types.test.ts` |
 | `AuthenticationError` | `AuthenticationError` | `./web` | 4 | `complete` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
@@ -64,6 +68,7 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `BinaryValue` | `BinaryValue` | `.` | 3 | `complete` | `frozen_const_and_union` | — | `binary_metadata`: `test/semantic/binary-metadata.test.ts` |
 | `ConnectionError` | `ConnectionError` | `./web` | 4 | `complete` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `CsrfError` | `CsrfError` | `./web` | 4 | `complete` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `ErrorCodeInfo` | `ErrorCodeInfo` | `.` | 1 | `complete` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `error_codes`: `test/error-codes.test.ts` |
 | `AdaptiveBackoff` | `AdaptiveBackoff` | `.` | 1 | `complete` | `class` | `snake_case_to_camelCase` | `timing`: `test/semantic/constants-and-types.test.ts` |
 | `DataType` | `DataType` | `.` | 1 | `complete` | `frozen_const_and_union` | `enum_to_const_union` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
 | `FeatureFlags` | `FeatureFlags` | `.` | 1 | `complete` | `readonly_object_factory` | `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
@@ -72,16 +77,38 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `IdmNavigator20WebClient` | `IdmNavigator20WebClient` | `./web` | 4 | `complete` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_client`: `test/parity/web-contract.test.ts` |
 | `IdmModelInfo` | `IdmModelInfo` | `.` | 1 | `complete` | `readonly_object_factory` | `list_to_readonly_array`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `set_to_immutable_set_like`, `snake_case_to_camelCase` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
 | `IdmModbusClient` | `IdmModbusClient` | `.` | 2 | `complete` | `class` | `diagnostic_message_redaction`, `idm_modbus_client_options`, `internal_adapter_retries_zero`, `mapping_to_readonly_map_or_record`, `none_to_null`, `set_to_immutable_set_like`, `snake_case_to_camelCase`, `transport_error_type_to_closed_kind`, `tuple_to_readonly_array` | `transport_client`: `test/parity/transport-contract.test.ts` |
+| `IdmCoilTransportExtension` | `IdmCoilTransportExtension` | `.` | 3 | `planned` | `readonly_object_factory` | `snake_case_to_camelCase` | `transport_protocol`: `test/transport/modbus-serial-adapter.test.ts` |
 | `IdmModbusTransport` | `ModbusTransport` | `.` | 3 | `complete` | `class` | `snake_case_to_camelCase` | `transport_client`: `test/parity/transport-contract.test.ts` |
-| `IllegalAddressError` | `IllegalAddressError` | `.` | 2 | `complete` | `error_class` | `python_exception_to_error_class` | `transport_errors`: `test/client/errors.test.ts` |
+| `IdmConnectionError` | `IdmConnectionError` | `.` | 2 | `complete` | `error_class` | `python_exception_to_error_class`, `snake_case_to_camelCase` | `transport_errors`: `test/client/errors.test.ts` |
+| `IdmDeviceError` | `IdmDeviceError` | `.` | 2 | `complete` | `error_class` | `python_exception_to_error_class`, `snake_case_to_camelCase` | `transport_errors`: `test/client/errors.test.ts` |
+| `IdmModbusError` | `IdmModbusError` | `.` | 2 | `complete` | `error_class` | `python_exception_to_error_class`, `snake_case_to_camelCase` | `transport_errors`: `test/client/errors.test.ts` |
+| `IdmTransportError` | `IdmTransportError` | `.` | 2 | `complete` | `error_class` | `python_exception_to_error_class`, `snake_case_to_camelCase` | `transport_errors`: `test/client/errors.test.ts` |
+| `IllegalAddressError` | `IllegalAddressError` | `.` | 2 | `complete` | `error_class` | `python_exception_to_error_class`, `snake_case_to_camelCase` | `transport_errors`: `test/client/errors.test.ts` |
 | `ModbusCodec` | `ModbusCodec` | `.` | 1 | `complete` | `class` | `snake_case_to_camelCase` | `codec`: `test/codec.test.ts` |
 | `IdmWebAuthenticationError` | `IdmWebAuthenticationError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `IdmWebConnectionError` | `IdmWebConnectionError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `IdmWebCsrfError` | `IdmWebCsrfError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `IdmWebData` | `IdmWebData` | `./web` | 4 | `complete` | `readonly_object_factory` | `mapping_to_readonly_map_or_record`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebDemandReason` | `IdmWebDemandReason` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
 | `IdmWebDependencyError` | `IdmWebDependencyError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `IdmWebDiagnostics` | `IdmWebDiagnostics` | `./web` | 4 | `complete` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebEnergyflow` | `IdmWebEnergyflow` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
 | `IdmWebError` | `IdmWebError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `IdmWebFreshwater` | `IdmWebFreshwater` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebIon` | `IdmWebIon` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebPerformance` | `IdmWebPerformance` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebHomeDetail` | `IdmWebHomeDetail` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebHomeOverview` | `IdmWebHomeOverview` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebStatus` | `IdmWebStatus` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebHeatingCircuit` | `IdmWebHeatingCircuit` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebHeatingCircuitChoice` | `IdmWebHeatingCircuitChoice` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebHeatingCircuitRef` | `IdmWebHeatingCircuitRef` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebHeatingCircuitValue` | `IdmWebHeatingCircuitValue` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebSettingParameter` | `IdmWebSettingParameter` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `parse_navigator_heatingcircuit_response` | `parseNavigatorHeatingcircuitResponse` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_parsers`: `test/parity/web-contract.test.ts` |
+| `IdmWebSystemCircuit` | `IdmWebSystemCircuit` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebSystemMode` | `IdmWebSystemMode` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebSystemOverview` | `IdmWebSystemOverview` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
 | `IdmWebNotification` | `IdmWebNotification` | `./web` | 4 | `complete` | `readonly_object_factory` | `mapping_to_readonly_map_or_record`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
 | `IdmWebNotifications` | `IdmWebNotifications` | `./web` | 4 | `complete` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `web_data`: `test/parity/web-contract.test.ts` |
 | `IdmWebPinRejectedError` | `IdmWebPinRejectedError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
@@ -95,13 +122,50 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `WebSocketError` | `WebSocketError` | `./web` | 4 | `complete` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `IdmWebValue` | `IdmWebValue` | `./web` | 4 | `complete` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
 | `IdmWebValueDescription` | `IdmWebValueDescription` | `./web` | 4 | `complete` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebWeatherDay` | `IdmWebWeatherDay` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
+| `IdmWebWeatherDetail` | `IdmWebWeatherDetail` | `./web` | 4 | `planned` | `readonly_object_factory` | `none_to_null`, `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `web_data`: `test/parity/web-contract.test.ts` |
 | `ModbusErrorContext` | `ModbusErrorContext` | `.` | 2 | `complete` | `readonly_object_factory` | `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase` | `transport_errors`: `test/client/diagnostics.test.ts` |
 | `PollRateLimiter` | `PollRateLimiter` | `.` | 1 | `complete` | `class` | — | `timing`: `test/semantic/constants-and-types.test.ts` |
 | `RECOMMENDED_WEB_SCAN_INTERVAL` | `RECOMMENDED_WEB_SCAN_INTERVAL` | `./web` | 4 | `complete` | `frozen_constant` | — | `web_constants`: `test/parity/web-contract.test.ts` |
 | `RegisterDef` | `RegisterDef` | `.` | 1 | `complete` | `readonly_object_factory` | `mapping_to_readonly_map_or_record`, `none_to_null`, `python_dataclass_to_readonly_object_factory`, `set_to_immutable_set_like`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `register_definition`: `test/registers/register-def.test.ts` |
 | `RegisterRegistry` | `RegisterRegistry` | `.` | 1 | `complete` | `class` | `mapping_to_readonly_map_or_record`, `none_to_null`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `RegisterType` | `RegisterType` | `.` | 1 | `complete` | `frozen_const_and_union` | `enum_to_const_union` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
+| `NAVIGATOR10_DHW_DEMAND_REASON_BITS` | `NAVIGATOR10_DHW_DEMAND_REASON_BITS` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_HEATING_DEMAND_REASON_BITS` | `NAVIGATOR10_HEATING_DEMAND_REASON_BITS` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_STATISTIC_EMHP` | `NAVIGATOR10_STATISTIC_EMHP` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_STATISTIC_EMEH` | `NAVIGATOR10_STATISTIC_EMEH` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_STATISTIC_ENERGY_FLOW` | `NAVIGATOR10_STATISTIC_ENERGY_FLOW` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_STATISTIC_HEAT_QUANTITIES` | `NAVIGATOR10_STATISTIC_HEAT_QUANTITIES` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_STATISTIC_PERIOD_DAILY` | `NAVIGATOR10_STATISTIC_PERIOD_DAILY` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_STATISTIC_PERIOD_TODAY` | `NAVIGATOR10_STATISTIC_PERIOD_TODAY` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_STATISTIC_PERIOD_TOTAL` | `NAVIGATOR10_STATISTIC_PERIOD_TOTAL` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_STATISTIC_RUNTIME_BIVALENCE` | `NAVIGATOR10_STATISTIC_RUNTIME_BIVALENCE` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_STATISTIC_RUNTIME_HEATPUMP` | `NAVIGATOR10_STATISTIC_RUNTIME_HEATPUMP` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_SYSTEM_MODE_AWAY` | `NAVIGATOR10_SYSTEM_MODE_AWAY` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_SYSTEM_MODE_AUTOMATIC` | `NAVIGATOR10_SYSTEM_MODE_AUTOMATIC` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_SYSTEM_MODE_HEATING_COOLING_ONLY` | `NAVIGATOR10_SYSTEM_MODE_HEATING_COOLING_ONLY` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_SYSTEM_MODE_HOLIDAY` | `NAVIGATOR10_SYSTEM_MODE_HOLIDAY` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_SYSTEM_MODE_HOT_WATER_ONLY` | `NAVIGATOR10_SYSTEM_MODE_HOT_WATER_ONLY` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_SYSTEM_MODE_STANDBY` | `NAVIGATOR10_SYSTEM_MODE_STANDBY` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_WRITABLE_SYSTEM_MODES` | `NAVIGATOR10_WRITABLE_SYSTEM_MODES` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_DHW_SETPOINT_PARAM` | `NAVIGATOR10_DHW_SETPOINT_PARAM` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_DATETIME_SETTING_ID` | `NAVIGATOR10_DATETIME_SETTING_ID` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `parse_navigator20_response` | `parseNavigator20Response` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_parsers`: `test/parity/web-contract.test.ts` |
+| `parse_navigator20_statistics_response` | `parseNavigator20StatisticsResponse` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_parsers`: `test/parity/web-contract.test.ts` |
+| `NAVIGATOR10_DHW_SETPOINT_SETTING_ID` | `NAVIGATOR10_DHW_SETPOINT_SETTING_ID` | `./web` | 4 | `planned` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `parse_navigator_energyflow_response` | `parseNavigatorEnergyflowResponse` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_parsers`: `test/parity/web-contract.test.ts` |
+| `parse_navigator_home_overview_response` | `parseNavigatorHomeOverviewResponse` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_parsers`: `test/parity/web-contract.test.ts` |
+| `parse_navigator_setting_parameter` | `parseNavigatorSettingParameter` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_parsers`: `test/parity/web-contract.test.ts` |
+| `parse_navigator_save_response` | `parseNavigatorSaveResponse` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_parsers`: `test/parity/web-contract.test.ts` |
 | `WEB_VALUE_DESCRIPTIONS` | `WEB_VALUE_DESCRIPTIONS` | `./web` | 4 | `complete` | `frozen_constant` | `mapping_to_readonly_map_or_record` | `web_constants`: `test/parity/web-contract.test.ts` |
+| `decode_navigator10_demand_reason` | `decodeNavigator10DemandReason` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_parsers`: `test/parity/web-contract.test.ts` |
+| `parse_navigator_freshwater_response` | `parseNavigatorFreshwaterResponse` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_parsers`: `test/parity/web-contract.test.ts` |
+| `parse_navigator_home_response` | `parseNavigatorHomeResponse` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_parsers`: `test/parity/web-contract.test.ts` |
+| `parse_navigator_ion_response` | `parseNavigatorIonResponse` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_parsers`: `test/parity/web-contract.test.ts` |
+| `parse_navigator_performance_response` | `parseNavigatorPerformanceResponse` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_parsers`: `test/parity/web-contract.test.ts` |
+| `parse_navigator_status_response` | `parseNavigatorStatusResponse` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_parsers`: `test/parity/web-contract.test.ts` |
+| `parse_navigator_system_overview_response` | `parseNavigatorSystemOverviewResponse` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_parsers`: `test/parity/web-contract.test.ts` |
+| `parse_navigator_weather_response` | `parseNavigatorWeatherResponse` | `./web` | 4 | `planned` | `function` | `none_to_null`, `snake_case_to_camelCase` | `web_parsers`: `test/parity/web-contract.test.ts` |
 | `WriteClass` | `WriteClass` | `.` | 1 | `complete` | `frozen_const_and_union` | `enum_to_const_union` | `domain_types`: `test/semantic/constants-and-types.test.ts` |
 | `WriteSafetyResult` | `WriteSafetyResult` | `.` | 3 | `complete` | `readonly_object_factory` | `python_dataclass_to_readonly_object_factory`, `snake_case_to_camelCase`, `tuple_to_readonly_array` | `writes`: `test/parity/write-contract.test.ts` |
 | `build_register_map` | `buildRegisterMap` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
@@ -110,10 +174,12 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `get_all_registers` | `getAllRegisters` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `get_binary_register_metadata` | `getBinaryRegisterMetadata` | `.` | 3 | `complete` | `function` | `none_to_null`, `snake_case_to_camelCase` | `binary_metadata`: `test/semantic/binary-metadata.test.ts` |
 | `get_detection_registers` | `getDetectionRegisters` | `.` | 1 | `complete` | `function` | `list_to_readonly_array`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
+| `get_error_code_info` | `getErrorCodeInfo` | `.` | 1 | `complete` | `function` | `none_to_null`, `snake_case_to_camelCase` | `error_codes`: `test/error-codes.test.ts` |
 | `get_heating_circuit_registers` | `getHeatingCircuitRegisters` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `get_register` | `getRegister` | `.` | 1 | `complete` | `function` | `none_to_null`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `get_register_registry` | `getRegisterRegistry` | `.` | 1 | `complete` | `function` | `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
 | `get_zone_module_registers` | `getZoneModuleRegisters` | `.` | 1 | `complete` | `function` | `mapping_to_readonly_map_or_record`, `snake_case_to_camelCase` | `registers`: `test/registers/builders.test.ts` |
+| `is_uninitialized_temperature` | `isUninitializedTemperature` | `.` | 1 | `complete` | `function` | `none_to_null`, `snake_case_to_camelCase` | `plausibility`: `test/plausibility.test.ts` |
 | `quiet_pymodbus_logging` | `quietPymodbusLogging` | `.` | 2 | `complete` | `function` | `snake_case_to_camelCase` | `transport_logging`: `test/client/errors.test.ts` |
 | `web_pin_configured` | `webPinConfigured` | `./web` | 4 | `complete` | `function` | `snake_case_to_camelCase` | `web_configuration`: `test/parity/web-contract.test.ts` |
 
@@ -123,6 +189,9 @@ These explicitly additive symbols have no Python counterpart and do not count to
 
 | TypeScript symbol | Export path | Owner | Status | Kind | Rationale | Contract evidence |
 | --- | --- | ---: | --- | --- | --- | --- |
+| `SYSTEM_MODE_17_OPTIONS` | `.` | 1 | `complete` | `type` | Navigator 1.7 enum table consumed by the mapped 1.7 register block; Python keeps it module-private (not in __all__), TypeScript re-exports it for register consumers. | `test/semantic/constants-and-types.test.ts` |
+| `HC_OPERATING_MODE_17_OPTIONS` | `.` | 1 | `complete` | `type` | Navigator 1.7 heating-circuit operating-mode table consumed by the mapped 1.7 register block; Python keeps it module-private (not in __all__), TypeScript re-exports it for register consumers. | `test/semantic/constants-and-types.test.ts` |
+| `SOLAR_OPERATING_MODE_17_OPTIONS` | `.` | 1 | `complete` | `type` | Navigator 1.7 solar operating-mode table consumed by the mapped 1.7 register block; Python keeps it module-private (not in __all__), TypeScript re-exports it for register consumers. | `test/semantic/constants-and-types.test.ts` |
 
 ## Runtime normalization authority
 
@@ -142,6 +211,26 @@ No partial classes are currently declared.
 
 Constructor defaults, exact Python signatures, and validation boundaries remain authoritative in `test/fixtures/public-classes.json`.
 The TypeScript naming and representation decisions below are derived only from mapping rows.
+
+### ErrorCodeInfo
+
+- Representation: `readonly_object_factory`
+- Python constructor: `(code: 'int', is_warning: 'bool', text: 'str \| None', info: 'str \| None', user_description: 'str \| None', service_description: 'str \| None') -> None`
+- Validation boundaries: 1
+- Counterparts:
+  - `ErrorCodeInfo.constructor.code` → `code`
+  - `ErrorCodeInfo.constructor.is_warning` → `isWarning`
+  - `ErrorCodeInfo.constructor.text` → `text`
+  - `ErrorCodeInfo.constructor.info` → `info`
+  - `ErrorCodeInfo.constructor.user_description` → `userDescription`
+  - `ErrorCodeInfo.constructor.service_description` → `serviceDescription`
+  - `ErrorCodeInfo.code` → `code` (attribute)
+  - `ErrorCodeInfo.info` → `info` (attribute)
+  - `ErrorCodeInfo.is_warning` → `isWarning` (attribute)
+  - `ErrorCodeInfo.service_description` → `serviceDescription` (attribute)
+  - `ErrorCodeInfo.text` → `text` (attribute)
+  - `ErrorCodeInfo.user_description` → `userDescription` (attribute)
+  - `ErrorCodeInfo.display_text` → `displayText` (property)
 
 ### AdaptiveBackoff
 
@@ -224,7 +313,7 @@ The TypeScript naming and representation decisions below are derived only from m
 ### PollRateLimiter
 
 - Representation: `class`
-- Python constructor: `(interval: 'float', *, clock: 'Any' = <built-in function monotonic>) -> 'None'`
+- Python constructor: `(interval: 'float', *, clock: 'Callable[[], float]' = <built-in function monotonic>) -> 'None'`
 - Validation boundaries: 2
 - Counterparts:
   - `PollRateLimiter.constructor.interval` → `interval`
@@ -237,7 +326,7 @@ The TypeScript naming and representation decisions below are derived only from m
 ### RegisterDef
 
 - Representation: `readonly_object_factory`
-- Python constructor: `(address: 'int', datatype: 'DataType', name: 'str', unit: 'str \| None' = None, writable: 'bool' = False, min_val: 'float \| None' = None, max_val: 'float \| None' = None, enum_options: 'dict[int, str] \| None' = None, multiplier: 'float' = 1.0, register_type: 'RegisterType' = <RegisterType.INPUT: 'input'>, eeprom_sensitive: 'bool' = False, cyclic_required: 'bool' = False, cyclic_write_ttl: 'float \| None' = None, binary: 'bool' = False, enabled_by_default: 'bool' = True, state_class: 'str \| None' = None, icon: 'str \| None' = None, write_only: 'bool' = False, exclude_from_write: 'set[int] \| None' = None, source: 'str' = 'official_idm_modbus', source_version: 'str' = 'MODBUS TCP NAVIGATOR 10 2025-06-18 plus Navigator 2.0/Pro legacy docs', supported_models: 'tuple[str, ...]' = <factory>, sentinel_values: 'tuple[int \| float \| str, ...]' = (), last_verified: 'str \| None' = None) -> None`
+- Python constructor: `(address: 'int', datatype: 'DataType', name: 'str', unit: 'str \| None' = None, writable: 'bool' = False, min_val: 'float \| None' = None, max_val: 'float \| None' = None, enum_options: 'dict[int, str] \| None' = None, multiplier: 'float' = 1.0, register_type: 'RegisterType' = <RegisterType.INPUT: 'input'>, eeprom_sensitive: 'bool' = False, cyclic_required: 'bool' = False, cyclic_write_ttl: 'float \| None' = None, binary: 'bool' = False, enabled_by_default: 'bool' = True, state_class: 'str \| None' = None, icon: 'str \| None' = None, write_only: 'bool' = False, exclude_from_write: 'set[int] \| None' = None, source: 'str' = 'official_idm_modbus', source_version: 'str' = 'MODBUS TCP NAVIGATOR 10 2025-06-18 plus Navigator 2.0/Pro legacy docs', supported_models: 'tuple[str, ...]' = <factory>, sentinel_values: 'tuple[int \| float \| str, ...]' = (), last_verified: 'str \| None' = None, step: 'float \| None' = None) -> None`
 - Validation boundaries: 3
 - Counterparts:
   - `RegisterDef.constructor.address` → `address`
@@ -264,6 +353,7 @@ The TypeScript naming and representation decisions below are derived only from m
   - `RegisterDef.constructor.supported_models` → `supportedModels`
   - `RegisterDef.constructor.sentinel_values` → `sentinelValues`
   - `RegisterDef.constructor.last_verified` → `lastVerified`
+  - `RegisterDef.constructor.step` → `step`
   - `RegisterDef.address` → `address` (attribute)
   - `RegisterDef.binary` → `binary` (attribute)
   - `RegisterDef.cyclic_required` → `cyclicRequired` (attribute)
@@ -285,6 +375,7 @@ The TypeScript naming and representation decisions below are derived only from m
   - `RegisterDef.source` → `source` (attribute)
   - `RegisterDef.source_version` → `sourceVersion` (attribute)
   - `RegisterDef.state_class` → `stateClass` (attribute)
+  - `RegisterDef.step` → `step` (attribute)
   - `RegisterDef.supported_models` → `supportedModels` (attribute)
   - `RegisterDef.unit` → `unit` (attribute)
   - `RegisterDef.writable` → `writable` (attribute)

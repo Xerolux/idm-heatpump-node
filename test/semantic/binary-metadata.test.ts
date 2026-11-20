@@ -11,6 +11,8 @@ describe("binary register metadata", () => {
     expect(Object.keys(BINARY_REGISTER_METADATA).sort()).toEqual([
       "compressor_status_1",
       "compressor_status_2",
+      "compressor_status_3",
+      "compressor_status_4",
       "cooling_demand",
       "dhw_demand",
       "heating_demand",

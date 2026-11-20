@@ -29,6 +29,7 @@ import {
   getZoneModuleRegisters,
   RegisterRegistry,
 } from "../../src/registers/index.js";
+import { navigator10Only } from "../../src/registers/registry.js";
 import { DataType, IdmModelInfo, RegisterType, type IdmModelInfoInput } from "../../src/types.js";
 
 interface MappingEntry {
@@ -131,6 +132,7 @@ function serializeForStaticContract(register: RegisterDef): Readonly<Record<stri
     source: register.source,
     source_version: register.sourceVersion,
     state_class: register.stateClass,
+    step: register.step,
     supported_models: [...register.supportedModels],
     unit: register.unit,
     writable: register.writable,
@@ -220,7 +222,10 @@ describe("static register catalog", () => {
       getSolarRegisters(),
       getIscRegisters(),
       getPvRegisters(),
-      getNavigator10Registers(),
+      // The Navigator-10-only blocks enter the built map with a
+      // Navigator-10-only supported_models stamp (Python 2.0.1); compare
+      // against the stamped block so the metadata matches the fixture.
+      navigator10Only(getNavigator10Registers()),
       getGltRegisters(),
     );
     const expected = Object.fromEntries(
@@ -618,12 +623,13 @@ describe("RegisterRegistry", () => {
       scale: 1,
       min_value: 0,
       max_value: 5,
+      step: null,
       writable: true,
       register_type: "input",
       write_class: "eeprom",
       supported_models: ["Navigator 10", "Navigator 2.0", "Navigator Pro"],
     });
-    expect(Object.keys(schema[0] ?? {})).toHaveLength(11);
+    expect(Object.keys(schema[0] ?? {})).toHaveLength(12);
   });
 
   it("permits occupied-range overlaps because indexes use exact starts only", () => {

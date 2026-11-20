@@ -113,15 +113,20 @@ assert(clientClass !== undefined, "Pinned IdmModbusClient class facts are missin
 const implementedMembers = clientClass.members.map(({ name }) => {
   return name.replace(/_([a-z0-9])/gu, (_match, character) => character.toUpperCase());
 });
-assert(implementedMembers.length === 31, "IdmModbusClient must expose exactly 31 members");
+assert(implementedMembers.length === 32, "IdmModbusClient must expose exactly 32 members");
 
 // Type-only counterparts are compile-time exports; they cannot appear as
 // runtime properties of the built module namespaces.
 const TYPE_ONLY_ROOT_SYMBOLS = new Set(["BinaryDeviceClass", "BinaryValue", "ModbusTransport"]);
-const expectedRuntimeExports = mapping.mappings
-  .filter(({ export_path: exportPath, status }) => exportPath === "." && status === "complete")
-  .map(({ typescript_symbol: typescriptSymbol }) => typescriptSymbol)
-  .filter((symbol) => !TYPE_ONLY_ROOT_SYMBOLS.has(symbol));
+const typeScriptExtensions = readJson(resolve(root, "contracts/typescript-extensions.json"));
+const expectedRuntimeExports = [
+  ...mapping.mappings
+    .filter(({ export_path: exportPath, status }) => exportPath === "." && status === "complete")
+    .map(({ typescript_symbol: typescriptSymbol }) => typescriptSymbol),
+  ...typeScriptExtensions.extensions
+    .filter(({ export_path: exportPath, status }) => exportPath === "." && status === "complete")
+    .map(({ typescript_symbol: typescriptSymbol }) => typescriptSymbol),
+].filter((symbol) => !TYPE_ONLY_ROOT_SYMBOLS.has(symbol));
 const expectedWebRuntimeExports = mapping.mappings
   .filter(({ export_path: exportPath, status }) => exportPath === "./web" && status === "complete")
   .map(({ typescript_symbol: typescriptSymbol }) => typescriptSymbol);

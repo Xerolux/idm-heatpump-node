@@ -100,7 +100,12 @@ describe("normalized transport failures", () => {
       isIllegalAddress: true,
       message: "Illegal Data Address at <endpoint>",
     });
-    expect(semanticOwnProperties(illegal)).toEqual(["isIllegalAddress", "message", "name"]);
+    expect(semanticOwnProperties(illegal)).toEqual([
+      "exceptionCode",
+      "isIllegalAddress",
+      "message",
+      "name",
+    ]);
     for (const forbidden of ["adapter", "cause", "code", "raw", "response"]) {
       expect(forbidden in illegal).toBe(false);
     }

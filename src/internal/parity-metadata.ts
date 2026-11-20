@@ -52,9 +52,9 @@ const SUPPORTED_BASELINE = Object.freeze({
   schema_version: 1,
   repository: "https://github.com/Xerolux/idm-heatpump-api",
   python_package: "idm-heatpump-api",
-  python_version: "1.0.3",
-  git_tag: "v1.0.3",
-  git_commit: "6b834747a05931c4512ebdbb03292b487a3f986d",
+  python_version: "2.16.1",
+  git_tag: "v2.16.1",
+  git_commit: "0347f2553a046159c19f6913f63099625da88668",
 } as const);
 
 const PARITY_STATUSES = new Set(["planned", "partial", "complete"]);

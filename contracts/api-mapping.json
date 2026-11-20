@@ -3,9 +3,9 @@
   "baseline": {
     "repository": "https://github.com/Xerolux/idm-heatpump-api",
     "python_package": "idm-heatpump-api",
-    "python_version": "1.0.3",
-    "git_tag": "v1.0.3",
-    "git_commit": "6b834747a05931c4512ebdbb03292b487a3f986d",
+    "python_version": "2.16.1",
+    "git_tag": "v2.16.1",
+    "git_commit": "0347f2553a046159c19f6913f63099625da88668",
     "parity_schema_version": 1
   },
   "mappings": [
@@ -176,6 +176,22 @@
       "kind": "constant",
       "owner_phase": 1,
       "status": "complete",
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "VALVE_HC_HEAT_COOL_OPTIONS",
+      "typescript_symbol": "VALVE_HC_HEAT_COOL_OPTIONS",
+      "export_path": ".",
+      "status": "complete",
+      "kind": "constant",
+      "owner_phase": 1,
       "evidence_category": "constants",
       "contract_test": "test/semantic/constants-and-types.test.ts",
       "normalizations": ["mapping_to_readonly_map_or_record"],
@@ -442,6 +458,22 @@
       }
     },
     {
+      "python_symbol": "MODEL_NAVIGATOR_17",
+      "typescript_symbol": "MODEL_NAVIGATOR_17",
+      "export_path": ".",
+      "status": "complete",
+      "kind": "constant",
+      "owner_phase": 1,
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
       "python_symbol": "MODEL_NAVIGATOR_20",
       "typescript_symbol": "MODEL_NAVIGATOR_20",
       "export_path": ".",
@@ -483,6 +515,22 @@
       "evidence_category": "constants",
       "contract_test": "test/semantic/constants-and-types.test.ts",
       "normalizations": [],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "PUMP_STATUS_OPTIONS",
+      "typescript_symbol": "PUMP_STATUS_OPTIONS",
+      "export_path": ".",
+      "status": "complete",
+      "kind": "constant",
+      "owner_phase": 1,
+      "evidence_category": "constants",
+      "contract_test": "test/semantic/constants-and-types.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
       "representation": {
         "form": "frozen_constant",
         "constructor": "value",
@@ -563,6 +611,22 @@
       "evidence_category": "constants",
       "contract_test": "test/semantic/constants-and-types.test.ts",
       "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "UNINITIALIZED_TEMPERATURE_C",
+      "typescript_symbol": "UNINITIALIZED_TEMPERATURE_C",
+      "export_path": ".",
+      "kind": "constant",
+      "owner_phase": 1,
+      "status": "complete",
+      "evidence_category": "plausibility",
+      "contract_test": "test/plausibility.test.ts",
+      "normalizations": [],
       "representation": {
         "form": "frozen_constant",
         "constructor": "value",
@@ -709,6 +773,28 @@
         "alias_of": "IdmWebCsrfError",
         "constructor": "class",
         "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "ErrorCodeInfo",
+      "status": "complete",
+      "typescript_symbol": "ErrorCodeInfo",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 1,
+      "evidence_category": "error_codes",
+      "contract_test": "test/error-codes.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "ErrorCodeInfo",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
         "validation": "python_fixture"
       }
     },
@@ -883,6 +969,24 @@
       }
     },
     {
+      "python_symbol": "IdmCoilTransportExtension",
+      "typescript_symbol": "IdmCoilTransportExtension",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 3,
+      "status": "planned",
+      "evidence_category": "transport_protocol",
+      "contract_test": "test/transport/modbus-serial-adapter.test.ts",
+      "normalizations": ["snake_case_to_camelCase"],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmCoilTransportExtension",
+        "constructor": "not_constructible",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
       "python_symbol": "IdmModbusTransport",
       "typescript_symbol": "ModbusTransport",
       "export_path": ".",
@@ -906,6 +1010,78 @@
       }
     },
     {
+      "python_symbol": "IdmConnectionError",
+      "status": "complete",
+      "typescript_symbol": "IdmConnectionError",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 2,
+      "evidence_category": "transport_errors",
+      "contract_test": "test/client/errors.test.ts",
+      "normalizations": ["python_exception_to_error_class", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "error_class",
+        "python_class": "IdmConnectionError",
+        "constructor": "class",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmDeviceError",
+      "status": "complete",
+      "typescript_symbol": "IdmDeviceError",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 2,
+      "evidence_category": "transport_errors",
+      "contract_test": "test/client/errors.test.ts",
+      "normalizations": ["python_exception_to_error_class", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "error_class",
+        "python_class": "IdmDeviceError",
+        "constructor": "class",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmModbusError",
+      "status": "complete",
+      "typescript_symbol": "IdmModbusError",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 2,
+      "evidence_category": "transport_errors",
+      "contract_test": "test/client/errors.test.ts",
+      "normalizations": ["python_exception_to_error_class", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "error_class",
+        "python_class": "IdmModbusError",
+        "constructor": "class",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmTransportError",
+      "status": "complete",
+      "typescript_symbol": "IdmTransportError",
+      "export_path": ".",
+      "kind": "class",
+      "owner_phase": 2,
+      "evidence_category": "transport_errors",
+      "contract_test": "test/client/errors.test.ts",
+      "normalizations": ["python_exception_to_error_class", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "error_class",
+        "python_class": "IdmTransportError",
+        "constructor": "class",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
       "python_symbol": "IllegalAddressError",
       "typescript_symbol": "IllegalAddressError",
       "export_path": ".",
@@ -914,12 +1090,12 @@
       "status": "complete",
       "evidence_category": "transport_errors",
       "contract_test": "test/client/errors.test.ts",
-      "normalizations": ["python_exception_to_error_class"],
+      "normalizations": ["python_exception_to_error_class", "snake_case_to_camelCase"],
       "representation": {
         "form": "error_class",
         "python_class": "IllegalAddressError",
         "constructor": "class",
-        "member_naming": "preserve",
+        "member_naming": "snake_case_to_camelCase",
         "validation": "python_fixture"
       }
     },
@@ -1019,6 +1195,28 @@
       }
     },
     {
+      "python_symbol": "IdmWebDemandReason",
+      "typescript_symbol": "IdmWebDemandReason",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebDemandReason",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
       "python_symbol": "IdmWebDependencyError",
       "typescript_symbol": "IdmWebDependencyError",
       "export_path": "./web",
@@ -1060,6 +1258,28 @@
       }
     },
     {
+      "python_symbol": "IdmWebEnergyflow",
+      "typescript_symbol": "IdmWebEnergyflow",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebEnergyflow",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
       "python_symbol": "IdmWebError",
       "typescript_symbol": "IdmWebError",
       "export_path": "./web",
@@ -1074,6 +1294,330 @@
         "python_class": "IdmWebError",
         "constructor": "class",
         "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebFreshwater",
+      "typescript_symbol": "IdmWebFreshwater",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebFreshwater",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebIon",
+      "typescript_symbol": "IdmWebIon",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebIon",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebPerformance",
+      "typescript_symbol": "IdmWebPerformance",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebPerformance",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebHomeDetail",
+      "typescript_symbol": "IdmWebHomeDetail",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebHomeDetail",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebHomeOverview",
+      "typescript_symbol": "IdmWebHomeOverview",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebHomeOverview",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebStatus",
+      "typescript_symbol": "IdmWebStatus",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebStatus",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebHeatingCircuit",
+      "typescript_symbol": "IdmWebHeatingCircuit",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebHeatingCircuit",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebHeatingCircuitChoice",
+      "typescript_symbol": "IdmWebHeatingCircuitChoice",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebHeatingCircuitChoice",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebHeatingCircuitRef",
+      "typescript_symbol": "IdmWebHeatingCircuitRef",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebHeatingCircuitRef",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebHeatingCircuitValue",
+      "typescript_symbol": "IdmWebHeatingCircuitValue",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebHeatingCircuitValue",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebSettingParameter",
+      "typescript_symbol": "IdmWebSettingParameter",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebSettingParameter",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "parse_navigator_heatingcircuit_response",
+      "typescript_symbol": "parseNavigatorHeatingcircuitResponse",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_parsers",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebSystemCircuit",
+      "typescript_symbol": "IdmWebSystemCircuit",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebSystemCircuit",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebSystemMode",
+      "typescript_symbol": "IdmWebSystemMode",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebSystemMode",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebSystemOverview",
+      "typescript_symbol": "IdmWebSystemOverview",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebSystemOverview",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
         "validation": "python_fixture"
       }
     },
@@ -1334,6 +1878,50 @@
       }
     },
     {
+      "python_symbol": "IdmWebWeatherDay",
+      "typescript_symbol": "IdmWebWeatherDay",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebWeatherDay",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebWeatherDetail",
+      "typescript_symbol": "IdmWebWeatherDetail",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_data",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": [
+        "none_to_null",
+        "python_dataclass_to_readonly_object_factory",
+        "snake_case_to_camelCase"
+      ],
+      "representation": {
+        "form": "readonly_object_factory",
+        "python_class": "IdmWebWeatherDetail",
+        "constructor": "factory",
+        "member_naming": "snake_case_to_camelCase",
+        "validation": "python_fixture"
+      }
+    },
+    {
       "python_symbol": "ModbusErrorContext",
       "typescript_symbol": "ModbusErrorContext",
       "export_path": ".",
@@ -1451,6 +2039,438 @@
       }
     },
     {
+      "python_symbol": "NAVIGATOR10_DHW_DEMAND_REASON_BITS",
+      "typescript_symbol": "NAVIGATOR10_DHW_DEMAND_REASON_BITS",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_HEATING_DEMAND_REASON_BITS",
+      "typescript_symbol": "NAVIGATOR10_HEATING_DEMAND_REASON_BITS",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_STATISTIC_EMHP",
+      "typescript_symbol": "NAVIGATOR10_STATISTIC_EMHP",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_STATISTIC_EMEH",
+      "typescript_symbol": "NAVIGATOR10_STATISTIC_EMEH",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_STATISTIC_ENERGY_FLOW",
+      "typescript_symbol": "NAVIGATOR10_STATISTIC_ENERGY_FLOW",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_STATISTIC_HEAT_QUANTITIES",
+      "typescript_symbol": "NAVIGATOR10_STATISTIC_HEAT_QUANTITIES",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_STATISTIC_PERIOD_DAILY",
+      "typescript_symbol": "NAVIGATOR10_STATISTIC_PERIOD_DAILY",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_STATISTIC_PERIOD_TODAY",
+      "typescript_symbol": "NAVIGATOR10_STATISTIC_PERIOD_TODAY",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_STATISTIC_PERIOD_TOTAL",
+      "typescript_symbol": "NAVIGATOR10_STATISTIC_PERIOD_TOTAL",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_STATISTIC_RUNTIME_BIVALENCE",
+      "typescript_symbol": "NAVIGATOR10_STATISTIC_RUNTIME_BIVALENCE",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_STATISTIC_RUNTIME_HEATPUMP",
+      "typescript_symbol": "NAVIGATOR10_STATISTIC_RUNTIME_HEATPUMP",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_SYSTEM_MODE_AWAY",
+      "typescript_symbol": "NAVIGATOR10_SYSTEM_MODE_AWAY",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_SYSTEM_MODE_AUTOMATIC",
+      "typescript_symbol": "NAVIGATOR10_SYSTEM_MODE_AUTOMATIC",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_SYSTEM_MODE_HEATING_COOLING_ONLY",
+      "typescript_symbol": "NAVIGATOR10_SYSTEM_MODE_HEATING_COOLING_ONLY",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_SYSTEM_MODE_HOLIDAY",
+      "typescript_symbol": "NAVIGATOR10_SYSTEM_MODE_HOLIDAY",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_SYSTEM_MODE_HOT_WATER_ONLY",
+      "typescript_symbol": "NAVIGATOR10_SYSTEM_MODE_HOT_WATER_ONLY",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_SYSTEM_MODE_STANDBY",
+      "typescript_symbol": "NAVIGATOR10_SYSTEM_MODE_STANDBY",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_WRITABLE_SYSTEM_MODES",
+      "typescript_symbol": "NAVIGATOR10_WRITABLE_SYSTEM_MODES",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_DHW_SETPOINT_PARAM",
+      "typescript_symbol": "NAVIGATOR10_DHW_SETPOINT_PARAM",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_DATETIME_SETTING_ID",
+      "typescript_symbol": "NAVIGATOR10_DATETIME_SETTING_ID",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "parse_navigator20_response",
+      "typescript_symbol": "parseNavigator20Response",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_parsers",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "parse_navigator20_statistics_response",
+      "typescript_symbol": "parseNavigator20StatisticsResponse",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_parsers",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "NAVIGATOR10_DHW_SETPOINT_SETTING_ID",
+      "typescript_symbol": "NAVIGATOR10_DHW_SETPOINT_SETTING_ID",
+      "export_path": "./web",
+      "kind": "constant",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_constants",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["mapping_to_readonly_map_or_record"],
+      "representation": {
+        "form": "frozen_constant",
+        "constructor": "value",
+        "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "parse_navigator_energyflow_response",
+      "typescript_symbol": "parseNavigatorEnergyflowResponse",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_parsers",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "parse_navigator_home_overview_response",
+      "typescript_symbol": "parseNavigatorHomeOverviewResponse",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_parsers",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "parse_navigator_setting_parameter",
+      "typescript_symbol": "parseNavigatorSettingParameter",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_parsers",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "parse_navigator_save_response",
+      "typescript_symbol": "parseNavigatorSaveResponse",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_parsers",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
       "python_symbol": "WEB_VALUE_DESCRIPTIONS",
       "typescript_symbol": "WEB_VALUE_DESCRIPTIONS",
       "export_path": "./web",
@@ -1464,6 +2484,134 @@
         "form": "frozen_constant",
         "constructor": "value",
         "validation": "constant_fixture"
+      }
+    },
+    {
+      "python_symbol": "decode_navigator10_demand_reason",
+      "typescript_symbol": "decodeNavigator10DemandReason",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_parsers",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "parse_navigator_freshwater_response",
+      "typescript_symbol": "parseNavigatorFreshwaterResponse",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_parsers",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "parse_navigator_home_response",
+      "typescript_symbol": "parseNavigatorHomeResponse",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_parsers",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "parse_navigator_ion_response",
+      "typescript_symbol": "parseNavigatorIonResponse",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_parsers",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "parse_navigator_performance_response",
+      "typescript_symbol": "parseNavigatorPerformanceResponse",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_parsers",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "parse_navigator_status_response",
+      "typescript_symbol": "parseNavigatorStatusResponse",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_parsers",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "parse_navigator_system_overview_response",
+      "typescript_symbol": "parseNavigatorSystemOverviewResponse",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_parsers",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "parse_navigator_weather_response",
+      "typescript_symbol": "parseNavigatorWeatherResponse",
+      "export_path": "./web",
+      "kind": "function",
+      "owner_phase": 4,
+      "status": "planned",
+      "evidence_category": "web_parsers",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
       }
     },
     {
@@ -1603,6 +2751,22 @@
       }
     },
     {
+      "python_symbol": "get_error_code_info",
+      "status": "complete",
+      "typescript_symbol": "getErrorCodeInfo",
+      "export_path": ".",
+      "kind": "function",
+      "owner_phase": 1,
+      "evidence_category": "error_codes",
+      "contract_test": "test/error-codes.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
       "python_symbol": "get_heating_circuit_registers",
       "typescript_symbol": "getHeatingCircuitRegisters",
       "export_path": ".",
@@ -1660,6 +2824,22 @@
       "evidence_category": "registers",
       "contract_test": "test/registers/builders.test.ts",
       "normalizations": ["mapping_to_readonly_map_or_record", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "function",
+        "constructor": "value",
+        "validation": "function_fixture"
+      }
+    },
+    {
+      "python_symbol": "is_uninitialized_temperature",
+      "status": "complete",
+      "typescript_symbol": "isUninitializedTemperature",
+      "export_path": ".",
+      "kind": "function",
+      "owner_phase": 1,
+      "evidence_category": "plausibility",
+      "contract_test": "test/plausibility.test.ts",
+      "normalizations": ["none_to_null", "snake_case_to_camelCase"],
       "representation": {
         "form": "function",
         "constructor": "value",
