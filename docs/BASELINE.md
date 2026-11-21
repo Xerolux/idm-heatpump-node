@@ -12,5 +12,5 @@ This document is a deterministic projection of `UPSTREAM-PARITY.json`; the JSON 
 | Python version | `2.16.1` |
 | Git tag | `v2.16.1` |
 | Full Git commit | `0347f2553a046159c19f6913f63099625da88668` |
-| Parity status | `partial` |
+| Parity status | `complete` |
 | Verified on | `2026-11-19` |

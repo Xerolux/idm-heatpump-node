@@ -3,7 +3,7 @@
   "development_baseline": {
     "python_version": "2.16.1",
     "python_commit": "0347f2553a046159c19f6913f63099625da88668",
-    "status": "partial"
+    "status": "complete"
   },
   "releases": [
     {
@@ -19,7 +19,7 @@
       "date": "2026-11-19",
       "python_version": "2.16.1",
       "python_commit": "0347f2553a046159c19f6913f63099625da88668",
-      "parity_status": "partial",
+      "parity_status": "complete",
       "public_symbols": 161
     }
   ]

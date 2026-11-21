@@ -1,0 +1,175 @@
+{
+  "status": {
+    "fn": "parseNavigatorStatusResponse",
+    "args": [
+      "{\"status\":{\"jsonVersion\":11,\"userlevel\":0,\"language\":\"de\",\"notificationCount\":2,\"timestamp\":1764000000000,\"frostProtectionInfo\":{\"active\":false},\"network\":true,\"authenticationEnabled\":true}}",
+      true
+    ]
+  },
+  "status_defensive": {
+    "fn": "parseNavigatorStatusResponse",
+    "args": ["{\"status\":{\"frostProtectionInfo\":{}}}"]
+  },
+  "status_missing": {
+    "fn": "parseNavigatorStatusResponse",
+    "args": ["{}"]
+  },
+  "freshwater": {
+    "fn": "parseNavigatorFreshwaterResponse",
+    "args": [
+      "{\"freshwater\":{\"circulation\":{\"active\":true},\"statusInfo\":{\"status\":1},\"systemMode\":1,\"temperatures\":{\"top\":47.5,\"bottom\":42}}}",
+      true
+    ]
+  },
+  "home": {
+    "fn": "parseNavigatorHomeResponse",
+    "args": [
+      "{\"homeDetail\":{\"widgets\":[{\"operationMode\":1,\"info\":32},{\"operationMode\":4,\"info\":4},{\"operationMode\":0},{\"operationMode\":8,\"info\":0}],\"energyflow\":{\"pv\":{\"value\":5900},\"grid\":{\"value\":-123.5}}}}",
+      true
+    ]
+  },
+  "home_multi_bit": {
+    "fn": "parseNavigatorHomeResponse",
+    "args": ["{\"home\":{\"w\":{\"operationMode\":1,\"info\":160}}}"]
+  },
+  "home_overview": {
+    "fn": "parseNavigatorHomeOverviewResponse",
+    "args": [
+      "{\"homeOverview\":{\"systemMode\":{\"value\":1,\"options\":[{\"value\":0},{\"value\":1},{\"value\":-1},{\"value\":2,\"name\":\"x\"},{\"name\":\"y\"}],\"coolingConfigured\":true}}}",
+      true
+    ]
+  },
+  "heatingcircuit": {
+    "fn": "parseNavigatorHeatingcircuitResponse",
+    "args": [
+      "{\"heatingcircuitDetail\":{\"id\":\"A\",\"displayName\":\"Wohnraum\",\"mode\":{\"id\":\"HKA01\",\"value\":1,\"types\":[{\"key\":0,\"name\":\"Aus\"},{\"key\":1,\"name\":\"Auto\"},{\"bad\":1}]},\"temperatures\":{\"heating\":{\"normal\":{\"id\":\"HKA04\",\"value\":21.5,\"min\":10,\"max\":30,\"increment\":\"0.5\"},\"eco\":{\"id\":\"HKA05\",\"value\":18,\"min\":10,\"max\":30,\"increment\":\"0.5\"}},\"set\":35.5},\"room\":{\"temperatures\":{\"actual\":\"21.3\"}},\"pumpActive\":true,\"availableHeatingCircuits\":[{\"id\":\"A\",\"displayName\":\"Wohnraum\",\"mode\":1},{\"id\":\"D\"}]}}",
+      true
+    ]
+  },
+  "setting_parameter": {
+    "fn": "parseNavigatorSettingParameter",
+    "args": [
+      "{\"settingDetail\":{\"id\":\"13256\",\"name\":\"Warmwasser\",\"param\":\"FW030\",\"type\":\"FW\",\"value\":47.5,\"min\":30,\"max\":60,\"increment\":\"0.5\",\"unit\":\"\\u00b0C\",\"def\":50}}"
+    ]
+  },
+  "setting_parameter_bad_value": {
+    "fn": "parseNavigatorSettingParameter",
+    "args": ["{\"settingDetail\":{\"id\":\"1\",\"value\":true}}"]
+  },
+  "performance": {
+    "fn": "parseNavigatorPerformanceResponse",
+    "args": [
+      "{\"performanceDetail\":{\"consumption\":{\"power\":2.15,\"source\":1,\"battery\":false},\"environment\":{\"power\":1.8,\"source\":2,\"temperatures\":{\"in\":3.4}},\"production\":{\"temperatures\":{\"flow\":34.6}},\"heatingRod\":false,\"mode\":1,\"systemMode\":1}}",
+      true
+    ]
+  },
+  "weather": {
+    "fn": "parseNavigatorWeatherResponse",
+    "args": [
+      "{\"weatherDetail\":{\"today\":{\"date\":\"2026-11-20\",\"dayofweek\":\"Fri\",\"cloudCover\":45.5,\"rainProbability\":10,\"sun\":36000,\"sym_w50\":1,\"temperature\":{\"act\":8.5,\"min\":3.5,\"max\":12.5,\"avg\":\"8\\u00b0C/12.0h\"},\"windSpeed\":{\"min\":2.5,\"max\":5.5}},\"forecast1\":{\"temperature\":{\"act\":7.25}},\"forecast2\":5,\"forecast4\":null}}",
+      true
+    ]
+  },
+  "ion": {
+    "fn": "parseNavigatorIonResponse",
+    "args": ["{\"ion\":{\"active\":true,\"enabled\":{\"id\":\"CE001\",\"value\":1},\"ionSubscriptionStatus\":-1}}", true]
+  },
+  "energyflow": {
+    "fn": "parseNavigatorEnergyflowResponse",
+    "args": ["{\"energyflow\":{\"grid\":{\"value\":-123.5},\"pv\":{\"value\":5900},\"signal\":2,\"type\":1}}", true]
+  },
+  "system_overview": {
+    "fn": "parseNavigatorSystemOverviewResponse",
+    "args": [
+      "{\"system\":{\"buffer\":{\"systemMode\":1,\"temperatures\":{\"heating\":35.5}},\"energyflow\":{\"signal\":2,\"type\":1,\"grid\":{\"value\":-123.5}},\"freshwater\":{\"systemMode\":1,\"temperatures\":{\"top\":47.5,\"bottom\":42},\"circulation\":{\"active\":true},\"statusInfo\":{\"status\":1}},\"heatpump\":{\"active\":true,\"systemMode\":1,\"operationMode\":1,\"temperatures\":{\"flow\":34.6,\"return\":30.1},\"source\":{\"active\":true,\"type\":2,\"temperatures\":{\"in\":3.4}}},\"heatingcircuit\":[{\"id\":\"A\",\"displayName\":\"Wohnraum\",\"type\":2,\"mode\":1,\"activeMode\":1,\"pumpActive\":true,\"temperatures\":{\"actual\":34.1,\"set\":35},\"room\":{\"temperatures\":{\"actual\":21.3,\"set\":21.5}}}]}}",
+      true
+    ]
+  },
+  "save_success": {
+    "fn": "parseNavigatorSaveResponse",
+    "args": ["{\"homeSave\":{\"note\":{\"type\":\"success\",\"text\":\"Gespeichert\"}}}", "homeSave"]
+  },
+  "save_success_empty": {
+    "fn": "parseNavigatorSaveResponse",
+    "args": ["{\"homeSave\":{\"note\":{\"type\":\"success\",\"text\":\"\"}}}", "homeSave"]
+  },
+  "save_danger": {
+    "fn": "parseNavigatorSaveResponse",
+    "args": ["{\"freshwaterSave\":{\"note\":{\"type\":\"danger\",\"text\":\"Au\\u00dferhalb des Bereichs\"}}}", "freshwaterSave"]
+  },
+  "save_danger_notext": {
+    "fn": "parseNavigatorSaveResponse",
+    "args": ["{\"freshwaterSave\":{\"note\":{\"type\":\"error\"}}}", "freshwaterSave"]
+  },
+  "save_missing": {
+    "fn": "parseNavigatorSaveResponse",
+    "args": ["{}", "homeSave"]
+  },
+  "decode_demand": {
+    "fn": "decodeNavigator10DemandReason",
+    "args": [1, 32]
+  },
+  "decode_more": {
+    "fn": "decodeNavigator10DemandReason",
+    "args": [1, 160]
+  },
+  "decode_dhw": {
+    "fn": "decodeNavigator10DemandReason",
+    "args": [4, 4]
+  },
+  "decode_zero": {
+    "fn": "decodeNavigator10DemandReason",
+    "args": [0, null]
+  },
+  "decode_off": {
+    "fn": "decodeNavigator10DemandReason",
+    "args": [8, 0]
+  },
+  "decode_unknown_mode": {
+    "fn": "decodeNavigator10DemandReason",
+    "args": [2, 5]
+  },
+  "decode_unknown_bit": {
+    "fn": "decodeNavigator10DemandReason",
+    "args": [1, 1]
+  },
+  "nav20_json": {
+    "fn": "parseNavigator20Response",
+    "args": [
+      "{\"out\":8.25,\"system\":{\"temperatures\":{\"hpout\":34.5,\"hpin\":30.25}},\"hk\":[{\"hk\":\"A\",\"flow\":{\"temperatures\":{\"act\":34.1}},\"room\":{\"temperatures\":{\"act\":21.2}}},{\"hk\":\"B\",\"flow\":{\"temperatures\":{\"act\":33.2}},\"room\":{\"temperatures\":{\"act\":20.1}}}]}"
+    ]
+  },
+  "nav20_html": {
+    "fn": "parseNavigator20Response",
+    "args": ["<table><tr><td>B33</td><td>21.5 &deg;C</td></tr></table>"]
+  },
+  "nav20_wrapped": {
+    "fn": "parseNavigator20Response",
+    "args": ["{\"html\":\"<table><tr><td>B32</td><td>7.8&deg;C</td></tr></table>\"}"]
+  },
+  "nav20_duplicate": {
+    "fn": "parseNavigator20Response",
+    "args": ["{\"hk\":[{\"hk\":\"A\",\"flow\":{\"temperatures\":{\"act\":34.1}},\"room\":{\"temperatures\":{\"act\":21.2}}},{\"hk\":\"A\",\"flow\":{\"temperatures\":{\"act\":30}}},{\"hk\":\"C\",\"room\":{\"temperatures\":{\"act\":19.5}}}]}" ]
+  },
+  "nav20_stats_wh": {
+    "fn": "parseNavigator20StatisticsResponse",
+    "args": [
+      "{\"unitTotal\":\"Wh\",\"total\":[{\"name\":\"Heizen\",\"value\":1234},{\"name\":\"Warmwasser\",\"value\":567.8},{\"name\":\"Unbekannt\",\"value\":1},{\"name\":\"K\\u00fchlen\",\"value\":234.5}]}",
+      "genheat"
+    ]
+  },
+  "nav20_stats_nested_runtime": {
+    "fn": "parseNavigator20StatisticsResponse",
+    "args": [
+      "{\"version\":2,\"data\":{\"unitTotal\":\"min\",\"total\":[{\"name\":\"Heating\",\"value\":90},{\"name\":\"Domestic Hot Water\",\"value\":1440.5}]}}",
+      "runtime"
+    ]
+  },
+  "nav20_stats_kwh": {
+    "fn": "parseNavigator20StatisticsResponse",
+    "args": [
+      "{\"unitTotal\":\"kWh\",\"total\":[{\"name\":\"Heating\",\"value\":1234.56}]}",
+      "elcons"
+    ]
+  }
+}

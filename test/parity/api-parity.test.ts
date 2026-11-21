@@ -359,62 +359,7 @@ const extensions = readJson<{
  * follow-up sync phases: the 2.x web expansion (52 symbols) and the
  * optional coil transport extension. Everything else is mapped complete.
  */
-const STAGED_PYTHON_SYMBOLS: ReadonlySet<string> = new Set([
-  "IdmWebDemandReason",
-  "IdmWebEnergyflow",
-  "IdmWebFreshwater",
-  "IdmWebHeatingCircuit",
-  "IdmWebHeatingCircuitChoice",
-  "IdmWebHeatingCircuitRef",
-  "IdmWebHeatingCircuitValue",
-  "IdmWebHomeDetail",
-  "IdmWebHomeOverview",
-  "IdmWebIon",
-  "IdmWebPerformance",
-  "IdmWebSettingParameter",
-  "IdmWebStatus",
-  "IdmWebSystemCircuit",
-  "IdmWebSystemMode",
-  "IdmWebSystemOverview",
-  "IdmWebWeatherDay",
-  "IdmWebWeatherDetail",
-  "NAVIGATOR10_DATETIME_SETTING_ID",
-  "NAVIGATOR10_DHW_DEMAND_REASON_BITS",
-  "NAVIGATOR10_DHW_SETPOINT_PARAM",
-  "NAVIGATOR10_DHW_SETPOINT_SETTING_ID",
-  "NAVIGATOR10_HEATING_DEMAND_REASON_BITS",
-  "NAVIGATOR10_STATISTIC_EMEH",
-  "NAVIGATOR10_STATISTIC_EMHP",
-  "NAVIGATOR10_STATISTIC_ENERGY_FLOW",
-  "NAVIGATOR10_STATISTIC_HEAT_QUANTITIES",
-  "NAVIGATOR10_STATISTIC_PERIOD_DAILY",
-  "NAVIGATOR10_STATISTIC_PERIOD_TODAY",
-  "NAVIGATOR10_STATISTIC_PERIOD_TOTAL",
-  "NAVIGATOR10_STATISTIC_RUNTIME_BIVALENCE",
-  "NAVIGATOR10_STATISTIC_RUNTIME_HEATPUMP",
-  "NAVIGATOR10_SYSTEM_MODE_AUTOMATIC",
-  "NAVIGATOR10_SYSTEM_MODE_AWAY",
-  "NAVIGATOR10_SYSTEM_MODE_HEATING_COOLING_ONLY",
-  "NAVIGATOR10_SYSTEM_MODE_HOLIDAY",
-  "NAVIGATOR10_SYSTEM_MODE_HOT_WATER_ONLY",
-  "NAVIGATOR10_SYSTEM_MODE_STANDBY",
-  "NAVIGATOR10_WRITABLE_SYSTEM_MODES",
-  "decode_navigator10_demand_reason",
-  "parse_navigator20_response",
-  "parse_navigator20_statistics_response",
-  "parse_navigator_energyflow_response",
-  "parse_navigator_freshwater_response",
-  "parse_navigator_heatingcircuit_response",
-  "parse_navigator_home_overview_response",
-  "parse_navigator_home_response",
-  "parse_navigator_ion_response",
-  "parse_navigator_performance_response",
-  "parse_navigator_save_response",
-  "parse_navigator_setting_parameter",
-  "parse_navigator_status_response",
-  "parse_navigator_system_overview_response",
-  "parse_navigator_weather_response",
-]);
+const STAGED_PYTHON_SYMBOLS: ReadonlySet<string> = new Set([]);
 
 function camelCase(name: string): string {
   return name.replace(/_([a-z0-9])/g, (_, character: string) => character.toUpperCase());
@@ -639,7 +584,7 @@ describe("API mapping inventory", () => {
     // Core parity against 2.16.1 is complete; the staged rows are the
     // Python-2.x web expansion and the coil transport extension, tracked
     // for the follow-up sync phases.
-    expect(completedRows).toHaveLength(107);
+    expect(completedRows).toHaveLength(161);
     expect(stagedRows.map(({ python_symbol }) => python_symbol).sort()).toEqual(
       [...STAGED_PYTHON_SYMBOLS].sort(),
     );
@@ -827,7 +772,7 @@ describe("Phase-1 class representation mapping", () => {
     const completedWebRows = webRows.filter(({ status }) => status === "complete");
 
     expect(webRows).toHaveLength(84);
-    expect(completedWebRows).toHaveLength(30);
+    expect(completedWebRows).toHaveLength(84);
     for (const row of webRows) {
       if (row.status === "complete") {
         // Word-boundary check: the library-owned Idm*Error hierarchy in the
@@ -883,7 +828,7 @@ describe("checked mapping export closure", () => {
     ).toEqual(expectedWebSymbols);
     expect(expectedRuntimeSymbols).toHaveLength(76);
     expect(expectedTypeOnlySymbols).toHaveLength(4);
-    expect(expectedWebSymbols).toHaveLength(30);
+    expect(expectedWebSymbols).toHaveLength(84);
     expect(rootExports).not.toHaveProperty("ModbusTransport");
   });
 
@@ -1508,7 +1453,7 @@ describe("generated API and baseline documentation", () => {
 
     expect(baselineDocument).toMatch(/^<!-- GENERATED FILE/u);
     expect(baselineDocument).toContain("| Python version | `2.16.1` |");
-    expect(baselineDocument).toContain("| Parity status | `partial` |");
+    expect(baselineDocument).toContain("| Parity status | `complete` |");
     expect(baselineDocument).toContain("| Verified on | `2026-11-19` |");
     expect(baselineDocument).not.toContain("PollRateLimiter");
   });
