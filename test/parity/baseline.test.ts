@@ -55,7 +55,7 @@ describe("upstream parity baseline manifest", () => {
       python_version: "2.16.1",
       git_tag: "v2.16.1",
       git_commit: "0347f2553a046159c19f6913f63099625da88668",
-      parity_status: "partial",
+      parity_status: "complete",
       verified_on: "2026-11-19",
     } satisfies UpstreamParity);
     expect(Object.isFrozen(parsed)).toBe(true);

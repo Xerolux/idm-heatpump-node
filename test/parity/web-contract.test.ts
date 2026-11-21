@@ -1,3 +1,17 @@
+import { readFileSync } from "node:fs";
+
+import * as webModule from "../../src/web/index.js";
+import apiMappingDocument from "../../contracts/api-mapping.json" with { type: "json" };
+
+const web = webModule;
+const apiMapping = apiMappingDocument as {
+  readonly mappings: readonly {
+    readonly export_path: string;
+    readonly python_symbol: string;
+    readonly status: string;
+    readonly typescript_symbol: string;
+  }[];
+};
 import { describe, expect, it } from "vitest";
 
 import {
@@ -225,5 +239,108 @@ describe("generated-source read-only web parity", () => {
 
   it("freezes value factories", () => {
     expect(Object.isFrozen(IdmWebValue.create({ name: "x", value: "1", rawKey: "X" }))).toBe(true);
+  });
+});
+
+// ---- Python 2.x web expansion (2.6.0–2.16.1) ----
+
+interface SmokeCase {
+  readonly fn: string;
+  readonly args: readonly unknown[];
+}
+
+const smokeCases = JSON.parse(
+  readFileSync(new URL("../fixtures/web-smoke-cases.json", import.meta.url), "utf8"),
+) as Record<string, SmokeCase>;
+
+function runCase(testCase: SmokeCase): unknown {
+  const fn = (web as unknown as Record<string, unknown>)[testCase.fn];
+  if (typeof fn !== "function") {
+    throw new Error(`missing export ${testCase.fn}`);
+  }
+  return (fn as (...args: readonly unknown[]) => unknown)(...testCase.args);
+}
+
+function normalizeValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(normalizeValue);
+  if (value === null || typeof value !== "object") return value;
+  const out: Record<string, unknown> = {};
+  for (const [key, item] of Object.entries(value as Record<string, unknown>)) {
+    const camel = key.replace(/_([a-z0-9])/gu, (_, character: string) => character.toUpperCase());
+    out[camel] = normalizeValue(item);
+  }
+  return out;
+}
+
+describe("web supplement parity (Python 2.x expansion)", () => {
+  it("maps every web symbol complete with this evidence file", () => {
+    const webRows = apiMapping.mappings.filter((row) => row.export_path === "./web");
+    const staged = webRows.filter((row) => row.status !== "complete");
+    expect(staged.map((row) => row.python_symbol)).toEqual([]);
+    expect(webRows).toHaveLength(84);
+  });
+
+  it("decodes the pinned status frame", () => {
+    const status = normalizeValue(runCase(smokeCases.status as SmokeCase)) as Record<
+      string,
+      unknown
+    >;
+    expect(status).toMatchObject({ jsonVersion: 11, userlevel: 0, language: "de" });
+  });
+
+  it("parses defensively: absent keys stay null", () => {
+    const defensive = normalizeValue(runCase(smokeCases.status_defensive as SmokeCase)) as Record<
+      string,
+      unknown
+    >;
+    expect(defensive.jsonVersion).toBeNull();
+    // A payload without the status object is the documented rejection.
+    expect(() => runCase(smokeCases.status_missing as SmokeCase)).toThrow(
+      /does not contain a status object/,
+    );
+  });
+
+  it("decodes the freshwater frame with circulation state", () => {
+    const freshwater = normalizeValue(runCase(smokeCases.freshwater as SmokeCase)) as Record<
+      string,
+      unknown
+    >;
+    expect(freshwater.circulationActive).toBe(true);
+  });
+
+  it("decodes home widgets into demand reasons", () => {
+    const home = normalizeValue(runCase(smokeCases.home as SmokeCase)) as Record<string, unknown>;
+    const reasons = home.demandReasons as readonly Record<string, unknown>[];
+    expect(Array.isArray(reasons)).toBe(true);
+    expect(reasons.length).toBeGreaterThan(0);
+    const multi = normalizeValue(runCase(smokeCases.home_multi_bit as SmokeCase)) as Record<
+      string,
+      unknown
+    >;
+    expect(Array.isArray(multi.demandReasons)).toBe(true);
+  });
+
+  it("decodes every remaining pinned frame without throwing", () => {
+    const covered = new Set([
+      "status",
+      "status_defensive",
+      "status_missing",
+      "freshwater",
+      "home",
+      "home_multi_bit",
+      // Rejection paths: danger notes and missing save frames
+      // (Python 2.8.0 / defensive parsing).
+      "save_danger",
+      "save_danger_notext",
+      "save_missing",
+    ]);
+    for (const [name, testCase] of Object.entries(smokeCases)) {
+      if (covered.has(name)) continue;
+      expect(() => runCase(testCase), name).not.toThrow();
+    }
+    // The danger note must surface as IdmWebResponseError, never as success.
+    expect(() => runCase(smokeCases.save_danger as SmokeCase)).toThrow(
+      /Navigator 10 rejected the write/,
+    );
   });
 });

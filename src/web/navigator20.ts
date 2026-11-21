@@ -5,16 +5,28 @@ import {
   IdmWebCsrfError,
   IdmWebData,
   IdmWebDiagnostics,
+  IdmWebError,
   IdmWebPinRejectedError,
   IdmWebResponseError,
+  IdmWebTimeoutError,
   extractCsrfToken,
   formatUrlHost,
   looksLikeAuthFailure,
   looksLikeDataResponse,
   looksLikeLoginPage,
-  parseIdmHtmlTableValues,
+  parseNavigator20Response,
+  parseNavigator20StatisticsResponse,
   type IdmWebValue,
 } from "./core.js";
+
+// Navigator 2.0 statistics pages: one URL per statistics type (runtime,
+// generated heat, electrical energy consumption). The pages answer with JSON
+// carrying a unitTotal scale and a localized category list.
+const NAVIGATOR20_STATISTICS_PATHS: readonly (readonly [string, string])[] = Object.freeze([
+  ["runtime", "/data/statistics.php?type=heatpump"],
+  ["genheat", "/data/statistics.php?type=amountofheat"],
+  ["elcons", "/data/statistics.php?type=baenergyhp"],
+] as const);
 
 export interface Navigator20Response {
   readonly status: number;
@@ -22,9 +34,10 @@ export interface Navigator20Response {
   readonly setCookies?: readonly string[];
 }
 export interface Navigator20Request {
-  readonly method: "GET" | "POST";
+  readonly method: "GET" | "POST" | "PUT";
   readonly url: string;
   readonly data?: Readonly<Record<string, string>>;
+  readonly body?: string;
   readonly headers: Readonly<Record<string, string>>;
   readonly timeout: number;
 }
@@ -40,15 +53,19 @@ class FetchNavigator20Session implements Navigator20Session {
     const headers: Record<string, string> = { ...request.headers };
     if (this.#cookies.size > 0)
       headers.cookie = [...this.#cookies].map(([name, value]) => `${name}=${value}`).join("; ");
-    let body: URLSearchParams | undefined;
+    let formBody: URLSearchParams | undefined;
     if (request.data !== undefined) {
-      body = new URLSearchParams(request.data);
+      formBody = new URLSearchParams(request.data);
       headers["content-type"] = "application/x-www-form-urlencoded";
     }
+    if (request.body !== undefined && headers["content-type"] === undefined)
+      headers["content-type"] = "application/json";
     const response = await fetch(request.url, {
       method: request.method,
       headers,
-      ...(body === undefined ? {} : { body }),
+      ...(formBody === undefined && request.body === undefined
+        ? {}
+        : { body: formBody ?? request.body }),
       signal: AbortSignal.timeout(request.timeout * 1000),
       redirect: "manual",
     });
@@ -87,6 +104,7 @@ export class IdmNavigator20WebClient {
   #dataPaths: readonly string[] = Object.freeze([]);
   #probeResponses = new Map<string, string>();
   #loginFormReturned = false;
+  #authError: IdmWebAuthenticationError | null = null;
   #lastSuccessMonotonic: number | null = null;
   #lastError: string | null = null;
   #cachedData: IdmWebData | null = null;
@@ -140,6 +158,13 @@ export class IdmNavigator20WebClient {
         this.#probeResponses.clear();
         const paths = await this.#probeDataEndpoints(DEFAULT_NAVIGATOR20_PATHS);
         if (paths.length === 0) {
+          if (this.#authError !== null) {
+            // A firmware that answers with HTTP 401/403 already named the
+            // cause; do not downgrade it to "detection failed" or to the
+            // generic login-form message.
+            this.#lastError = this.#authError.message;
+            throw this.#authError;
+          }
           if (this.#loginFormReturned)
             throw new IdmWebAuthenticationError(
               "NAV2 web login failed: PIN rejected or login form returned again",
@@ -167,6 +192,7 @@ export class IdmNavigator20WebClient {
     this.#dataPaths = Object.freeze([]);
     this.#probeResponses.clear();
     this.#loginFormReturned = false;
+    this.#authError = null;
     if (this.#ownSession && this.#session.close !== undefined) {
       try {
         await this.#session.close();
@@ -190,36 +216,52 @@ export class IdmNavigator20WebClient {
     const values: Record<string, IdmWebValue> = Object.create(null);
     const rawResponses: Record<string, string> = Object.create(null);
     let csrfRetried = false;
+    let authRetried = false;
+    // Caller may pass a subset of paths; intersect with the endpoints that
+    // were confirmed during login. Fall back to all confirmed endpoints when
+    // the caller's subset does not overlap the detected paths.
     const selected = paths.filter((path) => this.#dataPaths.includes(path));
     const selectedPaths = selected.length > 0 ? selected : this.#dataPaths;
     try {
       for (const path of selectedPaths) {
-        let text: string | undefined = useProbeResponses
-          ? this.#probeResponses.get(path)
-          : undefined;
-        this.#probeResponses.delete(path);
-        try {
-          text ??= await this.#requestText("GET", path);
-        } catch (error) {
-          if (!(error instanceof IdmWebCsrfError) || csrfRetried) throw error;
-          this.#csrfToken = null;
-          await this.login();
-          csrfRetried = true;
-          useProbeResponses = true;
-          text = this.#probeResponses.get(path);
-          this.#probeResponses.delete(path);
-          text ??= await this.#requestText("GET", path);
+        let text: string | undefined;
+        for (;;) {
+          try {
+            text = useProbeResponses ? this.#probeResponses.get(path) : undefined;
+            if (text !== undefined) this.#probeResponses.delete(path);
+            text ??= await this.#requestText("GET", path);
+          } catch (error) {
+            if (!(error instanceof IdmWebCsrfError) || csrfRetried) throw error;
+            this.#csrfToken = null;
+            await this.login();
+            csrfRetried = true;
+            useProbeResponses = true;
+            continue;
+          }
+          if (text.toLowerCase().includes("invalid csrf token")) {
+            this.#csrfToken = null;
+            throw new IdmWebCsrfError("Navigator 2.0 CSRF token was rejected");
+          }
+          if (looksLikeAuthFailure(text) || looksLikeLoginPage(text)) {
+            if (authRetried)
+              throw new IdmWebAuthenticationError(
+                `NAV2 endpoint ${path} returned an authentication response instead of data`,
+              );
+            // The session cookie expired or the controller rebooted: the
+            // endpoint serves its login page again. Log in once more instead
+            // of reporting a rejected PIN on every poll until the consumer
+            // restarts.
+            this.#dataPaths = Object.freeze([]);
+            this.#csrfToken = null;
+            await this.login();
+            authRetried = true;
+            useProbeResponses = true;
+            continue;
+          }
+          break;
         }
-        if (text.toLowerCase().includes("invalid csrf token")) {
-          this.#csrfToken = null;
-          throw new IdmWebCsrfError("Navigator 2.0 CSRF token was rejected");
-        }
-        if (looksLikeAuthFailure(text) || looksLikeLoginPage(text))
-          throw new IdmWebAuthenticationError(
-            `NAV2 endpoint ${path} returned an authentication response instead of data`,
-          );
         if (options.includeRaw === true) rawResponses[path] = text;
-        Object.assign(values, parseIdmHtmlTableValues(text));
+        Object.assign(values, parseNavigator20Response(text));
       }
     } finally {
       this.#probeResponses.clear();
@@ -232,6 +274,94 @@ export class IdmNavigator20WebClient {
 
   async readExtraData(): Promise<Readonly<Record<string, string>>> {
     return (await this.readData()).simpleValues;
+  }
+
+  async readStatistics(options: { readonly includeRaw?: boolean } = {}): Promise<IdmWebData> {
+    if (this.#dataPaths.length === 0) await this.login();
+    const values: Record<string, IdmWebValue> = Object.create(null);
+    const rawResponses: Record<string, string> = Object.create(null);
+    let answered = 0;
+    let authRetried = false;
+    for (const [statType, path] of NAVIGATOR20_STATISTICS_PATHS) {
+      let raw: string;
+      try {
+        for (;;) {
+          try {
+            raw = await this.#requestText("GET", path);
+            if (looksLikeAuthFailure(raw) || looksLikeLoginPage(raw))
+              throw new IdmWebAuthenticationError(
+                "Navigator 2.0 statistics returned a login response",
+              );
+            break;
+          } catch (error) {
+            if (!(error instanceof IdmWebAuthenticationError) || authRetried) throw error;
+            authRetried = true;
+            await this.login();
+          }
+        }
+      } catch (error) {
+        if (error instanceof IdmWebAuthenticationError) throw error;
+        if (error instanceof IdmWebError) continue;
+        throw error;
+      }
+      answered += 1;
+      if (options.includeRaw === true) rawResponses[path] = raw;
+      try {
+        Object.assign(values, parseNavigator20StatisticsResponse(raw, statType));
+      } catch (error) {
+        if (!(error instanceof IdmWebResponseError)) throw error;
+      }
+    }
+    if (answered === 0)
+      throw new IdmWebResponseError("Navigator 2.0 answered none of the statistics pages");
+    const data = IdmWebData.create({ model: "Navigator 2.0 Web", values, rawResponses });
+    this.#lastSuccessMonotonic = this.#now();
+    return data;
+  }
+
+  async setDatetime(value: Date): Promise<void> {
+    if (!(value instanceof Date) || Number.isNaN(value.getTime()))
+      throw new TypeError("value must be a datetime");
+    await this.login();
+    const payload =
+      `{"edesc":"_SETDATETIME","id":"SSETDATETIME","index":3,` +
+      `"name":"Date/time","type":"setdt","value":"${value.toISOString()}"}`;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+    };
+    if (this.#csrfToken !== null) {
+      headers["CSRF-Token"] = this.#csrfToken;
+      headers["X-CSRF-Token"] = this.#csrfToken;
+    }
+    let text: string;
+    let status: number;
+    try {
+      const response = await this.#session.request({
+        method: "PUT",
+        url: `http://${this.#urlHost}/index.php`,
+        body: payload,
+        headers,
+        timeout: this.#timeout,
+      });
+      text = response.text;
+      status = response.status;
+    } catch (error) {
+      if (error instanceof IdmWebError) throw error;
+      if (error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError"))
+        throw new IdmWebTimeoutError("Navigator 2.0 clock setting timed out", { cause: error });
+      throw new IdmWebConnectionError(
+        `Navigator 2.0 clock setting failed: ${error instanceof Error ? error.name : "Error"}`,
+        { cause: error },
+      );
+    }
+    if (status === 401 || status === 403)
+      throw new IdmWebPinRejectedError("Navigator 2.0 rejected the PIN or session");
+    if (text.toLowerCase().includes("invalid csrf token"))
+      throw new IdmWebCsrfError("Navigator 2.0 CSRF token was rejected");
+    if (status !== 200)
+      throw new IdmWebResponseError(`Navigator 2.0 clock setting returned HTTP ${status}`);
+    this.#lastSuccessMonotonic = this.#now();
   }
 
   getCachedData(): IdmWebData | null {
@@ -279,12 +409,19 @@ export class IdmNavigator20WebClient {
 
   async #tryLogin(): Promise<void> {
     this.#loginFormReturned = false;
+    this.#authError = null;
     for (const path of ["/", "/index.php", "/login.php"]) {
       for (const fieldName of ["pin", "PIN", "password", "pass"]) {
         let text: string;
         try {
           text = await this.#requestText("POST", path, { [fieldName]: this.#pin }, false, false);
-        } catch {
+        } catch (error) {
+          if (error instanceof IdmWebAuthenticationError) {
+            // HTTP 401/403: the device named the cause. Remember it so
+            // login() can raise it instead of a generic detection error.
+            this.#loginFormReturned = true;
+            this.#authError = error;
+          }
           continue;
         }
         if (text.toLowerCase().includes("authorization required")) {
@@ -309,7 +446,11 @@ export class IdmNavigator20WebClient {
       let text: string;
       try {
         text = await this.#requestText("GET", path, undefined, false);
-      } catch {
+      } catch (error) {
+        if (error instanceof IdmWebAuthenticationError) {
+          this.#loginFormReturned = true;
+          this.#authError = error;
+        }
         continue;
       }
       if (looksLikeDataResponse(text)) {
