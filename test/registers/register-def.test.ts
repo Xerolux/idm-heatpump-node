@@ -61,7 +61,7 @@ describe("immutable RegisterDef factory", () => {
     expect(Object.isFrozen(RegisterDef)).toBe(true);
   });
 
-  it("consumes the sole mapping representation and closes all 28 Python members", () => {
+  it("consumes the sole mapping representation and exposes all 29 Python members", () => {
     const row = mapping.mappings.find(({ python_symbol }) => python_symbol === "RegisterDef");
     const fact = publicClasses.classes.find(({ python_name }) => python_name === "RegisterDef");
     expect(row).toMatchObject({
@@ -77,8 +77,19 @@ describe("immutable RegisterDef factory", () => {
 
     const definition = createRegisterDef(baseInput());
     const mappedMembers = fact?.members.map(({ name }) => toCamelCase(name)).sort();
-    expect(Object.keys(definition).sort()).toEqual(mappedMembers);
-    expect(mappedMembers).toHaveLength(28);
+    expect(Object.getOwnPropertyNames(definition).sort()).toEqual(mappedMembers);
+    expect(mappedMembers).toHaveLength(29);
+    expect(Object.keys(definition)).not.toContain("matchesRequestShape");
+    expect(structuredClone(definition)).toMatchObject({
+      name: definition.name,
+      address: definition.address,
+    });
+    expect(definition.matchesRequestShape(createRegisterDef(baseInput()))).toBe(true);
+    expect(
+      definition.matchesRequestShape(
+        createRegisterDef({ ...baseInput(), datatype: DataType.FLOAT }),
+      ),
+    ).toBe(false);
     expect(fact?.constructor.parameters.map(({ name }) => toCamelCase(name))).toEqual([
       "address",
       "datatype",
