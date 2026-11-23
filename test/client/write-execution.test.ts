@@ -258,6 +258,30 @@ describe("internal IdmModbusClient write execution", () => {
     expect(writeRequests(transport)).toHaveLength(1);
   });
 
+  it("refuses an overlapping public EEPROM write before the first one fails", async () => {
+    const failure = new IllegalAddressError("write rejected");
+    const transport = new FakeModbusTransport([], {
+      pauseWrites: true,
+      writeResponses: [{ kind: "error", error: failure }, { kind: "write_ok" }],
+    });
+    const { client } = clientFromTransports([transport], new FakeClock());
+    const register = eepromRegister();
+    const first = client.writeRegister(register, 1);
+    const firstRejected = expect(first).rejects.toBe(failure);
+    await transport.waitForPendingWrites(1);
+    await expect(client.writeRegister(register, 2)).rejects.toThrow(
+      "already has a write in progress",
+    );
+    transport.releaseNextWrite();
+    await firstRejected;
+
+    const retry = client.writeRegister(register, 2);
+    await transport.waitForPendingWrites(1);
+    transport.releaseNextWrite();
+    await retry;
+    expect(writeRequests(transport)).toHaveLength(2);
+  });
+
   it("serializes two first EEPROM writes from validation through commit", async () => {
     const clock = new FakeClock();
     const transport = new FakeModbusTransport([], {

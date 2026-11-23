@@ -84,6 +84,61 @@ class FakeHttpSession implements Navigator20Session {
   }
 }
 
+describe("Python 2.17 web regressions", () => {
+  it("closes a socket delivered after close interrupts the handshake", async () => {
+    const socket = new FakeSocket(['{"authorized":true}']);
+    let finishOpening!: (socket: Navigator10Socket) => void;
+    const opening = new Promise<Navigator10Socket>((resolve) => {
+      finishOpening = resolve;
+    });
+    let signalStart!: () => void;
+    const started = new Promise<void>((resolve) => {
+      signalStart = resolve;
+    });
+    const client = new IdmNavigator10WebClient("example.invalid", "1234", {
+      socketFactory: async () => {
+        signalStart();
+        return opening;
+      },
+    });
+    const result = expect(client.connect()).rejects.toBeInstanceOf(web.IdmWebConnectionError);
+    await started;
+    await client.close();
+    finishOpening(socket);
+    await result;
+    expect(socket.closed).toBe(true);
+  });
+
+  it("distinguishes a confirmed missing heating circuit from a malformed reply", () => {
+    const raw = JSON.stringify({
+      heatingcircuitDetail: {
+        note: {
+          type: "danger",
+          text: "no heating circuit available for specified heating circuit id [G]!",
+        },
+      },
+    });
+    expect(() => web.parseNavigatorHeatingcircuitResponse(raw)).toThrow(
+      web.IdmWebHeatingCircuitUnavailableError,
+    );
+  });
+
+  it("scales case-insensitive units and rejects unknown statistics units", () => {
+    const total = [{ name: "heating", value: 1500 }];
+    const result = web.parseNavigator20StatisticsResponse(
+      JSON.stringify({ unitTotal: "WH", total }),
+      "heat",
+    );
+    expect(result.stat_heat_total_heating?.numericValue).toBe(1.5);
+    expect(() =>
+      web.parseNavigator20StatisticsResponse(
+        JSON.stringify({ unitTotal: "unknown", total }),
+        "heat",
+      ),
+    ).toThrow(web.IdmWebResponseError);
+  });
+});
+
 describe("generated-source read-only web parity", () => {
   it("parses Python-equivalent tables and immutable value helpers", () => {
     const values = parseIdmHtmlTableValues(SENSOR_HTML);
@@ -242,7 +297,7 @@ describe("generated-source read-only web parity", () => {
   });
 });
 
-// ---- Python 2.x web expansion (2.6.0–2.16.1) ----
+// ---- Python 2.x web expansion (2.6.0–2.17.0rc1) ----
 
 interface SmokeCase {
   readonly fn: string;
@@ -277,7 +332,7 @@ describe("web supplement parity (Python 2.x expansion)", () => {
     const webRows = apiMapping.mappings.filter((row) => row.export_path === "./web");
     const staged = webRows.filter((row) => row.status !== "complete");
     expect(staged.map((row) => row.python_symbol)).toEqual([]);
-    expect(webRows).toHaveLength(84);
+    expect(webRows).toHaveLength(85);
   });
 
   it("decodes the pinned status frame", () => {

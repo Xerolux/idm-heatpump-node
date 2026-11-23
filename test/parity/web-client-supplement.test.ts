@@ -1643,11 +1643,12 @@ describe("web core defensive parsing", () => {
       "runtime",
     );
     expect(flat.stat_runtime_total_heating).toMatchObject({ value: "0", unit: "h" });
-    const unknownUnit = parseNavigator20StatisticsResponse(
-      JSON.stringify({ unitTotal: "J", total: [{ name: "Heating", value: 2 }] }),
-      "elcons",
-    );
-    expect(unknownUnit.stat_elcons_total_heating?.numericValue).toBe(2);
+    expect(() =>
+      parseNavigator20StatisticsResponse(
+        JSON.stringify({ unitTotal: "J", total: [{ name: "Heating", value: 2 }] }),
+        "elcons",
+      ),
+    ).toThrow("unknown unitTotal");
     const bigNumber = parseNavigator20StatisticsResponse(
       JSON.stringify({ unitTotal: '"Wh",', total: [{ name: "Warmwasser", value: 1234567890 }] }),
       "genheat",

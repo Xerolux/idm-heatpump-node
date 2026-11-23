@@ -8,6 +8,7 @@ import {
   NAVIGATOR10_WRITABLE_SYSTEM_MODES,
   IdmWebAuthenticationError,
   IdmWebConnectionError,
+  IdmWebHeatingCircuitUnavailableError,
   IdmWebData,
   IdmWebDiagnostics,
   IdmWebPinRejectedError,
@@ -245,9 +246,12 @@ export class IdmNavigator10WebClient {
     if (this.#socket !== null && !this.#socket.closed) return;
     this.#socket = null;
     const url = `ws://${this.#urlHost}:${this.#port}/?auth_code=${encodeURIComponent(this.#pin)}`;
+    const closedMessage = "Navigator 10 web client was closed while connecting";
     try {
       this.#socket = await this.#socketFactory(url, this.#timeout);
+      if (this.#closed) throw new IdmWebConnectionError(closedMessage);
       const auth = await this.#socket.receiveText(this.#timeout);
+      if (this.#closed) throw new IdmWebConnectionError(closedMessage);
       const parsed: unknown = JSON.parse(auth);
       if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed))
         throw new IdmWebProtocolError("Navigator 10 authorization response was not recognized");
@@ -260,6 +264,10 @@ export class IdmNavigator10WebClient {
       this.#lastError = null;
     } catch (error) {
       await this.#closeUnlocked();
+      if (this.#closed) {
+        this.#lastError = closedMessage;
+        throw new IdmWebConnectionError(this.#lastError, { cause: error });
+      }
       if (error instanceof IdmWebAuthenticationError || error instanceof IdmWebProtocolError)
         throw error;
       if (error instanceof IdmWebTimeoutError) {
@@ -629,9 +637,18 @@ export class IdmNavigator10WebClient {
       command: "detail",
       data: { hcId: cleanId },
     });
-    const circuit = parseNavigatorHeatingcircuitResponse(raw);
-    this.#lastSuccessMonotonic = this.#now();
-    return circuit;
+    try {
+      const circuit = parseNavigatorHeatingcircuitResponse(raw);
+      this.#lastSuccessMonotonic = this.#now();
+      return circuit;
+    } catch (error) {
+      if (error instanceof IdmWebHeatingCircuitUnavailableError && error.hcId !== cleanId) {
+        throw new IdmWebResponseError("Navigator 10 unavailable circuit does not match request", {
+          cause: error,
+        });
+      }
+      throw error;
+    }
   }
 
   async saveHeatingcircuitParameter(

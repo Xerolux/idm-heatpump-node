@@ -18,7 +18,11 @@ import {
   MODEL_UNKNOWN,
 } from "../../src/constants.js";
 import { buildRegisterMap } from "../../src/registers/registry.js";
-import { IllegalAddressError } from "../../src/transport/errors.js";
+import {
+  createNormalizedTransportFailure,
+  IllegalAddressError,
+  NormalizedTransportFailureKind,
+} from "../../src/transport/errors.js";
 import type { ModbusReadRequest } from "../../src/transport/types.js";
 import { ModbusCodec } from "../../src/codec.js";
 import {
@@ -103,6 +107,29 @@ function featureNames(features: ReadonlySet<string>): readonly string[] {
 }
 
 describe("ordered IDM model detection", () => {
+  it("rejects a model even when a later probe succeeds after an unanswered probe", async () => {
+    const timeout = createNormalizedTransportFailure(
+      NormalizedTransportFailureKind.TIMEOUT,
+      "probe timed out",
+    );
+    const { client } = clientWithResponses([
+      ...heatingAllMissing(),
+      missing(2_000),
+      missing(2_065),
+      missing(1_850),
+      missing(1_870),
+      { kind: "error", error: timeout },
+      words([0]),
+      missing(4_108),
+      missing(4_001),
+      missing(4_122),
+      missing(1_000),
+      words(ModbusCodec.encodeFloat32(20.23)),
+    ]);
+
+    await expect(client.detectModel()).rejects.toThrow("Connection lost during model detection");
+    expect(client.modelInfo).toBeNull();
+  });
   it("uses one two-second attempt in exact order and preserves read-failure state", async () => {
     const responses = [
       ...heatingAllMissing(),
@@ -247,7 +274,7 @@ describe("ordered IDM model detection", () => {
     transport.assertResponsesConsumed();
   });
 
-  it("treats exact undecodable/out-of-range circuit pairs as active and -1 as missing", async () => {
+  it("ignores non-finite and sentinel temperatures while retaining finite out-of-range circuits", async () => {
     const responses = [
       words([0, 32_704]),
       words([
@@ -280,7 +307,7 @@ describe("ordered IDM model detection", () => {
 
     expect(info).toMatchObject({
       modelName: MODEL_NAVIGATOR_20,
-      activeHeatingCircuits: ["A", "B"],
+      activeHeatingCircuits: ["B"],
       zoneModules: 0,
       hasSolar: true,
       hasIsc: true,

@@ -28,9 +28,9 @@ const PATHS = Object.freeze({
 });
 const MAX_JSON_BYTES = 4 * 1024 * 1024;
 const MAX_STRING_LENGTH = 1024;
-const EXPECTED_SYMBOL_COUNT = 161;
+const EXPECTED_SYMBOL_COUNT = 162;
 const EXPECTED_ROOT_COUNT = 77;
-const EXPECTED_WEB_COUNT = 84;
+const EXPECTED_WEB_COUNT = 85;
 const IDENTIFIER = /^[A-Za-z][A-Za-z0-9_]*$/u;
 const CAMEL_IDENTIFIER = /^[A-Za-z][A-Za-z0-9]*$/u;
 const ALLOWED_STATUSES = new Set(["planned", "partial", "complete", "not_applicable"]);
@@ -375,7 +375,7 @@ function validatePublicApi(value, expectedBaseline) {
     value.counts.root !== rootCount ||
     value.counts.web !== webCount
   ) {
-    fail("public_inventory_invalid", "Public inventory must contain exactly 161/77/84 symbols");
+    fail("public_inventory_invalid", "Public inventory must contain exactly 162/77/85 symbols");
   }
   const aliases = new Map();
   for (const [index, alias] of value.aliases.entries()) {
@@ -1059,7 +1059,7 @@ function validateRuntimeNormalization(source, publicClasses) {
   const match = source
     .slice(start + RUNTIME_NORMALIZATION_START.length, end)
     .trim()
-    .match(/^```json\n([\s\S]+)\n```$/u);
+    .match(/^```json\r?\n([\s\S]+)\r?\n```$/u);
   if (match === null) {
     fail(
       "runtime_normalization_invalid",

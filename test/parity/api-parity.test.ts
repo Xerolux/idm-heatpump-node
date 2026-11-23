@@ -355,7 +355,7 @@ const extensions = readJson<{
 }>("contracts/typescript-extensions.json");
 
 /**
- * Python 2.16.1 symbols whose TypeScript counterparts are staged for the
+ * Python 2.17.0rc1 symbols whose TypeScript counterparts are staged for the
  * follow-up sync phases: the 2.x web expansion (52 symbols) and the
  * optional coil transport extension. Everything else is mapped complete.
  */
@@ -517,8 +517,8 @@ afterEach(() => {
 });
 
 describe("API mapping inventory", () => {
-  it("mapping has exact one-to-one coverage of the 161 pinned Python exports", () => {
-    expect(publicApi.counts).toEqual({ root: 77, total: 161, web: 84 });
+  it("mapping has exact one-to-one coverage of the 162 pinned Python exports", () => {
+    expect(publicApi.counts).toEqual({ root: 77, total: 162, web: 85 });
     expect(apiMapping.schema_version).toBe(1);
     expect(apiMapping.baseline).toEqual(
       readJson<{ readonly baseline: ApiMapping["baseline"] }>("test/fixtures/public-api.json")
@@ -528,18 +528,18 @@ describe("API mapping inventory", () => {
     const expectedSymbols = publicApi.symbols.map(({ name }) => name);
     const mappedSymbols = apiMapping.mappings.map(({ python_symbol }) => python_symbol);
 
-    expect(apiMapping.mappings).toHaveLength(161);
-    expect(new Set(mappedSymbols)).toHaveLength(161);
+    expect(apiMapping.mappings).toHaveLength(162);
+    expect(new Set(mappedSymbols)).toHaveLength(162);
     expect(mappedSymbols).toEqual(expectedSymbols);
   });
 
-  it("mapping boundary keeps 77 root and 84 web rows including every alias", () => {
+  it("mapping boundary keeps 77 root and 85 web rows including every alias", () => {
     const fixtureByName = new Map(publicApi.symbols.map((symbol) => [symbol.name, symbol]));
     const aliases = new Map(publicApi.aliases.map((alias) => [alias.name, alias.target]));
 
     expect(apiMapping.mappings.filter(({ export_path }) => export_path === ".")).toHaveLength(77);
     expect(apiMapping.mappings.filter(({ export_path }) => export_path === "./web")).toHaveLength(
-      84,
+      85,
     );
 
     for (const row of apiMapping.mappings) {
@@ -581,10 +581,10 @@ describe("API mapping inventory", () => {
     const completedRows = apiMapping.mappings.filter(({ status }) => status === "complete");
     const stagedRows = apiMapping.mappings.filter(({ status }) => status === "planned");
 
-    // Core parity against 2.16.1 is complete; the staged rows are the
+    // Core parity against 2.17.0rc1 is complete; the staged rows are the
     // Python-2.x web expansion and the coil transport extension, tracked
     // for the follow-up sync phases.
-    expect(completedRows).toHaveLength(161);
+    expect(completedRows).toHaveLength(162);
     expect(stagedRows.map(({ python_symbol }) => python_symbol).sort()).toEqual(
       [...STAGED_PYTHON_SYMBOLS].sort(),
     );
@@ -771,8 +771,8 @@ describe("Phase-1 class representation mapping", () => {
     const webRows = apiMapping.mappings.filter(({ owner_phase }) => owner_phase === 4);
     const completedWebRows = webRows.filter(({ status }) => status === "complete");
 
-    expect(webRows).toHaveLength(84);
-    expect(completedWebRows).toHaveLength(84);
+    expect(webRows).toHaveLength(85);
+    expect(completedWebRows).toHaveLength(85);
     for (const row of webRows) {
       if (row.status === "complete") {
         // Word-boundary check: the library-owned Idm*Error hierarchy in the
@@ -828,7 +828,7 @@ describe("checked mapping export closure", () => {
     ).toEqual(expectedWebSymbols);
     expect(expectedRuntimeSymbols).toHaveLength(76);
     expect(expectedTypeOnlySymbols).toHaveLength(4);
-    expect(expectedWebSymbols).toHaveLength(84);
+    expect(expectedWebSymbols).toHaveLength(85);
     expect(rootExports).not.toHaveProperty("ModbusTransport");
   });
 
@@ -989,7 +989,7 @@ describe("checked mapping export closure", () => {
 });
 
 describe("generated API and baseline documentation", () => {
-  it("keeps the exact 161-row Python inventory separate from additive extension and partial authorities", () => {
+  it("keeps the exact 162-row Python inventory separate from additive extension and partial authorities", () => {
     const project = createGeneratorProject();
     writeExtensionAuthority(project, FABRICATED_TYPE_EXTENSION);
     preparePartialIdmModbusClient(project);
@@ -1001,7 +1001,7 @@ describe("generated API and baseline documentation", () => {
     ) as ApiMapping;
     const apiDocument = readFileSync(resolve(project, "docs/API-PARITY.md"), "utf8");
 
-    expect(mapping.mappings).toHaveLength(161);
+    expect(mapping.mappings).toHaveLength(162);
     expect(mapping.mappings.map(({ python_symbol }) => python_symbol)).toEqual(
       publicApi.symbols.map(({ name }) => name),
     );
@@ -1434,7 +1434,7 @@ describe("generated API and baseline documentation", () => {
     }
   });
 
-  it("generator renders all 161 mapping rows and complete Phase-1 class member evidence", () => {
+  it("generator renders all 162 mapping rows and complete Phase-1 class member evidence", () => {
     const project = createGeneratorProject();
     requireSuccess(runGenerator(project), "documentation generation");
 
@@ -1442,8 +1442,8 @@ describe("generated API and baseline documentation", () => {
     const baselineDocument = readFileSync(resolve(project, "docs/BASELINE.md"), "utf8");
 
     expect(apiDocument).toMatch(/^<!-- GENERATED FILE/u);
-    expect(apiDocument).toContain("0347f2553a046159c19f6913f63099625da88668");
-    expect(apiDocument).toContain("161 public symbols: 77 root, 84 web");
+    expect(apiDocument).toContain("6d6174fabc49cef765249358f4308102ef35391b");
+    expect(apiDocument).toContain("162 public symbols: 77 root, 85 web");
     for (const row of apiMapping.mappings) {
       expect(apiDocument, row.python_symbol).toContain(`| \`${row.python_symbol}\` |`);
     }
@@ -1452,9 +1452,9 @@ describe("generated API and baseline documentation", () => {
     expect(apiDocument).toContain("`RegisterRegistry.to_schema` → `toSchema`");
 
     expect(baselineDocument).toMatch(/^<!-- GENERATED FILE/u);
-    expect(baselineDocument).toContain("| Python version | `2.16.1` |");
+    expect(baselineDocument).toContain("| Python version | `2.17.0rc1` |");
     expect(baselineDocument).toContain("| Parity status | `complete` |");
-    expect(baselineDocument).toContain("| Verified on | `2026-11-19` |");
+    expect(baselineDocument).toContain("| Verified on | `2026-11-23` |");
     expect(baselineDocument).not.toContain("PollRateLimiter");
   });
 

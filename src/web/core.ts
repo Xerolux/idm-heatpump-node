@@ -33,6 +33,14 @@ export class IdmWebCsrfError extends IdmWebAuthenticationError {}
 export class IdmWebProtocolError extends IdmWebError {}
 export class IdmWebWebSocketError extends IdmWebProtocolError {}
 export class IdmWebResponseError extends IdmWebProtocolError {}
+export class IdmWebHeatingCircuitUnavailableError extends IdmWebResponseError {
+  readonly hcId: string;
+
+  constructor(hcId: string) {
+    super(`Navigator 10 heating circuit ${hcId} is unavailable`);
+    this.hcId = hcId;
+  }
+}
 
 export {
   IdmWebAuthenticationError as AuthenticationError,
@@ -1433,6 +1441,14 @@ export function parseNavigatorHeatingcircuitResponse(
   const detail = payload.heatingcircuitDetail;
   if (!isJsonObject(detail))
     throw new IdmWebResponseError("Navigator 10 response does not contain heatingcircuitDetail");
+  const note = detail.note;
+  if (Object.keys(detail).length === 1 && isJsonObject(note) && note.type === "danger") {
+    const circuit =
+      /^no heating circuit available for specified heating circuit id \[([A-G])\]!$/u.exec(
+        typeof note.text === "string" ? note.text : "",
+      )?.[1];
+    if (circuit !== undefined) throw new IdmWebHeatingCircuitUnavailableError(circuit);
+  }
   const hcId = detail.id;
   if (typeof hcId !== "string" || hcId.length === 0)
     throw new IdmWebResponseError("Navigator 10 heatingcircuitDetail carries no id");
@@ -2125,16 +2141,27 @@ export function parseNavigator20StatisticsResponse(
   const unit = payload.unitTotal;
   let factor = 1;
   if (typeof unit === "string") {
-    const unitClean = unit.trim().replace(/^"|"|,$/gu, "");
+    const unitClean = unit
+      .trim()
+      .replace(/^[" ,]+|[" ,]+$/gu, "")
+      .toLowerCase();
     const factors: Readonly<Record<string, number>> = Object.freeze({
-      Wh: 0.001,
-      kWh: 1,
-      MWh: 1000,
-      GWh: 1_000_000,
+      wh: 0.001,
+      kwh: 1,
+      mwh: 1000,
+      gwh: 1_000_000,
       h: 1,
       min: 1 / 60,
     });
-    factor = factors[unitClean] ?? 1;
+    if (unitClean !== "") {
+      const scale = Object.hasOwn(factors, unitClean) ? factors[unitClean] : undefined;
+      if (scale === undefined) {
+        throw new IdmWebResponseError(
+          `Navigator 2.0 statistics uses an unknown unitTotal ${JSON.stringify(unit)}`,
+        );
+      }
+      factor = scale;
+    }
   }
   const values: Record<string, IdmWebValue> = Object.create(null);
   const total = payload.total;

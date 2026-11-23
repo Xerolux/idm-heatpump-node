@@ -95,6 +95,7 @@ export interface RegisterDef {
   readonly effectiveSentinelValues: readonly SentinelValue[];
   readonly lastVerified: string | null;
   readonly size: 1 | 2;
+  matchesRequestShape(other: RegisterDef): boolean;
 }
 
 function invalid(diagnostic: string): never {
@@ -316,7 +317,16 @@ export function createRegisterDef(input: RegisterDefInput): RegisterDef {
         : cloneAndFreeze([...DATATYPE_SENTINEL_DEFAULTS[input.datatype]]),
     lastVerified,
     size: DATA_TYPE_SIZE[input.datatype],
+    matchesRequestShape(other) {
+      return (
+        this.name === other.name &&
+        this.address === other.address &&
+        this.datatype === other.datatype &&
+        this.registerType === other.registerType
+      );
+    },
   };
+  Object.defineProperty(definition, "matchesRequestShape", { enumerable: false });
   return Object.freeze(definition);
 }
 

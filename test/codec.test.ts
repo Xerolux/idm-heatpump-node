@@ -253,8 +253,8 @@ function register(
 }
 
 describe("internal register-aware codec ownership", () => {
-  it("keeps helpers out of the 161-row mapping and package root after client completion", () => {
-    expect(mapping.mappings).toHaveLength(161);
+  it("keeps helpers out of the 162-row mapping and package root after client completion", () => {
+    expect(mapping.mappings).toHaveLength(162);
     expect(
       mapping.mappings.some(({ typescript_symbol }) =>
         ["decodeValue", "encodeValue"].includes(typescript_symbol),

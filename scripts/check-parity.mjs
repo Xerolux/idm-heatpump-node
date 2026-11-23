@@ -46,9 +46,9 @@ const EXPECTED_BASELINE = Object.freeze({
   schema_version: 1,
   repository: "https://github.com/Xerolux/idm-heatpump-api",
   python_package: "idm-heatpump-api",
-  python_version: "2.16.1",
-  git_tag: "v2.16.1",
-  git_commit: "0347f2553a046159c19f6913f63099625da88668",
+  python_version: "2.17.0rc1",
+  git_tag: "v2.17.0rc1",
+  git_commit: "6d6174fabc49cef765249358f4308102ef35391b",
 });
 const GENERATED_PATHS = Object.freeze([
   "test/fixtures/public-api.json",
@@ -345,6 +345,15 @@ function wslIsolatedEnvironmentArguments(temporaryParent) {
 
 function findPython312() {
   if (process.platform === "win32") {
+    if (
+      probe("python3.12", [
+        "-I",
+        "-c",
+        "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')",
+      ])
+    ) {
+      return Object.freeze({ kind: "native", command: "python3.12", prefix: [] });
+    }
     if (
       probe("py", [
         "-3.12",

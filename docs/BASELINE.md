@@ -9,8 +9,8 @@ This document is a deterministic projection of `UPSTREAM-PARITY.json`; the JSON 
 | Schema version | `1` |
 | Repository | `https://github.com/Xerolux/idm-heatpump-api` |
 | Python package | `idm-heatpump-api` |
-| Python version | `2.16.1` |
-| Git tag | `v2.16.1` |
-| Full Git commit | `0347f2553a046159c19f6913f63099625da88668` |
+| Python version | `2.17.0rc1` |
+| Git tag | `v2.17.0rc1` |
+| Full Git commit | `6d6174fabc49cef765249358f4308102ef35391b` |
 | Parity status | `complete` |
-| Verified on | `2026-11-19` |
+| Verified on | `2026-11-23` |

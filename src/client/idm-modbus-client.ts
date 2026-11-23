@@ -25,6 +25,7 @@ import {
   type DiagnosticEndpoint,
   type NormalizedTransportFailureKind as NormalizedTransportFailureKindValue,
 } from "../transport/errors.js";
+import { SemanticValidationError } from "../errors.js";
 import { IdmTransportError } from "../exceptions.js";
 import type { IdmCoilTransportExtension as CoilTransportExtensionView } from "../transport/types.js";
 import { createModbusSerialTransport } from "../transport/modbus-serial-adapter.js";
@@ -37,7 +38,7 @@ import {
   type ModbusWriteRequest,
   validateModbusWords,
 } from "../transport/types.js";
-import { RegisterType, type IdmModelInfo } from "../types.js";
+import { RegisterType, WriteClass, type IdmModelInfo } from "../types.js";
 import { IdmClientDiagnostics, ModbusErrorContext } from "./diagnostics.js";
 import type {
   IdmClientDiagnostics as IdmClientDiagnosticsValue,
@@ -504,6 +505,8 @@ export class IdmModbusClient {
   // Per-address record of whether the last probeRegister() call was
   // rejected by the device with Illegal Data Address. Model detection
   // reads it to tell "register not implemented" apart from "no answer".
+  #probeTransportFailed = false;
+  readonly #pendingEepromWrites = new Map<string, symbol>();
   readonly #probeIllegalRejections = new Map<number, boolean>();
   // Registers whose invalid read (out-of-range value or undecodable data)
   // has already produced a warning. A persistently invalid register is
@@ -594,6 +597,8 @@ export class IdmModbusClient {
         },
         resetWriteThrottle: (register: RegisterDef | null = null): void => {
           this.#writeSafetyState.resetWriteThrottle(register);
+          if (register === null) this.#pendingEepromWrites.clear();
+          else this.#pendingEepromWrites.delete(register.name);
         },
         seedReadState: (seed: InternalReadStateSeed): void => {
           for (const register of seed.batchUnsafeRegisters ?? []) {
@@ -832,12 +837,9 @@ export class IdmModbusClient {
     value: unknown,
     options: WriteRegisterOptions = {},
   ): Promise<void> {
-    await this.#gate.runExclusive(async () => {
-      const plan = this.#createWritePlan(register, value, {
-        dryRun: false,
-        allowCustomRegister: options.allowCustomRegister ?? false,
-      });
-      await this.#executeWritePlanLocked(plan);
+    await this.#writeWithThrottle(register, value, {
+      dryRun: false,
+      allowCustomRegister: options.allowCustomRegister ?? false,
     });
   }
 
@@ -847,15 +849,46 @@ export class IdmModbusClient {
     value: unknown,
     options: SetValueOptions = {},
   ): Promise<WriteSafetyResult> {
-    return this.#gate.runExclusive(async () => {
-      const plan = this.#createWritePlan(key, value, {
-        dryRun: options.dryRun ?? false,
+    return this.#writeWithThrottle(key, value, { dryRun: options.dryRun ?? false });
+  }
+
+  async #writeWithThrottle(
+    register: RegisterDef | string,
+    value: unknown,
+    options: SimulateWriteOptions,
+  ): Promise<WriteSafetyResult> {
+    // Reserve an EEPROM slot before entering the queue so overlapping calls
+    // are rejected even when the first write later fails.
+    let definition: RegisterDef | undefined;
+    try {
+      definition =
+        typeof register === "string"
+          ? getRegister(register, { modelInfo: this.#modelInfo })
+          : register;
+    } catch {
+      // Resolve again under the gate after any queued detection.
+    }
+    let reservation: symbol | undefined;
+    if (options.dryRun !== true && definition?.writeClass === WriteClass.EEPROM) {
+      this.#createWritePlan(register, value, options);
+      reservation = Symbol(definition.name);
+      this.#pendingEepromWrites.set(definition.name, reservation);
+    }
+    try {
+      return await this.#gate.runExclusive(async () => {
+        const plan = this.#createWritePlan(register, value, options, reservation);
+        if (!plan.dryRun) await this.#executeWritePlanLocked(plan);
+        return plan;
       });
-      if (!plan.dryRun) {
-        await this.#executeWritePlanLocked(plan);
+    } finally {
+      if (
+        definition &&
+        reservation &&
+        this.#pendingEepromWrites.get(definition.name) === reservation
+      ) {
+        this.#pendingEepromWrites.delete(definition.name);
       }
-      return plan;
-    });
+    }
   }
 
   public resetWriteThrottle(register: RegisterDef | null = null): void {
@@ -920,6 +953,7 @@ export class IdmModbusClient {
     return this.#gate.runExclusive(async () => {
       await this.#ensureConnectedLocked();
       this.#probeIllegalRejections.clear();
+      this.#probeTransportFailed = false;
       const info = await detectModel(
         async (address, count) =>
           this.#probeRegisterLocked(address, count, {
@@ -929,7 +963,7 @@ export class IdmModbusClient {
         options,
         (address) => this.#probeIllegalRejections.get(address) ?? null,
       );
-      if (this.#connectionSuspect) {
+      if (this.#connectionSuspect || this.#probeTransportFailed) {
         // Every probe reports a failed read as "register not implemented"
         // (probeRegister returns null for transport errors too), so a link
         // that died half-way through would otherwise yield a confident and
@@ -1275,6 +1309,9 @@ export class IdmModbusClient {
       return words;
     } catch (error) {
       if (isKnownTransportFailure(error)) {
+        if (error instanceof NormalizedTransportFailure && reconnectFailureKinds.has(error.kind)) {
+          this.#probeTransportFailed = true;
+        }
         this.#probeIllegalRejections.set(address, error instanceof IllegalAddressError);
         return null;
       }
@@ -1460,8 +1497,9 @@ export class IdmModbusClient {
     register: RegisterDef | string,
     value: unknown,
     options: SimulateWriteOptions,
+    reservation?: symbol,
   ): WriteSafetyResult {
-    return createWritePlan({
+    const plan = createWritePlan({
       register,
       value,
       dryRun: options.dryRun ?? true,
@@ -1472,6 +1510,18 @@ export class IdmModbusClient {
       now: this.#dependencies.now(),
       eepromWriteInterval: this.#eepromWriteInterval,
     });
+    const owner = this.#pendingEepromWrites.get(plan.register.name);
+    if (
+      plan.register.writeClass === WriteClass.EEPROM &&
+      owner !== undefined &&
+      owner !== reservation
+    ) {
+      throw new SemanticValidationError(
+        "write_eeprom_throttled",
+        `EEPROM-sensitive register '${plan.register.name}' already has a write in progress`,
+      );
+    }
+    return plan;
   }
 
   async #executeWritePlanLocked(plan: WriteSafetyResult): Promise<void> {

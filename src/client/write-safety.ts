@@ -376,6 +376,12 @@ function assertModelMembership(
       `Register '${register.name}' is not available for detected model ${modelInfo.modelName}`,
     );
   }
+  if (!available.matchesRequestShape(register)) {
+    reject(
+      "write_model_unavailable",
+      `Register '${register.name}' differs from the detected model's definition: ${modelInfo.modelName} has ${available.datatype} at ${available.registerType} address ${available.address}, got ${register.datatype} at ${register.registerType} address ${register.address}`,
+    );
+  }
 }
 
 function assertWriteValue(register: RegisterDef, value: unknown): number {
@@ -455,7 +461,7 @@ function assertWriteMetadata(register: RegisterDef, value: unknown, comparableVa
 /**
  * Resolve, validate, and encode one write without connecting or sending.
  *
- * The model bypass applies only to name/address membership. Every other guard
+ * The model bypass applies only to model request-shape validation. Every other guard
  * and the authoritative codec always run in the pinned Python order.
  */
 export function createWritePlan(input: WritePlanInput): WriteSafetyResult {

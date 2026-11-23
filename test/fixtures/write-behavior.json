@@ -1,10 +1,10 @@
 {
   "baseline": {
-    "git_commit": "0347f2553a046159c19f6913f63099625da88668",
-    "git_tag": "v2.16.1",
+    "git_commit": "6d6174fabc49cef765249358f4308102ef35391b",
+    "git_tag": "v2.17.0rc1",
     "parity_schema_version": 1,
     "python_package": "idm-heatpump-api",
-    "python_version": "2.16.1",
+    "python_version": "2.17.0rc1",
     "repository": "https://github.com/Xerolux/idm-heatpump-api"
   },
   "generator_version": "1",
@@ -890,6 +890,94 @@
             "register": {
               "address": 4214,
               "datatype": "UCHAR",
+              "name": "system_mode",
+              "source": "synthetic_contract",
+              "sourceVersion": "1",
+              "supportedModels": [
+                "Navigator 2.0",
+                "Navigator 10",
+                "Navigator Pro"
+              ],
+              "writable": true
+            },
+            "value": 1
+          }
+        ],
+        "kind": "sequence"
+      },
+      "transport_responses": []
+    },
+    {
+      "clock": [],
+      "configuration": {
+        "detectedModel": "Navigator 2.0",
+        "host": "example.invalid",
+        "maxGroupSize": 40,
+        "maxRetries": 3,
+        "port": 502,
+        "registerDefinitions": [
+          {
+            "address": 1005,
+            "datatype": "UINT16",
+            "name": "system_mode",
+            "source": "synthetic_contract",
+            "sourceVersion": "1",
+            "supportedModels": [
+              "Navigator 2.0",
+              "Navigator 10",
+              "Navigator Pro"
+            ],
+            "writable": true
+          }
+        ],
+        "slaveId": 1,
+        "timeout": 10
+      },
+      "expected_requests": [],
+      "expected_result": {
+        "steps": [
+          {
+            "result": {
+              "category": "validation",
+              "code": "write_model_unavailable",
+              "diagnostic": "Register 'system_mode' differs from the detected model's definition: Navigator 2.0 has UCHAR at input address 1005, got UINT16 at input address 1005",
+              "kind": "error"
+            },
+            "state": {
+              "activeCyclicWrites": {},
+              "connected": true,
+              "connectionSuspect": false,
+              "cyclicWrites": {},
+              "expiredCyclicWrites": [],
+              "lastError": null,
+              "maxActiveRequests": 0,
+              "unsupportedRegisters": [],
+              "writeThrottle": {}
+            }
+          }
+        ]
+      },
+      "expected_state": {
+        "activeCyclicWrites": {},
+        "connected": true,
+        "connectionSuspect": false,
+        "cyclicWrites": {},
+        "expiredCyclicWrites": [],
+        "lastError": null,
+        "maxActiveRequests": 0,
+        "unsupportedRegisters": [],
+        "writeThrottle": {}
+      },
+      "name": "write_validation_same_name_wrong_datatype",
+      "operation": {
+        "actions": [
+          {
+            "allowCustomRegister": false,
+            "dryRun": true,
+            "kind": "simulate_write",
+            "register": {
+              "address": 1005,
+              "datatype": "UINT16",
               "name": "system_mode",
               "source": "synthetic_contract",
               "sourceVersion": "1",
