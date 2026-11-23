@@ -56,7 +56,9 @@ describe("repository bootstrap contracts", () => {
       readJson<{ readonly version: string }>("package.json") as { version: string }
     ).version;
     expect(packageVersion).toBe("2.17.0-rc.1");
-    expect(matrix.releases.some(({ version }) => version === packageVersion)).toBe(false);
+    expect(matrix.releases).not.toContainEqual(
+      expect.objectContaining({ version: packageVersion }),
+    );
     expect(matrix.releases.at(-1)).toMatchObject({ version: "2.16.1", parity_status: "complete" });
     expect(() => assertParityMetadataConsistency(parity, matrix)).not.toThrow();
   });
