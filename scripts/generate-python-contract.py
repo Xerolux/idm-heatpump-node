@@ -35,9 +35,9 @@ EXPECTED_BASELINE = {
     "schema_version": 1,
     "repository": "https://github.com/Xerolux/idm-heatpump-api",
     "python_package": "idm-heatpump-api",
-    "python_version": "2.16.1",
-    "git_tag": "v2.16.1",
-    "git_commit": "0347f2553a046159c19f6913f63099625da88668",
+    "python_version": "2.17.0rc1",
+    "git_tag": "v2.17.0rc1",
+    "git_commit": "6d6174fabc49cef765249358f4308102ef35391b",
 }
 EXPECTED_MANIFEST_FIELDS = {
     "schema_version",
@@ -532,11 +532,11 @@ def _class_validation_boundaries(class_value: type[Any]) -> list[dict[str, Any]]
 def _public_fixtures(manifest: Mapping[str, Any], checkout: Path, package: Any) -> tuple[dict[str, Any], dict[str, Any]]:
     groups = _source_groups(checkout)
     public_names = list(package.__all__)
-    # 95 = Python 1.0.3 baseline; 161 = Python 2.16.1 (error-code database,
+    # 95 = Python 1.0.3 baseline; 162 = Python 2.17.0rc1 (error-code database,
     # plausibility helpers, Navigator 1.7 constants, coil extension and the
     # 2.x web expansion).
-    if len(public_names) != 161 or len(set(public_names)) != 161:
-        fail("fixture_invalid", "pinned package must expose exactly 161 unique symbols")
+    if len(public_names) != 162 or len(set(public_names)) != 162:
+        fail("fixture_invalid", "pinned package must expose exactly 162 unique symbols")
     symbols: list[dict[str, Any]] = []
     aliases: list[dict[str, str]] = []
     classes_by_identity: dict[tuple[str, str], dict[str, Any]] = {}
@@ -592,7 +592,7 @@ def _public_fixtures(manifest: Mapping[str, Any], checkout: Path, package: Any) 
             entry["public_names"].append(name)
     root_count = sum(symbol["export_boundary"] == "." for symbol in symbols)
     web_count = len(symbols) - root_count
-    if (root_count, web_count) != (77, 84):
+    if (root_count, web_count) != (77, 85):
         fail("fixture_invalid", f"unexpected public ownership split: {root_count}/{web_count}")
     public_api = _fixture_root(
         manifest,
@@ -2531,19 +2531,19 @@ WRITE_ACTION_KINDS = (
 # reviewed validation code must match both its closed exception family and the
 # terminal traceback location of the guard that rejected the value.
 WRITE_VALIDATION_REJECTION_SPECS = {
-    "write_unknown_register": (KeyError, "_get_register_by_key", 1599),
-    "write_read_only": (ValueError, "simulate_write", 1569),
-    "write_model_unavailable": (ValueError, "_validate_model_availability", 1682),
-    "write_boolean_required": (ValueError, "_validate_write_allowed", 1614),
-    "write_boolean_for_numeric": (ValueError, "_validate_write_allowed", 1619),
-    "write_not_numeric": (ValueError, "_validate_write_allowed", 1623),
-    "write_nonfinite": (ValueError, "_validate_write_allowed", 1625),
-    "write_integer_required": (ValueError, "_validate_write_allowed", 1638),
-    "write_excluded": (ValueError, "_validate_write_allowed", 1642),
-    "write_below_minimum": (ValueError, "_validate_write_allowed", 1647),
-    "write_above_maximum": (ValueError, "_validate_write_allowed", 1649),
-    "write_enum_unsupported": (ValueError, "_validate_write_allowed", 1654),
-    "write_eeprom_throttled": (ValueError, "_validate_write_allowed", 1666),
+    "write_unknown_register": (KeyError, "_get_register_by_key", 1685),
+    "write_read_only": (ValueError, "simulate_write", 1655),
+    "write_model_unavailable": (ValueError, "_validate_model_availability", (1772, 1781)),
+    "write_boolean_required": (ValueError, "_validate_write_allowed", 1700),
+    "write_boolean_for_numeric": (ValueError, "_validate_write_allowed", 1705),
+    "write_not_numeric": (ValueError, "_validate_write_allowed", 1709),
+    "write_nonfinite": (ValueError, "_validate_write_allowed", 1711),
+    "write_integer_required": (ValueError, "_validate_write_allowed", 1724),
+    "write_excluded": (ValueError, "_validate_write_allowed", 1728),
+    "write_below_minimum": (ValueError, "_validate_write_allowed", 1733),
+    "write_above_maximum": (ValueError, "_validate_write_allowed", 1735),
+    "write_enum_unsupported": (ValueError, "_validate_write_allowed", 1740),
+    "write_eeprom_throttled": (ValueError, "_validate_write_allowed", 1756),
 }
 
 
@@ -2552,7 +2552,7 @@ def _write_validation_rejection_spec(
     *,
     scenario: str,
     action_index: int,
-) -> tuple[type[BaseException], str, int]:
+) -> tuple[type[BaseException], str, int | tuple[int, ...]]:
     spec = WRITE_VALIDATION_REJECTION_SPECS.get(code)
     if spec is None:
         fail(
@@ -2592,7 +2592,7 @@ def _verify_write_validation_rejection(
     if (
         Path(code_object.co_filename).name != "client.py"
         or code_object.co_name != expected_function
-        or traceback.tb_lineno != expected_line
+        or traceback.tb_lineno not in ((expected_line,) if isinstance(expected_line, int) else expected_line)
     ):
         fail(
             "fixture_invalid",
@@ -3119,6 +3119,7 @@ def _write_fixture(manifest: Mapping[str, Any], client_module: Any, constants: A
         "synthetic_write_only", 4213, "UCHAR", writeOnly=True
     )
     wrong_address = _write_custom_register("system_mode", 4214, "UCHAR")
+    wrong_datatype = _write_custom_register("system_mode", 1005, "UINT16")
 
     def simulate(register: Any, value: Any, *, dry_run: bool = True, custom: bool = False) -> dict[str, Any]:
         return {
@@ -3197,6 +3198,12 @@ def _write_fixture(manifest: Mapping[str, Any], client_module: Any, constants: A
     add(
         name="write_validation_same_name_wrong_address",
         actions=[simulate(wrong_address, 1)],
+        validation_codes=["write_model_unavailable"],
+        detected_model=constants.MODEL_NAVIGATOR_20,
+    )
+    add(
+        name="write_validation_same_name_wrong_datatype",
+        actions=[simulate(wrong_datatype, 1)],
         validation_codes=["write_model_unavailable"],
         detected_model=constants.MODEL_NAVIGATOR_20,
     )

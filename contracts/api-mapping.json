@@ -3,9 +3,9 @@
   "baseline": {
     "repository": "https://github.com/Xerolux/idm-heatpump-api",
     "python_package": "idm-heatpump-api",
-    "python_version": "2.16.1",
-    "git_tag": "v2.16.1",
-    "git_commit": "0347f2553a046159c19f6913f63099625da88668",
+    "python_version": "2.17.0rc1",
+    "git_tag": "v2.17.0rc1",
+    "git_commit": "6d6174fabc49cef765249358f4308102ef35391b",
     "parity_schema_version": 1
   },
   "mappings": [
@@ -1718,6 +1718,24 @@
         "python_class": "IdmWebResponseError",
         "constructor": "class",
         "member_naming": "preserve",
+        "validation": "python_fixture"
+      }
+    },
+    {
+      "python_symbol": "IdmWebHeatingCircuitUnavailableError",
+      "typescript_symbol": "IdmWebHeatingCircuitUnavailableError",
+      "export_path": "./web",
+      "kind": "class",
+      "owner_phase": 4,
+      "status": "complete",
+      "evidence_category": "web_errors",
+      "contract_test": "test/parity/web-contract.test.ts",
+      "normalizations": ["python_exception_to_error_class", "snake_case_to_camelCase"],
+      "representation": {
+        "form": "error_class",
+        "python_class": "IdmWebHeatingCircuitUnavailableError",
+        "constructor": "class",
+        "member_naming": "snake_case_to_camelCase",
         "validation": "python_fixture"
       }
     },

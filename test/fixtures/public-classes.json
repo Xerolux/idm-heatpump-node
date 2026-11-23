@@ -1,10 +1,10 @@
 {
   "baseline": {
-    "git_commit": "0347f2553a046159c19f6913f63099625da88668",
-    "git_tag": "v2.16.1",
+    "git_commit": "6d6174fabc49cef765249358f4308102ef35391b",
+    "git_tag": "v2.17.0rc1",
     "parity_schema_version": 1,
     "python_package": "idm-heatpump-api",
-    "python_version": "2.16.1",
+    "python_version": "2.17.0rc1",
     "repository": "https://github.com/Xerolux/idm-heatpump-api"
   },
   "classes": [
@@ -6459,6 +6459,38 @@
       "constructor": {
         "parameters": [
           {
+            "annotation": "str",
+            "default": {
+              "kind": "required"
+            },
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "hc_id"
+          }
+        ],
+        "return_annotation": "None",
+        "signature": "(hc_id: 'str') -> 'None'",
+        "source": "class_signature"
+      },
+      "members": [],
+      "public_names": [
+        "IdmWebHeatingCircuitUnavailableError"
+      ],
+      "python_module": "idm_heatpump.web",
+      "python_name": "IdmWebHeatingCircuitUnavailableError",
+      "source_group": "web",
+      "validation_boundaries": [
+        {
+          "kind": "signature_acceptance_domain",
+          "parameters": [
+            "hc_id"
+          ]
+        }
+      ]
+    },
+    {
+      "constructor": {
+        "parameters": [
+          {
             "annotation": null,
             "default": {
               "kind": "required"
@@ -7880,6 +7912,22 @@
           "readable": true,
           "return_annotation": "tuple[int | float | str, ...]",
           "writable": false
+        },
+        {
+          "kind": "method",
+          "name": "matches_request_shape",
+          "parameters": [
+            {
+              "annotation": "RegisterDef",
+              "default": {
+                "kind": "required"
+              },
+              "kind": "POSITIONAL_OR_KEYWORD",
+              "name": "other"
+            }
+          ],
+          "return_annotation": "bool",
+          "signature": "(self, other: 'RegisterDef') -> 'bool'"
         },
         {
           "kind": "property",

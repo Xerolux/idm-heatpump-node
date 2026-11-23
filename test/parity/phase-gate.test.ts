@@ -24,8 +24,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const orchestrator = resolve(root, "scripts/check-parity.mjs");
 const upstreamSource = resolve(root, "../idm-heatpump-api");
 const canonicalRepository = "https://github.com/Xerolux/idm-heatpump-api";
-const pinnedCommit = "0347f2553a046159c19f6913f63099625da88668";
-const pinnedTag = "v2.16.1";
+const pinnedCommit = "6d6174fabc49cef765249358f4308102ef35391b";
+const pinnedTag = "v2.17.0rc1";
 const temporaryPrefix = "idm-heatpump-contract-";
 const phase3RuntimeSymbols = [
   "IdmClientDiagnostics",
@@ -158,7 +158,7 @@ function expectGeneratedUnchanged(before: ReadonlyMap<string, FileSnapshot>): vo
   }
 }
 
-describe.sequential("parity orchestrator phase gate", () => {
+describe("parity orchestrator phase gate", () => {
   let temporaryDirectory = "";
   let exactCheckout = "";
 
@@ -400,11 +400,11 @@ describe("npm parity entry points and release package boundary", () => {
 
     expect(packageJson.scripts?.["parity:api"]).toBe("node scripts/generate-api-parity.mjs");
     expect(packageJson.scripts?.["parity:check"]).toBe("node scripts/check-parity.mjs check");
-    expect(completeRows).toHaveLength(161);
+    expect(completeRows).toHaveLength(162);
     expect(completeRows.filter(({ owner_phase }) => owner_phase === 1)).toHaveLength(60);
     expect(completeRows.filter(({ owner_phase }) => owner_phase === 2)).toHaveLength(9);
     expect(completeRows.filter(({ owner_phase }) => owner_phase === 3)).toHaveLength(8);
-    expect(completeRows.filter(({ owner_phase }) => owner_phase === 4)).toHaveLength(84);
+    expect(completeRows.filter(({ owner_phase }) => owner_phase === 4)).toHaveLength(85);
     for (const row of completeRows) {
       expect(apiDocument, row.python_symbol).toContain(
         `| \`${row.python_symbol}\` | \`${row.typescript_symbol}\` | \`${row.export_path}\` | ${String(row.owner_phase)} | \`complete\` |`,
@@ -631,7 +631,7 @@ describe("GitHub Actions workflow contract", () => {
     const parityJob = workflow.match(/^\s{2}parity:\s*$([\s\S]*)/mu)?.[1] ?? "";
 
     expect(manifest).toMatchObject({
-      python_version: "2.16.1",
+      python_version: "2.17.0rc1",
       git_tag: pinnedTag,
       git_commit: pinnedCommit,
     });
@@ -655,11 +655,11 @@ describe("Phase 4 truthful documentation and closure", () => {
   it("README documents complete public Modbus and web parity plus the risk boundary", () => {
     const readme = readFileSync(resolve(root, "README.md"), "utf8");
 
-    expect(readme).toMatch(/Kern-Funktionsumfang[\s\S]*implementiert und maschinengeprüft/u);
+    expect(readme).toMatch(/Funktionsumfang ist\s+implementiert und maschinengeprüft/u);
     expect(readme).toContain("private: false");
-    expect(readme).toContain("161");
+    expect(readme).toContain("162");
     expect(readme).toContain("complete");
-    expect(readme).toContain("2.16.1");
+    expect(readme).toContain("2.17.0rc1");
     expect(readme).toContain(pinnedTag);
     expect(readme).toContain(pinnedCommit);
     expect(readme).toContain("npm run parity:check");
@@ -699,7 +699,7 @@ describe("Phase 4 truthful documentation and closure", () => {
     expect(readme).toMatch(/vertrauenswürdigen\s+lokalen Netzwerk/u);
     expect(readme).toMatch(/Keine\s+Node-Hardwarevalidierung\s+durchgeführt/u);
     expect(readme).not.toMatch(/noch keinen Modbus-Transport|Phase 3[^\n]*(?:geplant|Writes)/u);
-    expect(readme).toContain("Version `2.16.1`");
+    expect(readme).toContain("Version `2.17.0-rc.1`");
   });
 
   it("README register examples use canonical keys exposed by the public API", () => {
@@ -722,7 +722,7 @@ describe("Phase 4 truthful documentation and closure", () => {
     const changelog = readFileSync(changelogPath, "utf8");
 
     expect(changelog).toContain("## [Unreleased]");
-    expect(changelog).toContain("2.16.1");
+    expect(changelog).toContain("2.17.0rc1");
     expect(changelog).toContain(pinnedTag);
     expect(changelog).toContain(pinnedCommit);
     expect(changelog).toContain("private: false");
@@ -738,7 +738,7 @@ describe("Phase 4 truthful documentation and closure", () => {
     expect(changelog).toMatch(/Write-Fehler|fehlgeschlagene Writes/u);
     expect(changelog).toMatch(/Web-Supplement[\s\S]*Veröffentlichung/u);
     expect(changelog).toContain("106 vollständige API-Zuordnungen");
-    expect(changelog).toContain("Python-2.16.1-Parität");
+    expect(changelog).toContain("Python-2.17.0rc1-Parität");
     expect(changelog).toContain("Navigator 1.0/1.7");
     expect(changelog).toContain("keine integrierte TLS-Verschlüsselung");
     expect(changelog).toMatch(/keine\s+Modbus-Authentifizierung/u);
@@ -859,10 +859,10 @@ describe("Phase 4 truthful documentation and closure", () => {
     for (const threshold of ["branches", "functions", "lines", "statements"]) {
       expect(coverageConfig).toMatch(new RegExp("\\b" + threshold + ":\\s*80\\b", "u"));
     }
-    // Core parity against 2.16.1 is complete (106 rows); the staged rows
+    // Core parity against 2.17.0rc1 is complete (106 rows); the staged rows
     // are the Python 2.x web expansion and the coil transport extension
     // (55 rows), tracked for the follow-up sync phases. No row is partial.
-    expect(completeRows).toHaveLength(161);
+    expect(completeRows).toHaveLength(162);
     expect(
       completeRows.every(
         ({ export_path, owner_phase }) =>
@@ -879,7 +879,7 @@ describe("Phase 4 truthful documentation and closure", () => {
     expect(clientMapping?.partial_class).toBeUndefined();
     // Python 1.0 published the IdmModbusTransport protocol, so the former
     // TypeScript-only ModbusTransport extension became a mapped counterpart.
-    // The 2.16.1 sync adds the module-private Navigator 1.7 enum tables as
+    // The 2.17.0rc1 sync adds the module-private Navigator 1.7 enum tables as
     // reviewed type extensions.
     expect(extensions.extensions).toHaveLength(3);
     const prototypeMembers = Object.getOwnPropertyNames(IdmModbusClient.prototype)

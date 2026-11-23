@@ -5,6 +5,19 @@ dokumentiert.
 
 ## [Unreleased]
 
+### 2.17.0-rc.1
+
+- Python-2.17.0rc1-Parität für `v2.17.0rc1` (Commit
+  `6d6174fabc49cef765249358f4308102ef35391b`).
+- Modellerkennung verwirft Läufe mit unbeantworteten Probes und erkennt
+  nicht initialisierte Heizkreiswerte.
+- Modellgebundene Schreibzugriffe prüfen den Register- und Datentyp. Ein
+  laufender EEPROM-Schreibzugriff reserviert seinen Platz bis zum Abschluss.
+- Navigator 10 schließt WebSockets bei unterbrochener Anmeldung und meldet
+  nicht verfügbare Heizkreise mit einem eigenen Fehler. Navigator 2.0
+  normalisiert bekannte Statistikeinheiten und verwirft unbekannte Skalen.
+- Keine Node-Hardwarevalidierung durchgeführt.
+
 ### Added
 
 - **Coil-Transport-Erweiterung `IdmCoilTransportExtension` (FC01/FC05)**

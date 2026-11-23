@@ -10,12 +10,12 @@ It documents development intent; only `complete` rows with passing evidence may 
 
 - Repository: `https://github.com/Xerolux/idm-heatpump-api`
 - Python package: `idm-heatpump-api`
-- Python version/tag: `2.16.1` / `v2.16.1`
-- Full commit: `0347f2553a046159c19f6913f63099625da88668`
+- Python version/tag: `2.17.0rc1` / `v2.17.0rc1`
+- Full commit: `6d6174fabc49cef765249358f4308102ef35391b`
 - Parity schema: `1`
 - Development status: `complete`
 
-**161 public symbols: 77 root, 84 web.**
+**162 public symbols: 77 root, 85 web.**
 
 ## Symbol matrix
 
@@ -114,6 +114,7 @@ It documents development intent; only `complete` rows with passing evidence may 
 | `IdmWebPinRejectedError` | `IdmWebPinRejectedError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `IdmWebProtocolError` | `IdmWebProtocolError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `IdmWebResponseError` | `IdmWebResponseError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
+| `IdmWebHeatingCircuitUnavailableError` | `IdmWebHeatingCircuitUnavailableError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class`, `snake_case_to_camelCase` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `IdmWebTimeoutError` | `IdmWebTimeoutError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `IdmWebWebSocketError` | `IdmWebWebSocketError` | `./web` | 4 | `complete` | `error_class` | `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
 | `PinRejectedError` | `PinRejectedError` | `./web` | 4 | `complete` | `alias` | `python_alias_to_typescript_alias`, `python_exception_to_error_class` | `web_errors`: `test/parity/web-contract.test.ts` |
@@ -381,6 +382,7 @@ The TypeScript naming and representation decisions below are derived only from m
   - `RegisterDef.writable` → `writable` (attribute)
   - `RegisterDef.write_only` → `writeOnly` (attribute)
   - `RegisterDef.effective_sentinel_values` → `effectiveSentinelValues` (property)
+  - `RegisterDef.matches_request_shape` → `matchesRequestShape` (method)
   - `RegisterDef.write_class` → `writeClass` (property)
 
 ### RegisterRegistry

@@ -163,9 +163,9 @@ const CUSTOM_REGISTER_OPTIONAL_FIELDS = Object.freeze([
 const EXPECTED_BASELINE = Object.freeze({
   repository: "https://github.com/Xerolux/idm-heatpump-api",
   python_package: "idm-heatpump-api",
-  python_version: "2.16.1",
-  git_tag: "v2.16.1",
-  git_commit: "0347f2553a046159c19f6913f63099625da88668",
+  python_version: "2.17.0rc1",
+  git_tag: "v2.17.0rc1",
+  git_commit: "6d6174fabc49cef765249358f4308102ef35391b",
   parity_schema_version: 1,
 } as const);
 

@@ -15,8 +15,8 @@ import {
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const verifier = resolve(root, "scripts/check-upstream-version.mjs");
 const upstreamSource = resolve(root, "../idm-heatpump-api");
-const pinnedCommit = "0347f2553a046159c19f6913f63099625da88668";
-const pinnedTag = "v2.16.1";
+const pinnedCommit = "6d6174fabc49cef765249358f4308102ef35391b";
+const pinnedTag = "v2.17.0rc1";
 const canonicalRepository = "https://github.com/Xerolux/idm-heatpump-api";
 
 function readManifest(): unknown {
@@ -52,11 +52,11 @@ describe("upstream parity baseline manifest", () => {
       schema_version: 1,
       repository: "https://github.com/Xerolux/idm-heatpump-api",
       python_package: "idm-heatpump-api",
-      python_version: "2.16.1",
-      git_tag: "v2.16.1",
-      git_commit: "0347f2553a046159c19f6913f63099625da88668",
+      python_version: "2.17.0rc1",
+      git_tag: "v2.17.0rc1",
+      git_commit: "6d6174fabc49cef765249358f4308102ef35391b",
       parity_status: "complete",
-      verified_on: "2026-11-19",
+      verified_on: "2026-11-23",
     } satisfies UpstreamParity);
     expect(Object.isFrozen(parsed)).toBe(true);
     expect(() => {
@@ -248,7 +248,7 @@ describe("exact upstream checkout verifier", () => {
     expect(result.status, result.stderr).toBe(0);
     expect(result.stderr).toBe("");
     expect(result.stdout).toContain(canonicalRepository);
-    expect(result.stdout).toContain("idm-heatpump-api@2.16.1");
+    expect(result.stdout).toContain("idm-heatpump-api@2.17.0rc1");
     expect(result.stdout).toContain(pinnedTag);
     expect(result.stdout).toContain(pinnedCommit);
     expect(result.stdout).toContain("schema 1");

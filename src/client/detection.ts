@@ -161,12 +161,12 @@ export async function detectModel(
   for (let index = 0; index < MAX_HEATING_CIRCUITS; index += 1) {
     const response = flowSlots[index] ?? null;
     const exact = exactWords(response, 2);
-    const value = probeFloat(exact, -50, 80);
+    const value = probeFloat(exact);
     const unavailable = value === HEATING_CIRCUIT_UNAVAILABLE;
     const mode = exactWords(modeSlots[index] ?? null, 1);
     const modeConfigured =
       mode !== null && ((mode[0] as number) & 0xff) !== HEATING_CIRCUIT_ACTIVE_MODE_UNAVAILABLE;
-    if ((value !== null && !unavailable) || modeConfigured || (exact !== null && !unavailable)) {
+    if ((value !== null && !unavailable) || modeConfigured) {
       const circuit = HEATING_CIRCUIT_LETTERS[index];
       if (circuit !== undefined) {
         activeHeatingCircuits.push(circuit);

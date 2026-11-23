@@ -55,12 +55,11 @@ describe("repository bootstrap contracts", () => {
     const packageVersion = (
       readJson<{ readonly version: string }>("package.json") as { version: string }
     ).version;
-    expect(matrix.releases.at(-1)).toMatchObject({
-      version: packageVersion,
-      python_version: parity.python_version,
-      python_commit: parity.git_commit,
-      parity_status: parity.parity_status,
-    });
+    expect(packageVersion).toBe("2.17.0-rc.1");
+    expect(matrix.releases).not.toContainEqual(
+      expect.objectContaining({ version: packageVersion }),
+    );
+    expect(matrix.releases.at(-1)).toMatchObject({ version: "2.16.1", parity_status: "complete" });
     expect(() => assertParityMetadataConsistency(parity, matrix)).not.toThrow();
   });
 
@@ -110,7 +109,7 @@ describe("repository bootstrap contracts", () => {
 
     expect(manifest.name).toBe("@xerolux/idm-heatpump");
     expect(manifest.private).toBe(false);
-    expect(manifest.engines.node).toBe(">=22");
+    expect(manifest.engines.node).toBe("^22.18.0 || ^24.11.0 || >=26.0.0");
     expect(Object.keys(manifest.exports).sort()).toEqual([".", "./package.json", "./web"]);
   });
 });

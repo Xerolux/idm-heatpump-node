@@ -23,7 +23,7 @@ const PYTHON =
   (process.platform === "win32" && process.env.LOCALAPPDATA !== undefined
     ? join(process.env.LOCALAPPDATA, "Programs/Python/Python313/python.exe")
     : "python3.12");
-const PINNED_COMMIT = "0347f2553a046159c19f6913f63099625da88668";
+const PINNED_COMMIT = "6d6174fabc49cef765249358f4308102ef35391b";
 const CANONICAL_ORIGIN = "https://github.com/Xerolux/idm-heatpump-api";
 const FIXTURE_NAMES = [
   "public-api.json",
@@ -422,8 +422,8 @@ describe("verified Python contract generator", () => {
       expect(fixture.baseline).toEqual({
         repository: CANONICAL_ORIGIN,
         python_package: "idm-heatpump-api",
-        python_version: "2.16.1",
-        git_tag: "v2.16.1",
+        python_version: "2.17.0rc1",
+        git_tag: "v2.17.0rc1",
         git_commit: PINNED_COMMIT,
         parity_schema_version: 1,
       });
@@ -438,8 +438,8 @@ describe("verified Python contract generator", () => {
       readonly counts: { readonly total: number; readonly root: number; readonly web: number };
       readonly aliases: readonly { readonly name: string; readonly target: string }[];
     };
-    expect(publicApi.symbols).toHaveLength(161);
-    expect(publicApi.counts).toEqual({ total: 161, root: 77, web: 84 });
+    expect(publicApi.symbols).toHaveLength(162);
+    expect(publicApi.counts).toEqual({ total: 162, root: 77, web: 85 });
     expect(publicApi.symbols.map(({ name }) => name)).toEqual([
       ...new Set(publicApi.symbols.map(({ name }) => name)),
     ]);
@@ -607,7 +607,7 @@ describe("verified Python contract generator", () => {
     ).join("\n");
     expect(allFixtureText).toContain('"$number": "-0"');
     expect(allFixtureText).toContain('"$number": "NaN"');
-    // The Navigator 1.x embargo ended with the public 2.16.1 baseline:
+    // The Navigator 1.x embargo ended with the public 2.17.0rc1 baseline:
     // its register schema documents the official 1.7 map. Plant-identifying
     // data (addresses, PINs, serials) must never appear in any fixture.
     expect(allFixtureText).not.toMatch(

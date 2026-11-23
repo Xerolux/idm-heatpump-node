@@ -4,6 +4,7 @@ export {
   CsrfError,
   IdmWebAuthenticationError,
   IdmWebConnectionError,
+  IdmWebHeatingCircuitUnavailableError,
   IdmWebCsrfError,
   IdmWebData,
   IdmWebDependencyError,

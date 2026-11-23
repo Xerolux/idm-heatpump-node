@@ -10,31 +10,18 @@ vorgesehene Paketname ist:
 
 ## Status
 
-**Der vollständige öffentliche Kern-Funktionsumfang der Python-Referenz `2.16.1`
-ist implementiert und maschinengeprüft: Modbus Read/Write, Erkennung,
-Fehlerverhalten, Fehlercode-Datenbank, Plausibilitätshelfer und die
-Navigator-1.7-Registerkarte.** Das optionale Web-Supplement liegt funktional
-auf dem Stand der Python-`1.0.3`-Baseline; die Python-2.x-Web-Erweiterung
-(52 Symbole) und die Coil-Transport-Erweiterung (FC01/FC05) sind als
-`planned` gestaffelt und werden in den Folge-Syncs portiert. Ein
-npm-Release ist laut Release-Gate erst nach vollständiger Parität zulässig.
+Version `2.17.0-rc.1` portiert die Python-Referenz `2.17.0rc1`
+einschließlich Modbus, Coil-Transport und Web-Supplement. Der öffentliche Funktionsumfang ist
+implementiert und maschinengeprüft. Das Paket bleibt `private: false`.
+Der Desktop-Client bündelt den getesteten Tarball. Eine Veröffentlichung auf npm setzt eine
+stabile Python-Baseline voraus.
 
-`package.json` bleibt bewusst auf `private: false` gesetzt. Version `2.16.1`
-(gespiegelt an der Python-Baseline) wird nach Abschluss der gestaffelten
-Bereiche unter `@xerolux/idm-heatpump` veröffentlicht.
-Vor jeder späteren Version muss dieselbe Freshness- und Paritätsprüfung erneut
-erfolgreich laufen.
+- Paketversion: `2.17.0rc1`
+- Git-Tag: `v2.17.0rc1`
+- Vollständiger Commit: `6d6174fabc49cef765249358f4308102ef35391b`
 
-Die exakt geprüfte Python-Baseline ist:
-
-- Paketversion: `2.16.1`
-- Git-Tag: `v2.16.1`
-- vollständiger Commit: `0347f2553a046159c19f6913f63099625da88668`
-
-`UPSTREAM-PARITY.json` steht auf `partial` (Kern vollständig, Web-Staging
-dokumentiert). Keine Node-Hardwarevalidierung
-durchgeführt; sämtliche Prüfungen verwenden reproduzierbare Fake-Transporte,
-Fake-Zeit und Antworten der Python-Referenz.
+Keine Node-Hardwarevalidierung durchgeführt. Die Prüfungen verwenden Fake-Transporte,
+kontrollierte Zeit und Antworten der Python-Referenz.
 
 ## Nachgewiesener Funktionsumfang
 
@@ -62,10 +49,10 @@ evidenzbasierten Lesepfad aus Phase 2 bereit:
 - unveränderliche Diagnostik für Verbindungs-, Fehler-, Unsupported-,
   Permanent- und Quarantänezustand;
 - Planung, Simulation und Dry-run ohne Netzwerkverkehr;
-- validierte ein- und zwei-Wort-Writes ausschließlich als FC16-Request;
+- validierte ein- und zwei-Wort-Writes per FC16 sowie Coil-Schreibzugriffe per FC05;
 - Typ-, Bereichs-, Enum-, Ausschlusswert- und Modell-Validierung; die
-  `allowCustomRegister`-Option umgeht nur die Name-/Adress-Mitgliedschaft eines
-  erkannten Modells, niemals die übrigen Schutzprüfungen;
+  `allowCustomRegister`-Option umgeht nur die Prüfung von Name, Adresse, Register- und Datentyp
+  am erkannten Modell, niemals die übrigen Schutzprüfungen;
 - eine EEPROM-Schreibsperre von 60 Sekunden, öffentlich konfigurierbar über
   `eepromWriteInterval`, und Cyclic-Heartbeats mit einer
   Standard-TTL von 300 Sekunden, geprüft mit kontrollierter Uhr (Fake Clock);
@@ -73,7 +60,7 @@ evidenzbasierten Lesepfad aus Phase 2 bereit:
   erfolgreicher Zustandsänderung erst nach bestätigtem Transporterfolg;
 - acht exakt gepinnte Golden Fixtures und zwei generierte Dokumente als zehn
   transaktional geprüfte Paritätsartefakte.
-- read-only Navigator-10-WebSocket und Navigator-2.0-HTTP mit PIN-Prüfung,
+- optionaler Navigator-10-WebSocket und Navigator-2.0-HTTP mit PIN-Prüfung,
   Login/CSRF, Cache, Notifications, Statistics, Capabilities, Diagnostik und
   geschlossener Fehlerhierarchie über den separaten Export `./web`;
 - vollständige Erkennung nicht zusammenhängender Heizkreise A–G über
@@ -86,12 +73,8 @@ evidenzbasierten Lesepfad aus Phase 2 bereit:
 - Sentinel-Autorität über `effectiveSentinelValues` je Registerdefinition;
 - öffentliches `setModelInfo` zum expliziten Setzen erkannter Modellinformation.
 
-Die Paritätsmatrix enthält exakt 161 öffentliche Python-Symbole der Baseline
-`2.16.1`. 106 Zuordnungen sind `complete` (76 Paket-Root inklusive der
-Module `exceptions`, `error_codes` und `plausibility`, 30 Web der
-1.0.3-Baseline); die 54 gestaffelten Zuordnungen sind die Python-2.x-Web-Erweiterung;
-`IdmCoilTransportExtension` (FC01/FC05) ist seit diesem Stand vollständig
-portiert.
+Die Paritätsmatrix enthält 162 öffentliche Python-Symbole der Baseline
+`2.17.0rc1`. Alle Zuordnungen haben den Status `complete`.
 `IdmModbusClient` ist mit allen 32 öffentlichen Mitgliedern vollständig
 abgebildet, einschließlich `getRegisterOutcomes()` für die
 Lesediagnostik je Register (Wert, Rohwörter, Ablehnungsgrund).
@@ -100,8 +83,8 @@ Python-Protokolls `IdmModbusTransport`.
 
 Die exakte Zuordnung, Repräsentation und Testevidenz steht in
 [docs/API-PARITY.md](docs/API-PARITY.md). Der Exportpfad
-`@xerolux/idm-heatpump/web` enthält ausschließlich optionale read-only
-Web-Funktionen. Fehlende oder leere PINs liefern über die Factory-Funktionen
+`@xerolux/idm-heatpump/web` enthält optionale Lese- und Schreibfunktionen
+für die lokalen Navigator-Webschnittstellen. Fehlende oder leere PINs liefern über die Factory-Funktionen
 `null` und erhalten damit den Modbus-only-Betrieb.
 
 ## Verwendung des Lesepfads
@@ -149,7 +132,8 @@ console.log(plan.encodedRegisters, dryRun.dryRun);
 
 Ein echter Aufruf von `setValue()` oder `writeRegister()` muss erst nach
 bewusster Prüfung des Plans und einer hergestellten Verbindung erfolgen. Jeder
-akzeptierte ein- und zwei-Wort-Write wird mit FC16 gesendet. Ungültige Typen,
+akzeptierte ein- und zwei-Wort-Write wird mit FC16 gesendet. Coil-Schreibzugriffe
+verwenden FC05. Ungültige Typen,
 Bereiche, Enum-Werte, ausgeschlossene Werte, schreibgeschützte Register und
 Modellabweichungen werden vor Netzwerkverkehr abgewiesen.
 
@@ -166,15 +150,12 @@ keine Modbus-Authentifizierung. Verwende sie nur in einem vertrauenswürdigen
 lokalen Netzwerk und trenne das Gerät durch geeignete Netzwerkregeln von nicht
 vertrauenswürdigen Netzen.
 
-Navigator 1.0/1.7 besitzt seit diesem Sync eine eigene Registerkarte
-(Registermap 149/154 Register, Signatur-Erkennung über die
-Illegal-Data-Address-Antworten von 1350/1498/2000 plus Kernsonde 1000);
-Coil-Kommandos (FC01/FC05, c3000/c3003) sind gestaffelt, bis die
-Transport-Erweiterung portiert ist. Navigator 1.0/1.7 blieb vorher eine andere, nicht unterstützte und ausdrücklich
-ausgeschlossene Protokollfamilie. Dieses Paket übernimmt keine Adressen dieser
-Familie in die Navigator-2.0/Pro/10-Registerkarte.
+Navigator 1.0/1.7 verwendet eine eigene Registerkarte mit 149 bzw. 154
+Registern. Die Signatur verwendet die Antworten auf 1350, 1498 und 2000
+sowie die Kernsonde 1000. Coil-Kommandos c3000 und c3003 verwenden
+FC01/FC05. Die Registerkarte für Navigator 2.0, Pro und 10 bleibt separat.
 
-## Optionales read-only Web-Supplement
+## Optionales Web-Supplement
 
 ```ts
 import { createOptionalNavigator10WebClient } from "@xerolux/idm-heatpump/web";
@@ -191,12 +172,12 @@ if (web !== null) {
 }
 ```
 
-Das Web-Supplement bietet bewusst keinen Write-Pfad, keine Browser-Zusage und
-keine Telemetrie.
+Navigator 10 unterstützt zusätzlich gezielte Schreibzugriffe über die
+Webschnittstelle. Das Paket läuft in Node.js und enthält keine Telemetrie.
 
 ## Entwicklung und Paritätsprüfung
 
-Voraussetzungen sind Node.js 22 oder neuer, Git und Python 3.12. Die
+Voraussetzungen sind Node.js 22.18+, 24.11+ oder 26+, Git und Python 3.12. Die
 Paritätskommandos provisionieren die exakt gepinnte Python-Referenz selbst und
 benötigen keine Geräteadresse, Zugangsdaten oder PIN.
 
@@ -247,7 +228,7 @@ git diff --exit-code -- contracts docs/API-PARITY.md docs/BASELINE.md test/fixtu
 
 ## Zielplattform
 
-- Node.js 22 oder neuer
+- Node.js 22.18+, 24.11+ oder 26+
 - TypeScript im Strict Mode
 - Node.js-Laufzeit; keine Browser-Kompatibilitätszusage
 - Modbus TCP für Navigator 2.0, Navigator Pro und Navigator 10
